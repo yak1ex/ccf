@@ -1,0 +1,388 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\chromium\sandbox\win\src\acl.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\broker_services.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\crosscall_server.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\dep.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\eat_resolver.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\filesystem_dispatcher.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\filesystem_interception.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\filesystem_policy.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\handle_closer.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\handle_closer_agent.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\handle_dispatcher.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\handle_interception.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\handle_policy.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\handle_table.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\interception.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\interception_agent.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\job.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\named_pipe_dispatcher.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\named_pipe_interception.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\named_pipe_policy.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\policy_broker.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\policy_engine_opcodes.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\policy_engine_processor.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\policy_low_level.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\policy_target.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\process_thread_dispatcher.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\process_thread_interception.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\process_thread_policy.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\registry_dispatcher.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\registry_interception.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\registry_policy.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\resolver.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\resolver_32.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\restricted_token.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\restricted_token_utils.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\sandbox.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\sandbox_nt_util.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\sandbox_policy_base.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\sandbox_utils.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\service_resolver.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\service_resolver_32.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\shared_handles.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\sharedmem_ipc_client.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\sharedmem_ipc_server.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\sid.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\sidestep_resolver.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\sync_dispatcher.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\sync_interception.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\sync_policy.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\target_interceptions.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\target_process.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\target_services.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\win_utils.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\win2k_threadpool.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\window.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\Wow64.cc" />
+    <ClCompile Include="..\chromium\sandbox\win\src\sidestep\ia32_modrm_map.cpp">
+      <Filter>sidestep</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\sandbox\win\src\sidestep\ia32_opcode_map.cpp">
+      <Filter>sidestep</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\sandbox\win\src\sidestep\mini_disassembler.cpp">
+      <Filter>sidestep</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\sandbox\win\src\sidestep\preamble_patcher_with_stub.cpp">
+      <Filter>sidestep</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\logging.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\threading\platform_thread_win.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\win\scoped_process_information.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\win\scoped_handle.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\location.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\win\windows_version.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\win\pe_image.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\vlog.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\command_line.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\base_switches.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\synchronization\lock_impl_win.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\debug\debugger_win.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\utf_string_conversions.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\debug\alias.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\debug\stack_trace.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\string_piece.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\threading\thread_restrictions.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\time.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\debug\profiler.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\threading\thread_local_win.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\synchronization\lock.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\third_party\dynamic_annotations\dynamic_annotations.c">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\lazy_instance.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\string_number_conversions.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\stringprintf.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\string_split.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\string_util.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\file_path.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\utf_string_conversion_utils.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\debug\stack_trace_win.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\tracked_objects.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\debug\debugger.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\memory\singleton.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\at_exit.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\time_win.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\third_party\nspr\prtime.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\profiler\tracked_time.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\threading\thread_local_storage_win.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\profiler\alternate_timer.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\process_util_win.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\third_party\dmg_fp\g_fmt.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\third_party\dmg_fp\dtoa.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\third_party\icu\icu_utf.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\pickle.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\callback_internal.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\memory\ref_counted.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\cpu.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\win\object_watcher.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\process_util.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\message_loop.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\sys_info_win.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\threading\thread_collision_warner.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\memory\weak_ptr.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\message_pump_default.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\message_pump_win.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\thread_task_runner_handle.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\message_loop_proxy_impl.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\pending_task.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\run_loop.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\tracking_info.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\debug\trace_event.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\debug\trace_event_impl.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\metrics\histogram.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\metrics\statistics_recorder.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\task_runner.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\threading\thread_checker_impl.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\synchronization\waitable_event_win.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\message_pump.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\win\wrapped_window_proc.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\message_loop_proxy.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\memory\ref_counted_memory.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\debug\trace_event_win.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\metrics\bucket_ranges.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\metrics\histogram_base.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\threading\post_task_and_reply_impl.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\chromium\base\win\event_trace_provider.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\chromium\sandbox\win\src\acl.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\broker_services.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\crosscall_client.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\crosscall_params.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\crosscall_server.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\dep.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\eat_resolver.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\filesystem_dispatcher.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\filesystem_interception.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\filesystem_policy.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\handle_closer.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\handle_closer_agent.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\handle_dispatcher.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\handle_interception.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\handle_policy.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\handle_table.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\interception.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\interception_agent.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\interception_internal.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\interceptors.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\internal_types.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\ipc_tags.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\job.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\named_pipe_dispatcher.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\named_pipe_interception.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\named_pipe_policy.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\nt_internals.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\policy_broker.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\policy_engine_opcodes.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\policy_engine_params.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\policy_engine_processor.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\policy_low_level.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\policy_params.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\policy_target.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\process_thread_dispatcher.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\process_thread_interception.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\process_thread_policy.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\registry_dispatcher.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\registry_interception.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\registry_policy.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\resolver.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\restricted_token.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\restricted_token_utils.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\sandbox.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\sandbox_factory.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\sandbox_nt_types.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\sandbox_nt_util.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\sandbox_policy.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\sandbox_policy_base.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\sandbox_types.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\sandbox_utils.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\security_level.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\service_resolver.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\shared_handles.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\sharedmem_ipc_client.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\sharedmem_ipc_server.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\sid.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\sidestep_resolver.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\sync_dispatcher.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\sync_interception.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\sync_policy.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\target_interceptions.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\target_process.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\target_services.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\win_utils.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\win2k_threadpool.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\window.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\Wow64.h" />
+    <ClInclude Include="..\chromium\sandbox\win\src\sidestep\mini_disassembler.h">
+      <Filter>sidestep</Filter>
+    </ClInclude>
+    <ClInclude Include="..\chromium\sandbox\win\src\sidestep\mini_disassembler_types.h">
+      <Filter>sidestep</Filter>
+    </ClInclude>
+    <ClInclude Include="..\chromium\sandbox\win\src\sidestep\preamble_patcher.h">
+      <Filter>sidestep</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="sidestep">
+      <UniqueIdentifier>{28060c49-92d3-4d98-bed1-3b6dab826e2b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="base">
+      <UniqueIdentifier>{075ad8a0-5fc2-43be-818b-d2eb206bc993}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
