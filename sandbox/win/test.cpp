@@ -30,7 +30,8 @@ int main(int argc, char** argv)
 	for(int i=0;i<n;++i) std::cin >> v[i];
 	std::cout << std::accumulate(v.begin(), v.end(), 0) << std::endl;
 
-	std::ofstream ofs("d:\\home\\atarashi\\work-git\\ccf\\sandbox.log", std::ios::out|std::ios::app);
+// TODO: Set appropriate path automatically
+	std::ofstream ofs("d:\\home\\atarashi\\work-git\\ccf\\sandbox\\win\\sandbox.log", std::ios::out|std::ios::app);
 	ofs << "Test" << std::endl;
 
 	return 0;

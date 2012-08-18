@@ -52,6 +52,10 @@ public:
 	}
 };
 
+// TODO: Set appropriate path automatically
+#define MYPATH L"d:\\home\\atarashi\\work-git\\ccf\\sandbox\\win\\"
+#define MYPATHA "d:\\home\\atarashi\\work-git\\ccf\\sandbox\\win\\"
+
 int main(int argc, char** argv)
 {
 	sandbox::BrokerServices* broker_service = sandbox::SandboxFactory::GetBrokerServices();
@@ -71,8 +75,8 @@ int main(int argc, char** argv)
 		policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS, sandbox::USER_LOCKDOWN);
 		policy->SetAlternateDesktop(true);
 		policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
-//		policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES,
-//		                  sandbox::TargetPolicy::FILES_ALLOW_ANY, L"d:\\home\\atarashi\\work-git\\ccf\\sandbox.log");
+		policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES,
+		                  sandbox::TargetPolicy::FILES_ALLOW_ANY, MYPATH L"sandbox.log");
 		PROCESS_INFORMATION target_;
 		sandbox::ResultCode result = broker_service->SpawnTarget(L".\\sandbox.exe", L"", policy, &target_);
 		policy->Release();
@@ -94,7 +98,7 @@ int main(int argc, char** argv)
 
 		// SetStdHandle() does not work as expected
 		// Before locked-down, we can access arbitrary files.
-		StdHandleSaver shs("d:\\home\\atarashi\\work-git\\ccf\\sandboxin.txt", "d:\\home\\atarashi\\work-git\\ccf\\sandboxout.txt");
+		StdHandleSaver shs(MYPATHA "sandboxin.txt", MYPATHA "sandboxout.txt");
 
 		sandbox::TargetServices* target_service = sandbox::SandboxFactory::GetTargetServices();
 		if (NULL == target_service) {
