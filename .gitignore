@@ -23,6 +23,7 @@
 # Temporary files for MSVS
 *.suo
 *.sdf
+*.opensdf
 
 # Temporary folders for MSVS
 Debug/
