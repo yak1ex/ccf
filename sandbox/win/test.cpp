@@ -7,12 +7,12 @@ int main(int argc, char** argv)
 {
 #if defined(MEM_OK) || defined(MEM_BAD)
 #if defined(MEM_OK)
-	std::vector<int> v(218*1024); // OK
+	std::vector<int> vv(220*1024); // OK
 #endif
 #if defined(MEM_BAD)
-	std::vector<int> v(219*1024); // Bad
+	std::vector<int> vv(221*1024); // Bad
 #endif
-	v.back() = 5;
+	vv.back() = 5;
 #endif
 
 #if defined(CPU_OK) || defined(CPU_BAD)
@@ -20,7 +20,8 @@ int main(int argc, char** argv)
 	for(int i=0;i<100000000;++i); // OK
 #endif
 #if defined(CPU_BAD)
-	for(int i=0;i<1000000000;++i); // Bad
+	for(int i=0;i<1000000000;++i) // Bad
+		for(int j=0;j<1000000000;++j);
 #endif
 #endif
 

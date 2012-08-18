@@ -72,6 +72,8 @@ int main(int argc, char** argv)
 
 		sandbox::TargetPolicy* policy = broker_service->CreatePolicy();
 		policy->SetJobLevel(sandbox::JOB_LOCKDOWN, 0);
+		policy->SetJobPerProcessMemoryLimit(3*1024*1024);
+		policy->SetJobPerProcessUserTimeLimit(1);
 		policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS, sandbox::USER_LOCKDOWN);
 		policy->SetAlternateDesktop(true);
 		policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
@@ -92,7 +94,10 @@ int main(int argc, char** argv)
 		::CloseHandle(target_.hProcess);
 		::CloseHandle(target_.hThread);
 
-	    broker_service->WaitForAllTargets();
+		broker_service->WaitForAllTargets();
+
+		if(broker_service->IsMemoryLimitTargets()) std::cerr << "MLE" << std::endl;
+		if(broker_service->IsTimeLimitTargets()) std::cerr << "TLE" << std::endl;
 
 	} else {
 

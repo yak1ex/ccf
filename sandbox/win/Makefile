@@ -1,3 +1,13 @@
+!IFDEF CPU_OK
+CXXFLAGS=$(CXXFLAGS) /DCPU_OK
+!ELSEIFDEF CPU_BAD
+CXXFLAGS=$(CXXFLAGS) /DCPU_BAD
+!ELSEIFDEF MEM_OK
+CXXFLAGS=$(CXXFLAGS) /DMEM_OK
+!ELSEIFDEF MEM_BAD
+CXXFLAGS=$(CXXFLAGS) /DMEM_BAD
+!ENDIF
+
 sandbox.exe: sandbox.obj test_.obj ..\..\sandbox-win-standalone\Debug\sandbox-win-standalone.lib
 	cl /MDd sandbox.obj test_.obj ..\..\sandbox-win-standalone\Debug\sandbox-win-standalone.lib advapi32.lib user32.lib shell32.lib dbghelp.lib psapi.lib
 
@@ -8,7 +18,7 @@ test_.obj: test.obj
 	objcopy --redefine-sym _main=_main_ test.obj test_.obj
 
 test.obj: test.cpp
-	cl /c /MDd /EHsc test.cpp
+	cl /c $(CXXFLAGS) /MDd /EHsc test.cpp
 
 clean:
 	del *.exe *.obj
