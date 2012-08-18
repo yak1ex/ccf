@@ -225,10 +225,14 @@ DWORD WINAPI BrokerServicesBase::TargetEventsThread(PVOID param) {
         }
 
         case JOB_OBJECT_MSG_EXIT_PROCESS:
-        case JOB_OBJECT_MSG_ABNORMAL_EXIT_PROCESS: {
+        case JOB_OBJECT_MSG_ABNORMAL_EXIT_PROCESS:
+        case JOB_OBJECT_MSG_END_OF_PROCESS_TIME:
+        case JOB_OBJECT_MSG_PROCESS_MEMORY_LIMIT: {
           {
             AutoLock lock(&broker->lock_);
             broker->child_process_ids_.erase(reinterpret_cast<DWORD>(ovl));
+            if (JOB_OBJECT_MSG_END_OF_PROCESS_TIME == events) broker->timelimit_child_process_ids_.insert(reinterpret_cast<DWORD>(ovl));
+            if (JOB_OBJECT_MSG_PROCESS_MEMORY_LIMIT == events) broker->memlimit_child_process_ids_.insert(reinterpret_cast<DWORD>(ovl));
           }
           --target_counter;
           if (0 == target_counter)
@@ -363,6 +367,32 @@ bool BrokerServicesBase::IsActiveTarget(DWORD process_id) {
   AutoLock lock(&lock_);
   return child_process_ids_.find(process_id) != child_process_ids_.end() ||
          peer_map_.find(process_id) != peer_map_.end();
+}
+
+void BrokerServicesBase::ClearLimitedTargets() {
+  AutoLock lock(&lock_);
+  memlimit_child_process_ids_.clear();
+  timelimit_child_process_ids_.clear();
+}
+
+bool BrokerServicesBase::IsMemoryLimitTargets() {
+  AutoLock lock(&lock_);
+  return !memlimit_child_process_ids_.empty();
+}
+
+bool BrokerServicesBase::IsMemoryLimitTarget(DWORD process_id) {
+  AutoLock lock(&lock_);
+  return memlimit_child_process_ids_.count(process_id) != 0;
+}
+
+bool BrokerServicesBase::IsTimeLimitTargets() {
+  AutoLock lock(&lock_);
+  return !timelimit_child_process_ids_.empty();
+}
+
+bool BrokerServicesBase::IsTimeLimitTarget(DWORD process_id) {
+  AutoLock lock(&lock_);
+  return timelimit_child_process_ids_.count(process_id) != 0;
 }
 
 VOID CALLBACK BrokerServicesBase::RemovePeer(PVOID parameter, BOOLEAN timeout) {

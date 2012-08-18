@@ -61,6 +61,11 @@ class BrokerServicesBase : public BrokerServices,
   // Returns:
   //   true if there is an active target process for this ID, otherwise false.
   bool IsActiveTarget(DWORD process_id);
+  void ClearLimitedTargets();
+  virtual bool IsMemoryLimitTargets();
+  bool IsMemoryLimitTarget(DWORD process_id);
+  virtual bool IsTimeLimitTargets();
+  bool IsTimeLimitTarget(DWORD process_id);
 
  private:
   // Releases the Job and notifies the associated Policy object to its
@@ -103,6 +108,8 @@ class BrokerServicesBase : public BrokerServices,
 
   // Provides a fast lookup to identify sandboxed processes.
   std::set<DWORD> child_process_ids_;
+  std::set<DWORD> memlimit_child_process_ids_;
+  std::set<DWORD> timelimit_child_process_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(BrokerServicesBase);
 };

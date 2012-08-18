@@ -120,6 +120,9 @@ class TargetPolicy {
   // Note: the recommended level is JOB_RESTRICTED or JOB_LOCKDOWN.
   virtual ResultCode SetJobLevel(JobLevel job_level, uint32 ui_exceptions) = 0;
 
+  virtual ResultCode SetJobPerProcessMemoryLimit(SIZE_T memory_limit) = 0;
+  virtual ResultCode SetJobPerProcessUserTimeLimit(LONGLONG user_time) = 0;
+
   // Specifies the desktop on which the application is going to run. If the
   // desktop does not exist, it will be created. If alternate_winstation is
   // set to true, the desktop will be created on an alternate window station.

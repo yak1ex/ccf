@@ -15,7 +15,7 @@ Job::~Job() {
 };
 
 DWORD Job::Init(JobLevel security_level, wchar_t *job_name,
-                DWORD ui_exceptions) {
+                DWORD ui_exceptions, SIZE_T memory_limit, LONGLONG user_time) {
   if (job_handle_)
     return ERROR_ALREADY_INITIALIZED;
 
@@ -64,6 +64,15 @@ DWORD Job::Init(JobLevel security_level, wchar_t *job_name,
     default: {
       return ERROR_BAD_ARGUMENTS;
     }
+  }
+  // Set resource limitation
+  if (static_cast<SIZE_T>(-1) != memory_limit) {
+    jeli.BasicLimitInformation.LimitFlags |= JOB_OBJECT_LIMIT_PROCESS_MEMORY;
+    jeli.ProcessMemoryLimit = memory_limit;
+  }
+  if (-1 != user_time) {
+    jeli.BasicLimitInformation.LimitFlags |= JOB_OBJECT_LIMIT_PROCESS_TIME;
+    jeli.BasicLimitInformation.PerProcessUserTimeLimit.QuadPart = user_time;
   }
 
   if (FALSE == ::SetInformationJobObject(job_handle_,
