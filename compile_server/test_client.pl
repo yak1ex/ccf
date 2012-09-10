@@ -32,6 +32,7 @@ int main(void)
 	return 0;
 }
 EOF
+my $is_compile_output = 0;
 $handle->push_read(json => sub {
 	my ($handle, $json) = @_;
 	print "ID $json->{id}\n";
@@ -43,8 +44,18 @@ $handle->push_read(json => sub {
 				$handle->push_write(json => {command=>'result',id=>$json->{id}});
 				$handle->push_read(json => sub {
 					my ($handle, $json) = @_;
-					print Data::Dumper->Dump([$json]);
+					print "---compile---\n$json->{compile}---compile---\n" if $is_compile_output == 0;
+					print "---execute---\n$json->{execute}---execute---\n";
 					$cv->send;
+				});
+			} elsif($json->{status} == 3 && $is_compile_output == 0) {
+				$is_compile_output = 1;
+				$handle->push_write(json => {command=>'result',id=>$json->{id}});
+				$handle->push_read(json => sub {
+					my ($handle, $json) = @_;
+					print "---compile---\n$json->{compile}---compile---\n";
+					$handle->push_write(json => {command=>'status',id=>$json->{id}});
+					$handle->push_read(@handler);
 				});
 			} else {
 				# TODO: async
