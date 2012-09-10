@@ -25,6 +25,9 @@ sub make_cl
 	return map { $_ eq '$input' ? $input : $_ eq '$output' ?  $output : $_ } @{$conf->{$type}{$mode}};
 }
 
+my %status;
+my $id = 0;
+
 tcp_server '127.0.0.1', 8888, sub {
 	my ($fh, $host, $port) = @_;
 
@@ -38,6 +41,7 @@ tcp_server '127.0.0.1', 8888, sub {
 	my @handler; @handler = (json => sub {
 		print "handler\n";
 		my ($handle, $json) = @_;
+		my $curid = $id++;
 
 		my $fh = File::Temp->new(UNLINK=>0,SUFFIX=>'.cpp');
 		print $fh $json->{source};
@@ -48,14 +52,23 @@ tcp_server '127.0.0.1', 8888, sub {
 		my $out = $fho->filename;
 
 		if($json->{execute} eq 'true') {
-			run_cmd([make_cl($json->{type}, 'link', $source, $out)])->cb(sub {
-				run_cmd([$out])->cb(sub{
+			run_cmd([make_cl($json->{type}, 'link', $source, $out)], '<', '/dev/null', '>', \$status{$curid}{compile}, '2>', \$status{$curid}{compile})->cb(sub {
+print "---compile begin---\n";
+print $status{$curid}{compile};
+print "---compile  end ---\n";
+				run_cmd([$out], '<', '/dev/null', '>', \$status{$curid}{execute}, '2>', \$status{$curid}{execute})->cb(sub{
+print "---execute begin---\n";
+print $status{$curid}{execute};
+print "---execute  end ---\n";
 					unlink $out;
 					unlink $source;
 				});
 			});
 		} else {
-			run_cmd([make_cl($json->{type}, 'compile', $source, $out)])->cb(sub {
+			run_cmd([make_cl($json->{type}, 'compile', $source, $out)], '<', '/dev/null', '>', \$status{$curid}{compile}, '2>', \$status{$curid}{compile})->cb(sub {
+print "---compile begin---\n";
+print $status{$curid}{compile};
+print "---compile  end ---\n";
 				unlink $out;
 				unlink $source;
 			});
