@@ -35,3 +35,160 @@ cygwin:
       - -o
       - $output
       - $input
+linux:
+  GLOBAL:
+    memlimit-compile: 0
+    memlimit-execute: 0
+    cpulimit-compile: 0
+    cpulimit-execute: 0
+    sandbox: none
+  gcc44:
+    compile:
+      - g++-4.4
+      - -Wall
+      - -c
+      - -o
+      - $output
+      - $input
+    link:
+      - g++-4.4
+      - -Wall
+      - -o
+      - $output
+      - $input
+  gcc44-c++11:
+    compile:
+      - g++-4.4
+      - -Wall
+      - -std=c++0x
+      - -c
+      - -o
+      - $output
+      - $input
+    link:
+      - g++-4.4
+      - -Wall
+      - -std=c++0x
+      - -o
+      - $output
+      - $input
+  gcc45:
+    compile:
+      - g++-4.5
+      - -Wall
+      - -c
+      - -o
+      - $output
+      - $input
+    link:
+      - g++-4.5
+      - -Wall
+      - -o
+      - $output
+      - $input
+  gcc45-c++11:
+    compile:
+      - g++-4.5
+      - -Wall
+      - -std=c++0x
+      - -c
+      - -o
+      - $output
+      - $input
+    link:
+      - g++-4.5
+      - -Wall
+      - -std=c++0x
+      - -o
+      - $output
+      - $input
+  gcc46:
+    compile:
+      - g++-4.6
+      - -Wall
+      - -c
+      - -o
+      - $output
+      - $input
+    link:
+      - g++-4.6
+      - -Wall
+      - -o
+      - $output
+      - $input
+  gcc46-c++11:
+    compile:
+      - g++-4.6
+      - -Wall
+      - -std=c++0x
+      - -c
+      - -o
+      - $output
+      - $input
+    link:
+      - g++-4.6
+      - -Wall
+      - -std=c++0x
+      - -o
+      - $output
+      - $input
+  gcc47:
+    compile:
+      - g++-4.7
+      - -Wall
+      - -c
+      - -o
+      - $output
+      - $input
+    link:
+      - g++-4.7
+      - -Wall
+      - -o
+      - $output
+      - $input
+  gcc47-c++11:
+    compile:
+      - g++-4.7
+      - -Wall
+      - -std=c++0x
+      - -c
+      - -o
+      - $output
+      - $input
+    link:
+      - g++-4.7
+      - -Wall
+      - -std=c++0x
+      - -o
+      - $output
+      - $input
+  gcc48:
+    compile:
+      - g++-4.8
+      - -Wall
+      - -c
+      - -o
+      - $output
+      - $input
+    link:
+      - g++-4.8
+      - -Wall
+      - -o
+      - $output
+      - $input
+  gcc48-c++11:
+    compile:
+      - g++-4.8
+      - -Wall
+      - -std=c++0x
+      - -c
+      - -o
+      - $output
+      - $input
+    link:
+      - g++-4.8
+      - -Wall
+      - -std=c++0x
+      - -o
+      - $output
+      - $input
