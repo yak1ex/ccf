@@ -5,10 +5,49 @@ use warnings;
 use AnyEvent;
 use AnyEvent::Handle;
 
-use Data::Dumper;
+use Getopt::Std;
 
-# TODO: command line option handling
-# TODO: type should be extracted from configuration
+# TODO: type should be checked with configuration
+
+sub usage
+{
+	print "\n$_[0]\n" if defined $_[0];
+	print <<EOF;
+
+test_client.pl [option]
+
+Test client for compile server
+
+option:
+	-h: Show this help
+	-t <type>: Target type (required)
+	-c: compile only
+	-l: List types from configuration file
+	-v: Verbose
+
+EOF
+
+	exit;
+}
+
+my %opts;
+getopts('ht:clv', \%opts);
+
+usage if exists $opts{h};
+usage('-t option must be specified.') if ! exists $opts{t};
+if(exists $opts{l}) {
+	use English;
+	use YAML;
+	print "List all types in this environment:\n";
+	my $conf = YAML::LoadFile('config.yaml');
+	foreach my $key (sort keys %{$conf->{$OSNAME}}) {
+		if($key ne 'GLOBAL') {
+			print "\t$key\n";
+		}
+	}
+	exit;
+}
+
 
 my $cv = AnyEvent->condvar;
 
@@ -17,7 +56,7 @@ my $handle = AnyEvent::Handle->new(
 #	on_drain => sub { $cv->send },
 );
 
-$handle->push_write(json => {command=>'invoke',type=>'gcc45',execute=>'true',source=><<'EOF'});
+$handle->push_write(json => {command=>'invoke',type=>$opts{t},execute=>(exists $opts{c} ? 'false' : 'true'),source=><<'EOF'});
 #include <iostream>
 #include <unistd.h>
 
