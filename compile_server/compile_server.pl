@@ -8,11 +8,22 @@ use AnyEvent::Handle;
 use AnyEvent::Socket; # tcp_server
 use AnyEvent::Util; # run_cmd
 
+use YAML;
 use File::Temp;
 
 # TODO: compiler configuration
 # TODO: output capture
 # TODO: command/response implementation (compile/status/result)
+
+my $conf = YAML::LoadFile('config.yaml');
+
+sub make_cl
+{
+	my ($type, $mode, $input, $output) = @_;
+
+# TODO: error check
+	return map { $_ eq '$input' ? $input : $_ eq '$output' ?  $output : $_ } @{$conf->{$type}{$mode}};
+}
 
 tcp_server '127.0.0.1', 8888, sub {
 	my ($fh, $host, $port) = @_;
@@ -37,14 +48,14 @@ tcp_server '127.0.0.1', 8888, sub {
 		my $out = $fho->filename;
 
 		if($json->{execute} eq 'true') {
-			run_cmd([qw(g++ -o),$out,$source])->cb(sub {
+			run_cmd([make_cl($json->{type}, 'link', $source, $out)])->cb(sub {
 				run_cmd([$out])->cb(sub{
 					unlink $out;
 					unlink $source;
 				});
 			});
 		} else {
-			run_cmd([qw(g++ -o),$out,'-c',$source])->cb(sub {
+			run_cmd([make_cl($json->{type}, 'compile', $source, $out)])->cb(sub {
 				unlink $out;
 				unlink $source;
 			});
