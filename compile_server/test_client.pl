@@ -12,12 +12,15 @@ my $handle = AnyEvent::Handle->new(
 	on_drain => sub { $cv->send },
 );
 
-$handle->push_write(json => {type=>'gcc46-c++11',execute=>'true',source=><<'EOF'});
+$handle->push_write(json => {type=>'gcc45',execute=>'true',source=><<'EOF'});
 #include <iostream>
 
 int main(void)
 {
-	std::cout << "Run" << std::endl;
+	std::cout << "Run: " << __GNUC__ << '.' << __GNUC_MINOR__ << '.' << __GNUC_PATCHLEVEL__ << std::endl;
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+	std::cout << "     with C++0X mode" << std::endl;
+#endif
 	return 0;
 }
 EOF
