@@ -34,7 +34,6 @@ my %opts;
 getopts('ht:clv', \%opts);
 
 usage if exists $opts{h};
-usage('-t option must be specified.') if ! exists $opts{t};
 if(exists $opts{l}) {
 	use English;
 	use YAML;
@@ -47,7 +46,7 @@ if(exists $opts{l}) {
 	}
 	exit;
 }
-
+usage('-t option must be specified.') if ! exists $opts{t};
 
 my $cv = AnyEvent->condvar;
 
