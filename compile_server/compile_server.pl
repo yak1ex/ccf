@@ -8,6 +8,7 @@ use AnyEvent::Handle;
 use AnyEvent::Socket; # tcp_server
 use AnyEvent::Util; # run_cmd
 
+use English;
 use YAML;
 use File::Temp;
 
@@ -22,7 +23,7 @@ sub make_cl
 	my ($type, $mode, $input, $output) = @_;
 
 # TODO: error check
-	return map { $_ eq '$input' ? $input : $_ eq '$output' ?  $output : $_ } @{$conf->{$type}{$mode}};
+	return map { $_ eq '$input' ? $input : $_ eq '$output' ?  $output : $_ } @{$conf->{$OSNAME}{$type}{$mode}};
 }
 
 my %status;
