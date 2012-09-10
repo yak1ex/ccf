@@ -19,7 +19,10 @@ use constant {
 	FINISHED => 4,
 };
 
+# TODO: clear command
 # TODO: FINISHED reaper
+# TODO: Optional log
+# TODO: Using sandbox
 
 my $conf = YAML::LoadFile('config.yaml');
 
