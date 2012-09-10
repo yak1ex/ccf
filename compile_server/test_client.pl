@@ -5,6 +5,9 @@ use warnings;
 use AnyEvent;
 use AnyEvent::Handle;
 
+# TODO: command line option handling
+# TODO: type should be extracted from configuration
+
 my $cv = AnyEvent->condvar;
 
 my $handle = AnyEvent::Handle->new(
