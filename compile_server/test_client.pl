@@ -17,6 +17,7 @@ $handle->push_write(json => {type=>'gcc45',execute=>'true',source=><<'EOF'});
 
 int main(void)
 {
+	int n;
 	std::cout << "Run: " << __GNUC__ << '.' << __GNUC_MINOR__ << '.' << __GNUC_PATCHLEVEL__ << std::endl;
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
 	std::cout << "     with C++0X mode" << std::endl;
