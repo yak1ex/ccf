@@ -1,15 +1,21 @@
 <html>
+<!-- TOOD: Adjust UI theme -->
 <head>
 <title>C++ Compiler Farm</title>
+<link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.23/themes/cupertino/jquery-ui.css" rel="stylesheet" type="text/css">
 <link href="ccf.css" rel="stylesheet" type="text/css">
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.23/jquery-ui.min.js"></script>
 <script src="ccf.js" type="text/javascript"></script>
 </head>
 <body>
-<div id="compiler_types" />
-<textarea id="source"></textarea>
-<input type="checkbox" value="compile">compile only
-<input type="button" value="Go!">
-<div id="result" />
+<p>Source:</p>
+<form id="form">
+<textarea id="source" name="source"></textarea>
+<div id="compiler_types"></div>
+<input type="checkbox" id="compile" value="compile">compile only
+<input type="submit" value="Go!">
+</form>
+<div id="result"><ul></ul></div>
 </body>
 </html>
