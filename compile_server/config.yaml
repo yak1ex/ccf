@@ -6,6 +6,7 @@ cygwin:
     cpulimit-execute: 0
     sandbox: none
   gcc45:
+    name: 'gcc version 4.5.3 (GCC)'
     compile:
       - g++
       - -Wall
@@ -20,6 +21,7 @@ cygwin:
       - $output
       - $input
   gcc45-c++11:
+    name: 'gcc version 4.5.3 (GCC) with -std=c++0x'
     compile:
       - g++
       - -Wall
