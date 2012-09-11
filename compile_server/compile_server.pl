@@ -124,8 +124,15 @@ tcp_server '127.0.0.1', 8888, sub {
 	my @handler; @handler = (json => sub {
 		print "handler\n";
 		my ($handle, $json) = @_;
-# TODO: check unknown command
-		$handler{$json->{command}}->($handle, $json);
+		if(exists $json->{command} && exists $handler{$json->{command}}) {
+			$handler{$json->{command}}->($handle, $json);
+		} else {
+			my $command = '';
+			$command = $json->{command} if exists $json->{command};
+			$command = "Unknown command `$command'";
+			warn $command;
+			$handle->push_write(json => { error => $command });
+		}
 		$handle->push_read(@handler);
 	});
 	$handle->push_read(@handler);
