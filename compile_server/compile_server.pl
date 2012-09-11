@@ -97,10 +97,18 @@ sub result
 	$handle->push_write(json => { id => $json->{id}, execute => $status{$json->{id}}{execute}, compile => $status{$json->{id}}{compile} });
 }
 
+sub list
+{
+	my ($handle, $json) = @_;
+
+	$handle->push_write(json => { map { $_ => $conf->{$OSNAME}{$_}{name} } grep { $_ ne 'GLOBAL' } keys %{$conf->{$OSNAME}} });
+}
+
 my %handler = (
 	invoke => \&invoke,
 	status => \&status,
 	result => \&result,
+	list => \&list,
 );
 
 tcp_server '127.0.0.1', 8888, sub {
