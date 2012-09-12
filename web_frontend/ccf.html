@@ -9,13 +9,15 @@
 <script src="ccf.js" type="text/javascript"></script>
 </head>
 <body>
+<div id="input-container">
 <form id="form">
-<label for="source">Source:</label><br>
-<textarea id="source" name="source"></textarea>
+<div id="source-label"><label for="source">Source:</label></div>
+<textarea id="source" name="source">// Input source here</textarea>
 <div id="compiler_types"></div>
 <input type="checkbox" id="compile" value="compile"><label for="compile">compile only</label>
 <input type="submit" value="Go!">
 </form>
+</div>
 <div id="result"><ul><li><a href="#note">Result</a></li></ul><div id="note">Results are shown here.</div></div>
 </body>
 </html>
