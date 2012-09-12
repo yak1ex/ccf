@@ -1,4 +1,5 @@
 $(function() {
+    var idmap;
 	// Init
 	// TODO: Select all and deselect all
 	$.ajax({
@@ -31,13 +32,17 @@ $(function() {
 		$('#result').tabs('destroy');
 		$('#result').tabs();
 		$.each($('.ctypes:checked'), function(idx, obj) {
-/*			window.alert(
-				'command=invoke&' + $('#source').serialize() + '&' +
-				'type=' + obj.name + '&' +
-				'execute=' + ($('#compile:checked').length == 0 ? 'true' : 'false')
-			);*/
-			$('#result').tabs('add', 'ccf.dummy.html', obj.name);
+            $.ajax({
+				url: 'ccf.cgi?command=invoke&'
+                     + $('#source').serialize()
+                     + '&type=' + obj.name
+                     + '&execute=' + ($('#compile:checked').length == 0 ? 'true' : 'false'),
+                dataType: 'json'
+			}).done(function(msg) {
+				idmap[obj.name] = msg.id;
+			});
 		});
+		$('#result').tabs('add', 'ccf.dummy.html', obj.name);
 		return false;
 	});
 	$('#result').tabs();
