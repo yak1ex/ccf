@@ -1,3 +1,4 @@
+var tabopts = { spinner: '', cache: true };
 $(function() {
 	var status = {};
 	var idxmap = {};
@@ -53,7 +54,7 @@ $(function() {
 	// TODO: actual implementation
 	$('#form').submit(function() {
 		$('#result').tabs('destroy');
-		$('#result').tabs();
+		$('#result').tabs(tabopts);
 		$.each($('.ctypes:checked'), function(idx, obj) {
             $.ajax({
 				url: 'ccf.cgi?command=invoke&'
@@ -72,7 +73,7 @@ $(function() {
 		});
 		return false;
 	});
-	$('#result').tabs();
+	$('#result').tabs(tabopts);
 	$('#result').bind("tabsselect", function(event, ui) {
 		setTimeout(updater, 1000);
 		return true;
