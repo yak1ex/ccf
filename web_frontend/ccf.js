@@ -7,7 +7,18 @@ $(function() {
 		dataType: 'json'
 	}).done(function(msg) {
 		$.each(msg, function(key, value) {
-			$('#compiler_types').append('<input type="checkbox" class="ctypes" name="' + key + '">[' + key + '] ' + value + '<br>');
+			$('#compiler_types').append('<input type="checkbox" class="ctypes" id="' + key + '" name="' + key + '"><label for="' + key + '">[' + key + '] ' + value + '</label><br>');
+		});
+		$('#form').addClass('ui-widget');
+		$('label').addClass('ui-widget-header');
+		$('textarea').addClass('ui-widget-content');
+		$('.ctypes').change(function(e) {
+			$('.ctypes').removeClass('ui-status-active');
+			$.each($('.ctypes:checked'), function(idx, obj) {
+				window.alert(obj.id);
+				obj.addClass('ui-status-active');
+				$('label[for="'+obj.id+'"]').addClass('ui-status-active');
+			});
 		});
 	});
 	// Invoke
