@@ -45,6 +45,12 @@ sub invoke
 
 	$status{$curid}{status} = REQUESTED;
 	$handle->push_write(json => { id => $curid });
+# TODO: Other sanity check
+	if(!exists $json->{type} || !exists $conf->{$OSNAME}{$json->{type}}) {
+		$status{$curid}{status} = FINISHED;
+		$status{$curid}{compile} = 'CCF: Unknown compiler type.';
+		return;
+	}
 
 	my $fh = File::Temp->new(UNLINK=>0,SUFFIX=>'.cpp');
 	print $fh $json->{source};
