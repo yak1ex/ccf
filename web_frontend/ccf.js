@@ -31,17 +31,22 @@ $(function() {
 	// Status updater
 	var updater = function() {
 		var idx = $('#result').tabs('option', 'selected');
-		if(idx != 0 && status[idxmap[idx]].status != 4) {
-			console.log('IDX:' + idx + 'IDXMAP:' + idxmap[idx] + 'ID:' + status[idxmap[idx]].id);
-			$.ajax({
-				url: 'ccf.cgi',
-				data: { command: 'status', id: status[idxmap[idx]].id },
-				dataType: 'json'
-			}).done(function(msg) {
-				status[idmap[msg.id]].status = msg.status;
-			});
-			$('#result').tabs('load', idx);
-			setTimeout(updater, 1000);
+		if(idx != 0) {
+			if(status[idxmap[idx]].status != 4) {
+				console.log('IDX:' + idx + 'IDXMAP:' + idxmap[idx] + 'ID:' + status[idxmap[idx]].id);
+				$.ajax({
+					url: 'ccf.cgi',
+					data: { command: 'status', id: status[idxmap[idx]].id },
+					dataType: 'json'
+				}).done(function(msg) {
+					status[idmap[msg.id]].status = msg.status;
+				});
+				$('#result').tabs('load', idx);
+				setTimeout(updater, 1000);
+			} else {
+				$('#result').tabs('load', idx);
+				status[idmap[msg.id]].status = 5;
+			}
 		}
 	};
 	// Invoke
