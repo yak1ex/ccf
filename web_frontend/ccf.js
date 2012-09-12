@@ -64,7 +64,7 @@ $(function() {
 			}).done(function(msg) {
 				status[obj.name].id = msg.id;
 				idmap[msg.id] = obj.name;
-				$('#result').tabs('url', status[obj.name].idx, 'ccf.cgi?command=status&id=' + msg.id);
+				$('#result').tabs('url', status[obj.name].idx, 'ccf.cgi?command=show&id=' + msg.id);
 			});
 			$('#result').tabs('add', 'ccf.dummy.html', obj.name);
 			status[obj.name] = { status: 0, idx: $('#result').tabs('length')-1 };
