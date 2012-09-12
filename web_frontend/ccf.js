@@ -58,7 +58,7 @@ $(function() {
             $.ajax({
 				url: 'ccf.cgi?command=invoke&'
                      + $('#source').serialize()
-                     + '&type=' + obj.name
+                     + '&type=' + encodeURIComponent(obj.name)
                      + '&execute=' + ($('#compile:checked').length == 0 ? 'true' : 'false'),
                 dataType: 'json'
 			}).done(function(msg) {
