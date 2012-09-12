@@ -100,7 +100,11 @@ sub result
 {
 	my ($handle, $json) = @_;
 
-	$handle->push_write(json => { id => $json->{id}, execute => $status{$json->{id}}{execute}, compile => $status{$json->{id}}{compile} });
+	if(exists $status{$json->{id}}{execute}) {
+		$handle->push_write(json => { id => $json->{id}, execute => $status{$json->{id}}{execute}, compile => $status{$json->{id}}{compile} });
+	} else {
+		$handle->push_write(json => { id => $json->{id}, compile => $status{$json->{id}}{compile} });
+	}
 }
 
 sub list
