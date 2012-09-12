@@ -7,4 +7,4 @@ C++ Compiler Farm (ccf) is just my personal ongoing project. The goal of this pr
 * Backend (compiler/resultant executable invocation server)
 * Sandbox environment
 
-Currently, sandbox environment is being investigated.
+Currently, prototype system, w/o sandbox and multiple backend, starts to work.
