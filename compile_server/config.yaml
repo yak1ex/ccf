@@ -6,7 +6,7 @@ cygwin:
     cpulimit-execute: 0
     sandbox: none
   gcc45:
-    name: 'gcc version 4.5.3 (GCC)'
+    name: 'gcc 4.5.3'
     compile:
       - g++
       - -Wall
@@ -21,7 +21,7 @@ cygwin:
       - $output
       - $input
   gcc45-c++11:
-    name: 'gcc version 4.5.3 (GCC) with -std=c++0x'
+    name: 'gcc 4.5.3 with -std=c++0x'
     compile:
       - g++
       - -Wall
@@ -45,7 +45,7 @@ linux:
     cpulimit-execute: 0
     sandbox: none
   gcc44:
-    name: 'gcc version 4.4.7 (Ubuntu/Linaro 4.4.7-1ubuntu2)'
+    name: 'gcc 4.4.7'
     compile:
       - g++-4.4
       - -Wall
@@ -60,7 +60,7 @@ linux:
       - $output
       - $input
   gcc44-c++11:
-    name: 'gcc version 4.4.7 (Ubuntu/Linaro 4.4.7-1ubuntu2) with -std=c++0x'
+    name: 'gcc 4.4.7 with -std=c++0x'
     compile:
       - g++-4.4
       - -Wall
@@ -77,7 +77,7 @@ linux:
       - $output
       - $input
   gcc45:
-    name: 'gcc version 4.5.3 (Ubuntu/Linaro 4.5.3-12ubuntu2)'
+    name: 'gcc 4.5.3'
     compile:
       - g++-4.5
       - -Wall
@@ -92,7 +92,7 @@ linux:
       - $output
       - $input
   gcc45-c++11:
-    name: 'gcc version 4.5.3 (Ubuntu/Linaro 4.5.3-12ubuntu2) with -std=c++0x'
+    name: 'gcc 4.5.3 with -std=c++0x'
     compile:
       - g++-4.5
       - -Wall
@@ -109,7 +109,7 @@ linux:
       - $output
       - $input
   gcc46:
-    name: 'gcc version 4.6.3 (Ubuntu/Linaro 4.6.3-1ubuntu5)'
+    name: 'gcc 4.6.3'
     compile:
       - g++-4.6
       - -Wall
@@ -124,7 +124,7 @@ linux:
       - $output
       - $input
   gcc46-c++11:
-    name: 'gcc version 4.6.3 (Ubuntu/Linaro 4.6.3-1ubuntu5) with -std=c++0x'
+    name: 'gcc 4.6.3 with -std=c++0x'
     compile:
       - g++-4.6
       - -Wall
@@ -141,7 +141,7 @@ linux:
       - $output
       - $input
   gcc47:
-    name: 'gcc version 4.7.1 (GCC)'
+    name: 'gcc 4.7.1'
     compile:
       - g++-4.7
       - -Wall
@@ -156,7 +156,7 @@ linux:
       - $output
       - $input
   gcc47-c++11:
-    name: 'gcc version 4.7.1 (GCC) with -std=c++0x'
+    name: 'gcc 4.7.1 with -std=c++0x'
     compile:
       - g++-4.7
       - -Wall
@@ -173,7 +173,7 @@ linux:
       - $output
       - $input
   gcc48:
-    name: 'gcc version 4.8.0 20120801 (experimental) (GCC)'
+    name: 'gcc 4.8.0 20120801 (exp.)'
     compile:
       - g++-4.8
       - -Wall
@@ -188,7 +188,7 @@ linux:
       - $output
       - $input
   gcc48-c++11:
-    name: 'gcc version 4.8.0 20120801 (experimental) (GCC) with -std=c++0x'
+    name: 'gcc 4.8.0 20120801 (exp.) with -std=c++0x'
     compile:
       - g++-4.8
       - -Wall
