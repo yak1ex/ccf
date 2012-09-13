@@ -63,7 +63,11 @@ int main(void)
 {
 	int n;
 	sleep(5);
-	std::cout << "Run: " << __GNUC__ << '.' << __GNUC_MINOR__ << '.' << __GNUC_PATCHLEVEL__ << std::endl;
+#ifdef __clang__
+	std::cout << "Run: Clang " << __clang_major__ << '.' << __clang_minor__ << '.' << __clang_patchlevel__ << " faked as GCC " << __GNUC__ << '.' << __GNUC_MINOR__ << '.' << __GNUC_PATCHLEVEL__ << std::endl;
+#else
+	std::cout << "Run: GCC " << __GNUC__ << '.' << __GNUC_MINOR__ << '.' << __GNUC_PATCHLEVEL__ << std::endl;
+#endif
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
 	std::cout << "     with C++0X mode" << std::endl;
 #endif
