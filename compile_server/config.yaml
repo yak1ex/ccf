@@ -204,3 +204,35 @@ linux:
       - -o
       - $output
       - $input
+  clang30:
+    name: 'Ubuntu clang 3.0-6ubuntu3'
+    compile:
+      - clang++
+      - -Wall
+      - -c
+      - -o
+      - $output
+      - $input
+    link:
+      - clang++
+      - -Wall
+      - -o
+      - $output
+      - $input
+  clang30-c++11:
+    name: 'Ubuntu clang 3.0-6ubuntu3'
+    compile:
+      - clang++
+      - -Wall
+      - -std=c++0x
+      - -c
+      - -o
+      - $output
+      - $input
+    link:
+      - clang++
+      - -Wall
+      - -std=c++0x
+      - -o
+      - $output
+      - $input
