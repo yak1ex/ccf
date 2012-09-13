@@ -11,8 +11,9 @@ $(function() {
 		dataType: 'json'
 	}).done(function(msg) {
         // Setup compiler types
-		$.each(msg, function(key, value) {
-			$('#compiler_types').append('<input type="checkbox" class="ctypes" id="' + key + '" name="' + key + '"><label for="' + key + '">[' + key + '] ' + value + '</label><br>');
+		var keys = $.map(msg, function(value, key) { return key; }).sort();
+		$.each(keys, function(idx, key) {
+			$('#compiler_types').append('<input type="checkbox" class="ctypes" id="' + key + '" name="' + key + '"><label for="' + key + '">[' + key + '] ' + msg[key] + '</label><br>');
 		});
         // Apply jQuery theme and add icons
 		$('input:checkbox').button({ icons: { primary: 'ui-icon-minus' } })
@@ -34,7 +35,6 @@ $(function() {
 		var idx = $('#result').tabs('option', 'selected');
 		if(idx != 0) {
 			if(status[idxmap[idx]].status != 4) {
-				console.log('IDX:' + idx + 'IDXMAP:' + idxmap[idx] + 'ID:' + status[idxmap[idx]].id);
 				$.ajax({
 					url: 'ccf.cgi',
 					data: { command: 'status', id: status[idxmap[idx]].id },
