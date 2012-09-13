@@ -13,7 +13,7 @@ $(function() {
         // Setup compiler types
 		var keys = $.map(msg, function(value, key) { return key; }).sort();
 		$.each(keys, function(idx, key) {
-			$('#compiler_types').append('<input type="checkbox" class="ctypes" id="' + key + '" name="' + key + '"><label for="' + key + '">[' + key + '] ' + msg[key] + '</label><br>');
+			$('#compiler_types').append('<input type="checkbox" class="ctypes" id="' + key + '" name="' + key + '"><label for="' + key + '">[' + key + '] ' + msg[key] + '</label>' + (idx % 2 == 1 ? '<br>' : ''));
 		});
         // Apply jQuery theme and add icons
 		$('input:checkbox').button({ icons: { primary: 'ui-icon-minus' } })
