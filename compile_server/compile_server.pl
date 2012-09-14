@@ -12,6 +12,13 @@ use English;
 use YAML;
 use File::Temp;
 
+BEGIN {
+	if($^O eq 'cygwin') {
+		use Encode;
+		use Win32::Codepage::Simple qw(get_codepage);
+	}
+}
+
 use constant {
 	REQUESTED => 1,
 	COMPILING => 2,
@@ -26,12 +33,73 @@ use constant {
 
 my $conf = YAML::LoadFile('config.yaml');
 
-sub make_cl
+sub is_cygwin2native
+{
+	my ($type) = @_;
+	return exists $conf->{$OSNAME}{$type}{cygwin2native} && $conf->{$OSNAME}{$type}{cygwin2native} eq 'true';
+}
+
+sub make_arg
 {
 	my ($type, $mode, $input, $output) = @_;
+	if(is_cygwin2native($type)) {
+		$input = Cygwin::posix_to_win_path($input);
+		$output = Cygwin::posix_to_win_path($output);
+	}
 
 # TODO: error check
-	return map { $_ eq '$input' ? $input : $_ eq '$output' ?  $output : $_ } @{$conf->{$OSNAME}{$type}{$mode}};
+#	return map { $_ eq '$input' ? $input : $_ eq '$output' ?  $output : $_ } @{$conf->{$OSNAME}{$type}{$mode}};
+	my @res = map { my $t = $_; $t =~ s/\$input/$input/; $t =~ s/\$output/$output/; $t; } @{$conf->{$OSNAME}{$type}{$mode}}; 
+	print join(' ', @res), "\n";
+	return @res;
+}
+
+sub setenv
+{
+	my ($type) = @_;
+	return unless is_cygwin2native($type);
+
+	my (@ENV_) = (%ENV);
+	if(exists($conf->{$OSNAME}{$type}{env})) {
+		foreach my $hash (@{$conf->{$OSNAME}{$type}{env}}) {
+			foreach my $name (keys %$hash) {
+				my $t = $hash->{$name};
+				$t =~ s/%([^%]*)%/$ENV{$1}/eg;
+				if($name eq 'PATH') {
+# NOTE: I can not understand but the following line causes out of memory error on my environment.
+#					$t = join ':', map { Cygwin::win_to_posix_path($_, 'true') } split /;/, $t;
+					$t = join ':', map { $_ = `cygpath -u '$_'`; s/\s*$//; $_ } split /;/, $t;
+#					my @t = split /;/, $t;
+#					for my $tt (@t) {
+#						print STDERR $tt, "\n";
+#						my $ttt = `cygpath -u '$tt'`;
+#						$ttt =~ s/\s*$//;
+#						my $ttt = Cygwin::win_to_posix_path($tt);
+#						print STDERR $ttt,"\n";
+#					}
+					$t .= ':' . $ENV{PATH};
+				}
+				$ENV{$name} = $t;
+			}
+		}
+	}
+#print STDERR "OK4\n";
+	return \@ENV_;
+}
+
+sub resetenv
+{
+	my ($type, $ENV_) = @_;
+	return unless is_cygwin2native($type);
+	(%ENV) = (@$ENV_);
+}
+
+sub dec
+{
+	my ($type, $str) = @_;
+	return $str unless is_cygwin2native($type);
+print STDERR 'CODEPAGE:',get_codepage(),"\n";
+	return Encode::decode('CP'.get_codepage(), $str);
 }
 
 my %status;
@@ -62,7 +130,10 @@ sub invoke
 
 	$status{$curid}{status} = COMPILING;
 	if($json->{execute} eq 'true') {
+		my $env = setenv($json->{type});
 		run_cmd([make_cl($json->{type}, 'link', $source, $out)], '<', '/dev/null', '>', \$status{$curid}{compile}, '2>', \$status{$curid}{compile})->cb(sub {
+			resetenv($json->{type}, $env);
+			$status{$curid}{compile} = dec($json->{type}, $status{$curid}{compile});
 print "---compile begin---\n";
 print $status{$curid}{compile};
 print "---compile  end ---\n";
@@ -77,7 +148,10 @@ print "---execute  end ---\n";
 			});
 		});
 	} else {
+		my $env = setenv($json->{type});
 		run_cmd([make_cl($json->{type}, 'compile', $source, $out)], '<', '/dev/null', '>', \$status{$curid}{compile}, '2>', \$status{$curid}{compile})->cb(sub {
+			resetenv($json->{type}, $env);
+			$status{$curid}{compile} = dec($json->{type}, $status{$curid}{compile});
 print "---compile begin---\n";
 print $status{$curid}{compile};
 print "---compile  end ---\n";
