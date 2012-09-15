@@ -144,7 +144,6 @@ sub invoke
 			});
 		});
 	} else {
-		my $env = setenv($json->{type});
 		run_cmd(make_arg($json->{type}, 'compile', $source, $out, \$status{$curid}{compile}))->cb(sub {
 			$status{$curid}{compile} = dec($json->{type}, $status{$curid}{compile});
 			$opts{v} and print STDERR "---compile begin---\n$status{$curid}{compile}---compile  end ---\n";
