@@ -81,7 +81,6 @@ sub dec
 {
 	my ($type, $str) = @_;
 	return $str unless is_cygwin2native($type);
-print STDERR 'CODEPAGE:',get_codepage(),"\n";
 	return Encode::decode('CP'.get_codepage(), $str);
 }
 
