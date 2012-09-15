@@ -37,7 +37,7 @@ cygwin:
       - -o
       - $output
       - $input
-  vc_7:
+  'vc 7':
     name: '.NET 2003 / VC7 / 13.10.3077'
     cygwin2native: true
     env:
