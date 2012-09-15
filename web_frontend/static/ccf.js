@@ -57,10 +57,14 @@ $(function() {
 		$('#result').tabs(tabopts);
 		$.each($('.ctypes:checked'), function(idx, obj) {
             $.ajax({
-				url: 'ccf.cgi?command=invoke&'
-                     + $('#source').serialize()
-                     + '&type=' + encodeURIComponent(obj.name)
-                     + '&execute=' + ($('#compile:checked').length == 0 ? 'true' : 'false'),
+            	type: 'POST',
+				url: 'ccf.cgi',
+				data: {
+					command: 'invoke',
+					source: $('#source').val(),
+					type: obj.name,
+					execute: ($('#compile:checked').length == 0 ? 'true' : 'false'),
+				},
                 dataType: 'json'
 			}).done(function(msg) {
 				status[obj.name].id = msg.id;
