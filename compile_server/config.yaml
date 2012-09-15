@@ -37,6 +37,68 @@ cygwin:
       - -o
       - $output
       - $input
+  vc_7:
+    name: '.NET 2003 / VC7 / 13.10.3077'
+    cygwin2native: true
+    env:
+      - VSINSTALLDIR: 'C:\Program Files (x86)\Application\Microsoft Visual Studio .NET 2003\Common7\IDE'
+        VCINSTALLDIR: 'C:\Program Files (x86)\Application\Microsoft Visual Studio .NET 2003'
+        FrameworkDir: 'C:\Windows\Microsoft.NET\Framework'
+        FrameworkVersion: 'v1.1.4322'
+        FrameworkSDKDir: 'C:\Program Files (x86)\Application\Microsoft Visual Studio .NET 2003\SDK\v1.1'
+      - DevEnvDir: %VSINSTALLDIR%
+        MSVCDir: '%VCINSTALLDIR%\VC7'
+      - PATH: '%DevEnvDir%;%MSVCDir%\BIN;%VCINSTALLDIR%\Common7\Tools;%VCINSTALLDIR%\Common7\Tools\bin\prerelease;%VCINSTALLDIR%\Common7\Tools\bin;%FrameworkSDKDir%\bin;%FrameworkDir%\%FrameworkVersion%;'
+        INCLUDE: '%MSVCDir%\ATLMFC\INCLUDE;%MSVCDir%\INCLUDE;%MSVCDir%\PlatformSDK\include\prerelease;%MSVCDir%\PlatformSDK\include;%FrameworkSDKDir%\include;%INCLUDE%'
+        LIB: '%MSVCDir%\ATLMFC\LIB;%MSVCDir%\LIB;%MSVCDir%\PlatformSDK\lib\prerelease;%MSVCDir%\PlatformSDK\lib;%FrameworkSDKDir%\lib;%LIB%'
+    compile:
+      - cl
+      - /nologo
+      - /W3
+      - /EHsc
+      - /c
+      - /Fo$output
+      - $input
+    link:
+      - cl
+      - /nologo
+      - /W3
+      - /EHsc
+      - /Fe$output
+      - $input
+  vc10:
+    name: '2010 / VC10 / 16.00.40219.01'
+    cygwin2native: true
+    env:
+      - VSINSTALLDIR: 'C:\Program Files (x86)\Application\Microsoft Visual Studio 10.0\'
+        VCINSTALLDIR: 'C:\Program Files (x86)\Application\Microsoft Visual Studio 10.0\VC\'
+        FrameworkDir32: 'C:\Windows\Microsoft.NET\Framework\'
+        FrameworkVersion32: 'v4.0.30319'
+        Framework35Version: 'v3.5'
+        WindowsSdkDir: 'C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\'
+      - DevEnvDir: '%VSINSTALLDIR%\Common7\IDE\'
+        VS100COMNTOOLS: '%VSINSTALLDIR%\Common7\Tools\'
+        FrameworkDir: %FrameworkDir32%
+        FrameworkVersion: %FrameworkVersion32%
+      - PATH: '%FrameworkDir%%Framework35Version%;%FrameworkDir%%FrameworkVersion%;%VSINSTALLDIR%Common7\Tools;%VCINSTALLDIR%BIN;%DevEnvDir%;%WindowsSdkDir%bin\NETFX 4.0 Tools;%WindowsSdkDir%bin;'
+        INCLUDE: '%VCINSTALLDIR%INCLUDE;%WindowsSdkDir%include;%INCLUDE%'
+        LIB: '%VCINSTALLDIR%LIB;%WindowsSdkDir%lib;%LIB%'
+        LIBPATH: '%FrameworkDir%%FrameworkVersion%;%FrameworkDir%%Framework35Version%;%VCINSTALLDIR%LIB;%LIBPATH%'
+    compile:
+      - cl
+      - /nologo
+      - /W3
+      - /EHsc
+      - /c
+      - /Fo$output
+      - $input
+    link:
+      - cl
+      - /nologo
+      - /W3
+      - /EHsc
+      - /Fe$output
+      - $input
 linux:
   GLOBAL:
     memlimit-compile: 0
