@@ -57,12 +57,13 @@ my $handle = AnyEvent::Handle->new(
 
 $handle->push_write(json => {command=>'invoke',type=>$opts{t},execute=>(exists $opts{c} ? 'false' : 'true'),source=><<'EOF'});
 #include <iostream>
-#include <unistd.h>
 
 int main(void)
 {
 	int n;
-	sleep(5);
+#ifdef _MSC_VER
+	std::cout << "Run: MSVC cl " << _MSC_VER << std::endl;
+#else
 #ifdef __clang__
 	std::cout << "Run: Clang " << __clang_major__ << '.' << __clang_minor__ << '.' << __clang_patchlevel__ << " faked as GCC " << __GNUC__ << '.' << __GNUC_MINOR__ << '.' << __GNUC_PATCHLEVEL__ << std::endl;
 #else
@@ -70,6 +71,7 @@ int main(void)
 #endif
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
 	std::cout << "     with C++0X mode" << std::endl;
+#endif
 #endif
 	return 0;
 }
