@@ -138,6 +138,7 @@ print "---compile begin---\n";
 print $status{$curid}{compile};
 print "---compile  end ---\n";
 			$status{$curid}{status} = RUNNING;
+			chmod 0711, $out if is_cygwin2native($json->{type});
 			run_cmd([$out], '<', '/dev/null', '>', \$status{$curid}{execute}, '2>', \$status{$curid}{execute})->cb(sub{
 print "---execute begin---\n";
 print $status{$curid}{execute};
