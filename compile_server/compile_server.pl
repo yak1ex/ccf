@@ -33,6 +33,8 @@ use constant {
 
 my $conf = YAML::LoadFile('config.yaml');
 
+# TODO: Separate cygwin2native handling to module?
+
 sub is_cygwin2native
 {
 	my ($type) = @_;
