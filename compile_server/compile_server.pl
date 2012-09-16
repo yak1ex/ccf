@@ -120,6 +120,11 @@ sub invoke
 		$status{$curid}{compile} = 'CCF: Unknown compiler type.';
 		return;
 	}
+	if(exists $obj->{source} && length $obj->{source} > 10 * 1024) {
+		$status{$curid}{status} = FINISHED;
+		$status{$curid}{compile} = 'CCF: Source size is over 10KiB.';
+		return;
+	}
 
 	my $fh = File::Temp->new(UNLINK=>0,SUFFIX=>'.cpp');
 	print $fh $obj->{source};
