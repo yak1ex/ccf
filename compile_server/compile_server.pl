@@ -137,20 +137,36 @@ sub invoke
 	$status{$curid}{status} = COMPILING;
 	if($obj->{execute} eq 'true') {
 		run_cmd(make_arg($obj->{type}, 'link', $source, $out, \$status{$curid}{compile}))->cb(sub {
+			my $rc = shift->recv;
 			$status{$curid}{compile} = dec($obj->{type}, $status{$curid}{compile});
+			if($rc) {
+				$status{$curid}{compile} .= sprintf "CCF: compilation failed by status: 0x%04X\n", $rc;
+			}
 			$opts{v} and print STDERR "---compile begin---\n$status{$curid}{compile}---compile  end ---\n";
-			$status{$curid}{status} = RUNNING;
-			chmod 0711, $out if is_cygwin2native($obj->{type});
-			run_cmd([$out], '<', '/dev/null', '>', \$status{$curid}{execute}, '2>', \$status{$curid}{execute})->cb(sub{
-				$opts{v} and print STDERR "---execute begin---\n$status{$curid}{execute}---execute  end ---\n";
-				unlink $out;
-				unlink $source;
+			if($rc) {
 				$status{$curid}{status} = FINISHED;
-			});
+			} else {
+				$status{$curid}{status} = RUNNING;
+				chmod 0711, $out if is_cygwin2native($obj->{type});
+				run_cmd([$out], '<', '/dev/null', '>', \$status{$curid}{execute}, '2>', \$status{$curid}{execute})->cb(sub{
+					my $rc = shift->recv;
+					if($rc) {
+						$status{$curid}{execute} .= sprintf "CCF: execution failed by status: 0x%04X\n", $rc;
+					}
+					$opts{v} and print STDERR "---execute begin---\n$status{$curid}{execute}---execute  end ---\n";
+					unlink $out;
+					unlink $source;
+					$status{$curid}{status} = FINISHED;
+				});
+			}
 		});
 	} else {
 		run_cmd(make_arg($obj->{type}, 'compile', $source, $out, \$status{$curid}{compile}))->cb(sub {
+			my $rc = shift->recv;
 			$status{$curid}{compile} = dec($obj->{type}, $status{$curid}{compile});
+			if($rc) {
+				$status{$curid}{compile} .= sprintf "CCF: compilation failed by status: 0x%04X\n", $rc;
+			}
 			$opts{v} and print STDERR "---compile begin---\n$status{$curid}{compile}---compile  end ---\n";
 			unlink $out;
 			unlink $source;
