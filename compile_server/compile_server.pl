@@ -108,34 +108,34 @@ my $id = 0;
 
 sub invoke
 {
-	my ($handle, $json) = @_;
+	my ($handle, $obj) = @_;
 
 	my $curid = $id++;
 
 	$status{$curid}{status} = REQUESTED;
-	$handle->push_write(json => { id => $curid });
+	$handle->push_write(storable => { id => $curid });
 # TODO: Other sanity check
-	if(!exists $json->{type} || !exists $conf->{$OSNAME}{$json->{type}}) {
+	if(!exists $obj->{type} || !exists $conf->{$OSNAME}{$obj->{type}}) {
 		$status{$curid}{status} = FINISHED;
 		$status{$curid}{compile} = 'CCF: Unknown compiler type.';
 		return;
 	}
 
 	my $fh = File::Temp->new(UNLINK=>0,SUFFIX=>'.cpp');
-	print $fh $json->{source};
+	print $fh $obj->{source};
 	close $fh;
 	my $source = $fh->filename;
-	my $fho = File::Temp->new(UNLINK=>0,SUFFIX=>($json->{execute} eq 'true' ? '.exe' : '.o'));
+	my $fho = File::Temp->new(UNLINK=>0,SUFFIX=>($obj->{execute} eq 'true' ? '.exe' : '.o'));
 	close $fho;
 	my $out = $fho->filename;
 
 	$status{$curid}{status} = COMPILING;
-	if($json->{execute} eq 'true') {
-		run_cmd(make_arg($json->{type}, 'link', $source, $out, \$status{$curid}{compile}))->cb(sub {
-			$status{$curid}{compile} = dec($json->{type}, $status{$curid}{compile});
+	if($obj->{execute} eq 'true') {
+		run_cmd(make_arg($obj->{type}, 'link', $source, $out, \$status{$curid}{compile}))->cb(sub {
+			$status{$curid}{compile} = dec($obj->{type}, $status{$curid}{compile});
 			$opts{v} and print STDERR "---compile begin---\n$status{$curid}{compile}---compile  end ---\n";
 			$status{$curid}{status} = RUNNING;
-			chmod 0711, $out if is_cygwin2native($json->{type});
+			chmod 0711, $out if is_cygwin2native($obj->{type});
 			run_cmd([$out], '<', '/dev/null', '>', \$status{$curid}{execute}, '2>', \$status{$curid}{execute})->cb(sub{
 				$opts{v} and print STDERR "---execute begin---\n$status{$curid}{execute}---execute  end ---\n";
 				unlink $out;
@@ -144,8 +144,8 @@ sub invoke
 			});
 		});
 	} else {
-		run_cmd(make_arg($json->{type}, 'compile', $source, $out, \$status{$curid}{compile}))->cb(sub {
-			$status{$curid}{compile} = dec($json->{type}, $status{$curid}{compile});
+		run_cmd(make_arg($obj->{type}, 'compile', $source, $out, \$status{$curid}{compile}))->cb(sub {
+			$status{$curid}{compile} = dec($obj->{type}, $status{$curid}{compile});
 			$opts{v} and print STDERR "---compile begin---\n$status{$curid}{compile}---compile  end ---\n";
 			unlink $out;
 			unlink $source;
@@ -156,28 +156,28 @@ sub invoke
 
 sub status
 {
-	my ($handle, $json) = @_;
+	my ($handle, $obj) = @_;
 
 # TODO: check unknown ID
-	$handle->push_write(json => { id => $json->{id}, status => $status{$json->{id}}{status} });
+	$handle->push_write(storable => { id => $obj->{id}, status => $status{$obj->{id}}{status} });
 }
 
 sub result
 {
-	my ($handle, $json) = @_;
+	my ($handle, $obj) = @_;
 
-	if(exists $status{$json->{id}}{execute}) {
-		$handle->push_write(json => { id => $json->{id}, execute => $status{$json->{id}}{execute}, compile => $status{$json->{id}}{compile} });
+	if(exists $status{$obj->{id}}{execute}) {
+		$handle->push_write(storable => { id => $obj->{id}, execute => $status{$obj->{id}}{execute}, compile => $status{$obj->{id}}{compile} });
 	} else {
-		$handle->push_write(json => { id => $json->{id}, compile => $status{$json->{id}}{compile} });
+		$handle->push_write(storable => { id => $obj->{id}, compile => $status{$obj->{id}}{compile} });
 	}
 }
 
 sub list
 {
-	my ($handle, $json) = @_;
+	my ($handle, $obj) = @_;
 
-	$handle->push_write(json => { map { $_ => $conf->{$OSNAME}{$_}{name} } grep { $_ ne 'GLOBAL' } keys %{$conf->{$OSNAME}} });
+	$handle->push_write(storable => { map { $_ => $conf->{$OSNAME}{$_}{name} } grep { $_ ne 'GLOBAL' } keys %{$conf->{$OSNAME}} });
 }
 
 my %handler = (
@@ -198,17 +198,17 @@ tcp_server '127.0.0.1', $port, sub {
 		on_eof => sub { $handle->destroy; },
 		on_error => sub { $handle->destroy; },
 	);
-	my @handler; @handler = (json => sub {
-		my ($handle, $json) = @_;
-		if(exists $json->{command} && exists $handler{$json->{command}}) {
-			$opts{v} and print STDERR "handler called by command `$json->{command}'.\n";
-			$handler{$json->{command}}->($handle, $json);
+	my @handler; @handler = (storable => sub {
+		my ($handle, $obj) = @_;
+		if(exists $obj->{command} && exists $handler{$obj->{command}}) {
+			$opts{v} and print STDERR "handler called by command `$obj->{command}'.\n";
+			$handler{$obj->{command}}->($handle, $obj);
 		} else {
 			my $command = '';
-			$command = $json->{command} if exists $json->{command};
+			$command = $obj->{command} if exists $obj->{command};
 			$command = "Unknown command `$command'";
 			warn $command;
-			$handle->push_write(json => { error => $command });
+			$handle->push_write(storable => { error => $command });
 		}
 		$handle->push_read(@handler);
 	});

@@ -67,30 +67,30 @@ sub call
 
 		if($command eq 'show') {
 			my $id = $q->param('id');
-			$handle->push_write(json => { command => 'status', id => $id });
-			$handle->push_read(json => sub {
-				my ($handle, $json) = @_;
+			$handle->push_write(storable => { command => 'status', id => $id });
+			$handle->push_read(storable => sub {
+				my ($handle, $obj) = @_;
 				my $html;
-				my $status = $json->{status};
+				my $status = $obj->{status};
 				given($status) {
 					when (1)     { $responder->('<html><body>Invoked.</body></html>'); }
 					when (2)     { $responder->('<html><body>Compiling.</body></html>'); }
 					when ([3,4]) {
-						$handle->push_write(json => { command => 'result', id => $id });
-						$handle->push_read(json => sub {
-							my ($handle, $json) = @_;
+						$handle->push_write(storable => { command => 'result', id => $id });
+						$handle->push_read(storable => sub {
+							my ($handle, $obj) = @_;
 # TODO: HTML escape
 # TODO: Apply CSS
-							if($status == 3 || ! exists $json->{execute}) {
-								my $compile = $json->{compile};
+							if($status == 3 || ! exists $obj->{execute}) {
+								my $compile = $obj->{compile};
 								$compile = '&nbsp;' if $compile eq '';
 								$responder->(<<EOF);
 <html><body><p>Compiled.</p><p>compilation result:</p><pre style="background:#fff;">$compile</pre></body></html>
 EOF
 							} else {
-								my $compile = $json->{compile};
+								my $compile = $obj->{compile};
 								$compile = '&nbsp;' if $compile eq '';
-								my $execute = $json->{execute};
+								my $execute = $obj->{execute};
 								$execute = '&nbsp;' if $execute eq '';
 								$responder->(<<EOF);
 <html><body><p>Executed.</p><p>compilation result:</p><pre style="background:#fff;">$compile</pre><p>execution result:</p><pre style="background:#fff;">$execute</pre></body></html>
@@ -102,10 +102,10 @@ EOF
 			});
 		} else {
 			my (@names) = $q->param;
-			$handle->push_write(json => { map { $_, $q->param($_) } @names });
-			$handle->push_read(json => sub {
-				my ($handle_, $json) = @_;
-				$responder_orig->([$q->psgi_header(-type => 'application/json', -charset => 'utf-8'), [Encode::encode_utf8(encode_json($json))] ]);
+			$handle->push_write(storable => { map { $_, $q->param($_) } @names });
+			$handle->push_read(storable => sub {
+				my ($handle_, $obj) = @_;
+				$responder_orig->([$q->psgi_header(-type => 'application/json', -charset => 'utf-8'), [Encode::encode_utf8(encode_json($obj))] ]);
 			});
 		}
 	};
