@@ -60,6 +60,10 @@ $(function() {
 	// Invoke
 	// TODO: actual implementation
 	$('#form').submit(function() {
+		if($('#source').val().length > 10 * 1024) {
+			window.alert('Currently, source size is limited to 10KiB.');
+			return false;
+		}
 		$('#result').tabs('destroy');
 		$('#result').tabs(tabopts);
 		$.each($('.ctypes:checked'), function(idx, obj) {
