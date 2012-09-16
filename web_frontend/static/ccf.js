@@ -26,6 +26,13 @@ $(function() {
 		});
         // Apply jQuery theme
         // TODO: Use table?
+        $('.selector').button();
+        $('#selectall').click(function(e) {
+			$('.ctypes:not(:checked)').click();
+		});
+        $('#deselectall').click(function(e) {
+			$('.ctypes:checked').click();
+		});
 		$('#input-container').addClass('ui-widget ui-widget-content ui-corner-all');
 		$('#source-label').addClass('ui-widget-header ui-corner-all');
 		$('#source').addClass('ui-corner-all');
