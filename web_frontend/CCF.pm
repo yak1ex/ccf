@@ -15,6 +15,35 @@ use Encode qw(decode);
 
 # TODO: Error check
 
+sub new
+{
+	my ($self, %arg) = @_;
+	my $class = ref($self) || $self;
+	return bless {
+		_backend => $arg{backend}
+	}, $class;
+}
+
+sub _host
+{
+	my ($self, $idx) = @_;
+	$idx //= 0;
+	return $self->{_backend}[$idx][0];
+}
+
+sub _port
+{
+	my ($self, $idx) = @_;
+	$idx //= 0;
+	return $self->{_backend}[$idx][1];
+}
+
+sub _num_backends
+{
+	my ($self) = @_;
+	return scalar @{$self->{_backend}};
+}
+
 sub call
 {
 	my ($self, $env) = @_;
@@ -32,7 +61,7 @@ sub call
 		my $command = $q->param('command');
 
 		my $handle; $handle = AnyEvent::Handle->new(
-			connect => ['127.0.0.1', 8888],
+			connect => [$self->_host, $self->_port],
 			on_error => sub { undef $handle },
 		);
 
