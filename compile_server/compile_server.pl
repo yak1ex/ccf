@@ -99,7 +99,7 @@ sub make_arg
 sub dec
 {
 	my ($type, $str) = @_;
-	return $str unless is_cygwin2native($type);
+	return Encode::decode_utf8($str) unless is_cygwin2native($type);
 	return Encode::decode('CP'.get_codepage(), $str);
 }
 
