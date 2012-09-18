@@ -44,6 +44,48 @@ sub _num_backends
 	return scalar @{$self->{_backend}};
 }
 
+sub _show
+{
+	my ($self, $q, $responder, $handle) = @_;
+
+	my $id = $q->param('id');
+	$handle->push_write(storable => { command => 'status', id => $id });
+	$handle->push_read(storable => sub {
+		my ($handle, $obj) = @_;
+		my $html;
+		my $status = $obj->{status};
+		given($status) {
+			when (1)     { $responder->('<html><body>Invoked.</body></html>'); }
+			when (2)     { $responder->('<html><body>Compiling.</body></html>'); }
+			when ([3,4]) {
+				$handle->push_write(storable => { command => 'result', id => $id });
+				$handle->push_read(storable => sub {
+					my ($handle, $obj) = @_;
+# TODO: HTML escape
+# TODO: Apply CSS
+					if($status == 3 || ! exists $obj->{execute}) {
+						my $compile = $obj->{compile};
+						$compile = '&nbsp;' if $compile eq '';
+						$responder->(<<EOF);
+<html><body><p>Compiled.</p><p>compilation result:</p><pre style="background:#fff;">$compile</pre></body></html>
+EOF
+					} else {
+						my $compile = $obj->{compile};
+						$compile = '&nbsp;' if $compile eq '';
+						my $execute = $obj->{execute};
+						$execute = '&nbsp;' if $execute eq '';
+						$responder->(<<EOF);
+<html><body><p>Executed.</p><p>compilation result:</p><pre style="background:#fff;">$compile</pre><p>execution result:</p><pre style="background:#fff;">$execute</pre></body></html>
+EOF
+					}
+				});
+			}
+		}
+	});
+}
+
+my %command = (show => \&_show);
+
 sub call
 {
 	my ($self, $env) = @_;
@@ -65,41 +107,8 @@ sub call
 			on_error => sub { undef $handle },
 		);
 
-		if($command eq 'show') {
-			my $id = $q->param('id');
-			$handle->push_write(storable => { command => 'status', id => $id });
-			$handle->push_read(storable => sub {
-				my ($handle, $obj) = @_;
-				my $html;
-				my $status = $obj->{status};
-				given($status) {
-					when (1)     { $responder->('<html><body>Invoked.</body></html>'); }
-					when (2)     { $responder->('<html><body>Compiling.</body></html>'); }
-					when ([3,4]) {
-						$handle->push_write(storable => { command => 'result', id => $id });
-						$handle->push_read(storable => sub {
-							my ($handle, $obj) = @_;
-# TODO: HTML escape
-# TODO: Apply CSS
-							if($status == 3 || ! exists $obj->{execute}) {
-								my $compile = $obj->{compile};
-								$compile = '&nbsp;' if $compile eq '';
-								$responder->(<<EOF);
-<html><body><p>Compiled.</p><p>compilation result:</p><pre style="background:#fff;">$compile</pre></body></html>
-EOF
-							} else {
-								my $compile = $obj->{compile};
-								$compile = '&nbsp;' if $compile eq '';
-								my $execute = $obj->{execute};
-								$execute = '&nbsp;' if $execute eq '';
-								$responder->(<<EOF);
-<html><body><p>Executed.</p><p>compilation result:</p><pre style="background:#fff;">$compile</pre><p>execution result:</p><pre style="background:#fff;">$execute</pre></body></html>
-EOF
-							}
-						});
-					}
-				}
-			});
+		if(exists $command{$command}) {
+			$command{$command}->($self, $q, $responder, $handle);
 		} else {
 			my (@names) = $q->param;
 			$handle->push_write(storable => { map { $_, $q->param($_) } @names });
