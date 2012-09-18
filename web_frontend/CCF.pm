@@ -13,6 +13,8 @@ use AnyEvent::Handle;
 use JSON;
 use Encode qw(decode);
 
+use CCF::Dispatcher;
+
 # TODO: Error check
 
 sub new
@@ -20,28 +22,14 @@ sub new
 	my ($self, %arg) = @_;
 	my $class = ref($self) || $self;
 	return bless {
-		_backend => $arg{backend}
+		_dispatcher => CCF::Dispatcher->new(backend => $arg{backend})
 	}, $class;
 }
 
-sub _host
-{
-	my ($self, $idx) = @_;
-	$idx //= 0;
-	return $self->{_backend}[$idx][0];
-}
-
-sub _port
-{
-	my ($self, $idx) = @_;
-	$idx //= 0;
-	return $self->{_backend}[$idx][1];
-}
-
-sub _num_backends
+sub dispatcher
 {
 	my ($self) = @_;
-	return scalar @{$self->{_backend}};
+	return $self->{_dispatcher};
 }
 
 sub _show
@@ -102,10 +90,7 @@ sub call
 
 		my $command = $q->param('command');
 
-		my $handle; $handle = AnyEvent::Handle->new(
-			connect => [$self->_host, $self->_port],
-			on_error => sub { undef $handle },
-		);
+		my $handle = $self->dispatcher->handle();
 
 		if(exists $command{$command}) {
 			$command{$command}->($self, $q, $responder, $handle);
