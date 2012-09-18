@@ -48,6 +48,11 @@ sub _show
 {
 	my ($self, $q, $responder, $handle) = @_;
 
+	my $html_responder = sub {
+		my $str = shift;
+		$responder->([$q->psgi_header(-type => 'text/html', -charset => 'utf-8'), [ Encode::encode_utf8($str) ] ]);
+	};
+
 	my $id = $q->param('id');
 	$handle->push_write(storable => { command => 'status', id => $id });
 	$handle->push_read(storable => sub {
@@ -55,8 +60,8 @@ sub _show
 		my $html;
 		my $status = $obj->{status};
 		given($status) {
-			when (1)     { $responder->('<html><body>Invoked.</body></html>'); }
-			when (2)     { $responder->('<html><body>Compiling.</body></html>'); }
+			when (1)     { $html_responder->('<html><body>Invoked.</body></html>'); }
+			when (2)     { $html_responder->('<html><body>Compiling.</body></html>'); }
 			when ([3,4]) {
 				$handle->push_write(storable => { command => 'result', id => $id });
 				$handle->push_read(storable => sub {
@@ -66,7 +71,7 @@ sub _show
 					if($status == 3 || ! exists $obj->{execute}) {
 						my $compile = $obj->{compile};
 						$compile = '&nbsp;' if $compile eq '';
-						$responder->(<<EOF);
+						$html_responder->(<<EOF);
 <html><body><p>Compiled.</p><p>compilation result:</p><pre style="background:#fff;">$compile</pre></body></html>
 EOF
 					} else {
@@ -74,7 +79,7 @@ EOF
 						$compile = '&nbsp;' if $compile eq '';
 						my $execute = $obj->{execute};
 						$execute = '&nbsp;' if $execute eq '';
-						$responder->(<<EOF);
+						$html_responder->(<<EOF);
 <html><body><p>Executed.</p><p>compilation result:</p><pre style="background:#fff;">$compile</pre><p>execution result:</p><pre style="background:#fff;">$execute</pre></body></html>
 EOF
 					}
@@ -91,14 +96,9 @@ sub call
 	my ($self, $env) = @_;
 
 	return sub {
-		my $responder_orig = shift;
+		my $responder = shift;
 
 		my $q = CGI::PSGI->new($env);
-
-		my $responder = sub {
-			my $str = shift;
-			$responder_orig->([$q->psgi_header(-type => 'text/html', -charset => 'utf-8'), [ Encode::encode_utf8($str) ] ]);
-		};
 
 		my $command = $q->param('command');
 
@@ -114,7 +114,7 @@ sub call
 			$handle->push_write(storable => { map { $_, $q->param($_) } @names });
 			$handle->push_read(storable => sub {
 				my ($handle_, $obj) = @_;
-				$responder_orig->([$q->psgi_header(-type => 'application/json', -charset => 'utf-8'), [Encode::encode_utf8(encode_json($obj))] ]);
+				$responder->([$q->psgi_header(-type => 'application/json', -charset => 'utf-8'), [Encode::encode_utf8(encode_json($obj))] ]);
 			});
 		}
 	};
