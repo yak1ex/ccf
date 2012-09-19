@@ -9,6 +9,7 @@ use AnyEvent::Socket; # tcp_server
 use AnyEvent::Util; # run_cmd
 
 use English;
+use Encode;
 use YAML;
 use File::Temp;
 use Getopt::Std;
@@ -16,8 +17,8 @@ use Pod::Usage;
 
 BEGIN {
 	if($^O eq 'cygwin') {
-		use Encode;
-		use Win32::Codepage::Simple qw(get_codepage);
+		require Win32::Codepage::Simple;
+		Win32::Codepage::Simple->import(qw(get_codepage));
 	}
 }
 
