@@ -5,6 +5,114 @@ cygwin:
     cpulimit-compile: 0
     cpulimit-execute: 0
     sandbox: none
+  'vc 8':
+    name: '2005 / VC8 / 14.00.50727.42'
+    cygwin2native: true
+    env:
+      - VSINSTALLDIR: 'C:\Program Files (x86)\Microsoft Visual Studio 8'
+        VCINSTALLDIR: 'C:\Program Files (x86)\Microsoft Visual Studio 8\VC'
+        FrameworkDir: 'C:\Windows\Microsoft.NET\Framework'
+        FrameworkVersion: 'v2.0.50727'
+        FrameworkSDKDir: 'C:\Program Files (x86)\Microsoft Visual Studio 8\SDK\v2.0'
+        DevEnvDir: 'C:\Program Files (x86)\Microsoft Visual Studio 8\Common7\IDE'
+        PATH: 'C:\Program Files (x86)\Microsoft Visual Studio 8\Common7\IDE;C:\Program Files (x86)\Microsoft Visual Studio 8\VC\BIN;C:\Program Files (x86)\Microsoft Visual Studio 8\Common7\Tools;C:\Program Files (x86)\Microsoft Visual Studio 8\SDK\v2.0\bin;C:\Windows\Microsoft.NET\Framework\v2.0.50727;C:\Program Files (x86)\Microsoft Visual Studio 8\VC\VCPackages;%PATH%'
+        INCLUDE: 'C:\Program Files (x86)\Microsoft Visual Studio 8\VC\INCLUDE;%INCLUDE%'
+        LIB: 'C:\Program Files (x86)\Microsoft Visual Studio 8\VC\LIB;C:\Program Files (x86)\Microsoft Visual Studio 8\SDK\v2.0\lib;%LIB%'
+        LIBPATH: 'C:\Windows\Microsoft.NET\Framework\v2.0.50727'
+    compile:
+      - cl
+      - /nologo
+      - /W3
+      - /EHsc
+      - /c
+      - /Fo$output
+      - $input
+    link:
+      - cl
+      - /nologo
+      - /W3
+      - /EHsc
+      - /Fo$input
+      - /Fe$output
+      - $input
+  'vc 9':
+    name: '2008 / VC9 / 15.00.30729.01'
+    cygwin2native: true
+    env:
+      - VSINSTALLDIR: 'C:\Program Files (x86)\Microsoft Visual Studio 9.0'
+        VCINSTALLDIR: 'C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC'
+        FrameworkDir: 'C:\Windows\Microsoft.NET\Framework'
+        FrameworkVersion: 'v2.0.50727'
+        Framework35Version: 'v3.5'
+        WindowsSdkDir: 'C:\Program Files\Microsoft SDKs\Windows\v6.0A\'
+        DevEnvDir: 'C:\Program Files (x86)\Microsoft Visual Studio 9.0\Common7\IDE'
+      - VSINSTALLDIR: 'C:\Program Files (x86)\Microsoft Visual Studio 8'
+        VCINSTALLDIR: 'C:\Program Files (x86)\Microsoft Visual Studio 8\VC'
+        FrameworkDir: 'C:\Windows\Microsoft.NET\Framework'
+        FrameworkVersion: 'v2.0.50727'
+        FrameworkSDKDir: 'C:\Program Files (x86)\Microsoft Visual Studio 8\SDK\v2.0'
+        DevEnvDir: 'C:\Program Files (x86)\Microsoft Visual Studio 8\Common7\IDE'
+      - PATH: 'C:\Program Files (x86)\Microsoft Visual Studio 9.0\Common7\IDE;C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\BIN;C:\Program Files (x86)\Microsoft Visual Studio 9.0\Common7\Tools;C:\Windows\Microsoft.NET\Framework\v3.5;C:\Windows\Microsoft.NET\Framework\v2.0.50727;C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\VCPackages;%WindowsSdkDir%bin;%PATH%'
+        INCLUDE: 'C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\INCLUDE;%WindowsSdkDir%include;%INCLUDE%'
+        LIB: 'C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\LIB;%WindowsSdkDir%lib;%LIB%'
+        LIBPATH: 'C:\Windows\Microsoft.NET\Framework\v3.5;C:\Windows\Microsoft.NET\Framework\v2.0.50727;C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\LIB;%LIBPATH%'
+    compile:
+      - cl
+      - /nologo
+      - /W3
+      - /EHsc
+      - /c
+      - /Fo$output
+      - $input
+    link:
+      - cl
+      - /nologo
+      - /W3
+      - /EHsc
+      - /Fo$input
+      - /Fe$output
+      - $input
+  vc10:
+    name: '2010 / VC10 / 16.00.30319.01'
+    cygwin2native: true
+    env:
+      - VSINSTALLDIR: 'C:\Program Files (x86)\Microsoft Visual Studio 10.0\'
+        VCINSTALLDIR: 'C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\'
+        FrameworkDir32: 'C:\Windows\Microsoft.NET\Framework\'
+        FrameworkVersion32: 'v4.0.30319'
+        Framework35Version: 'v3.5'
+        WindowsSdkDir: 'C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\'
+      - DevEnvDir: '%VSINSTALLDIR%\Common7\IDE\'
+        VS100COMNTOOLS: '%VSINSTALLDIR%\Common7\Tools\'
+        FrameworkDir: %FrameworkDir32%
+        FrameworkVersion: %FrameworkVersion32%
+      - PATH: '%FrameworkDir%%Framework35Version%;%FrameworkDir%%FrameworkVersion%;%VSINSTALLDIR%Common7\Tools;%VCINSTALLDIR%BIN;%DevEnvDir%;%WindowsSdkDir%bin\NETFX 4.0 Tools;%WindowsSdkDir%bin;'
+        INCLUDE: '%VCINSTALLDIR%INCLUDE;%WindowsSdkDir%include;%INCLUDE%'
+        LIB: '%VCINSTALLDIR%LIB;%WindowsSdkDir%lib;%LIB%'
+        LIBPATH: '%FrameworkDir%%FrameworkVersion%;%FrameworkDir%%Framework35Version%;%VCINSTALLDIR%LIB;%LIBPATH%'
+    compile:
+      - cl
+      - /nologo
+      - /W3
+      - /EHsc
+      - /c
+      - /Fo$output
+      - $input
+    link:
+      - cl
+      - /nologo
+      - /W3
+      - /EHsc
+      - /Fo$input
+      - /Fe$output
+      - $input
+cygwin-test:
+  GLOBAL:
+    memlimit-compile: 0
+    memlimit-execute: 0
+    cpulimit-compile: 0
+    cpulimit-execute: 0
+    sandbox: none
   gcc45:
     name: 'gcc 4.5.3'
     compile:
