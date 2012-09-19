@@ -66,25 +66,31 @@ sub _handle
 {
 	my ($self, $idx) = @_;
 	my $handle; $handle = AnyEvent::Handle->new(
-		connect => [$self->_host, $self->_port],
+		connect => [$self->_host($idx), $self->_port($idx)],
 		on_error => sub { undef $handle },
 	);
 	return $handle;
 }
 
+sub _idx
+{
+	my ($self, $type) = @_;
+	return $self->{_type}{$type}[1][0]; # TODO: Currently, always return the first entry.
+}
+
 sub handle_and_pre_adjust_id
 {
 	my ($self, $obj) = @_;
-	if(exists $obj->{id}) {
+	if(exists $obj->{command} && $obj->{command} eq 'list') {
+		return (undef, undef);
+	} elsif(exists $obj->{id}) {
 		my $idx = CCF::Base64Like::decode(substr($obj->{id}, 0, 1));
 		$obj->{id} = CCF::Base64Like::decode(substr($obj->{id}, 1));
 		return ($self->_handle($idx), $idx);
 	} else {
-		# Currently, list does not include type.
-		if(! exists $obj->{command} || $obj->{command} ne 'list') {
-			croak('id or type must exist') if ! exists $obj->{type};
-		}
-		return ($self->_handle(0), 0); # TODO: Currently, always return the first entry.
+		croak('id or type must exist') if ! exists $obj->{type};
+		my $idx = $self->_idx($obj->{type});
+		return ($self->_handle($idx), $idx);
 	}
 }
 
