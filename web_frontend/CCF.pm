@@ -34,7 +34,7 @@ sub dispatcher
 
 sub _show
 {
-	my ($self, $obj, $html_responder, $handle) = @_;
+	my ($self, $obj, $responders, $handle) = @_;
 
 	my $id = $obj->{id};
 	$handle->push_write(storable => { command => 'status', id => $id });
@@ -43,8 +43,8 @@ sub _show
 		my $html;
 		my $status = $obj->{status};
 		given($status) {
-			when (1)     { $html_responder->('<html><body>Invoked.</body></html>'); }
-			when (2)     { $html_responder->('<html><body>Compiling.</body></html>'); }
+			when (1)     { $responders->{html}('<html><body>Invoked.</body></html>'); }
+			when (2)     { $responders->{html}('<html><body>Compiling.</body></html>'); }
 			when ([3,4]) {
 				$handle->push_write(storable => { command => 'result', id => $id });
 				$handle->push_read(storable => sub {
@@ -54,7 +54,7 @@ sub _show
 					if($status == 3 || ! exists $obj->{execute}) {
 						my $compile = $obj->{compile};
 						$compile = '&nbsp;' if $compile eq '';
-						$html_responder->(<<EOF);
+						$responders->{html}(<<EOF);
 <html><body><p>Compiled.</p><p>compilation result:</p><pre style="background:#fff;">$compile</pre></body></html>
 EOF
 					} else {
@@ -62,7 +62,7 @@ EOF
 						$compile = '&nbsp;' if $compile eq '';
 						my $execute = $obj->{execute};
 						$execute = '&nbsp;' if $execute eq '';
-						$html_responder->(<<EOF);
+						$responders->{html}(<<EOF);
 <html><body><p>Executed.</p><p>compilation result:</p><pre style="background:#fff;">$compile</pre><p>execution result:</p><pre style="background:#fff;">$execute</pre></body></html>
 EOF
 					}
@@ -72,7 +72,16 @@ EOF
 	});
 }
 
-my %dispatch = (show => \&_show);
+sub _list
+{
+	my ($self, $obj, $responders, $handle) = @_;
+	$responders->{json}($self->dispatcher->list);
+}
+
+my %dispatch = (
+	list => \&_list,
+	show => \&_show,
+);
 
 sub call
 {
@@ -82,22 +91,28 @@ sub call
 		my $responder = shift;
 
 		my $q = CGI::PSGI->new($env);
-		my $html_responder = sub {
-			my $str = shift;
-			$responder->([$q->psgi_header(-type => 'text/html', -charset => 'utf-8'), [ Encode::encode_utf8($str) ] ]);
+		my $responders = {
+			html => sub {
+				my $str = shift;
+				$responder->([$q->psgi_header(-type => 'text/html', -charset => 'utf-8'), [ Encode::encode_utf8($str) ] ]);
+			},
+			json => sub {
+				my $obj = shift;
+				$responder->([$q->psgi_header(-type => 'application/json', -charset => 'utf-8'), [Encode::encode_utf8(encode_json($obj))] ]);
+			}
 		};
 
 		my (%obj) = map { $_, $q->param($_) } $q->param;
 		my ($handle, $idx) = $self->dispatcher->handle_and_pre_adjust_id(\%obj);
 
 		if(exists $dispatch{$obj{command}}) {
-			$dispatch{$obj{command}}->($self, \%obj, $html_responder, $handle);
+			$dispatch{$obj{command}}->($self, \%obj, $responders, $handle);
 		} else {
 			$handle->push_write(storable => \%obj);
 			$handle->push_read(storable => sub {
 				my ($handle_, $obj) = @_;
 				$self->dispatcher->post_adjust_id($obj, $idx);
-				$responder->([$q->psgi_header(-type => 'application/json', -charset => 'utf-8'), [Encode::encode_utf8(encode_json($obj))] ]);
+				$responders->{json}($obj);
 			});
 		}
 	};

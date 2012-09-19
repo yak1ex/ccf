@@ -16,9 +16,10 @@ sub new
 	my $class = ref($self) || $self;
 	$self = bless {
 		_backend => $arg{backend},
-		_type => {}
+		_type => {},
 	}, $class;
-	AE::cv->begin(sub {
+	my $cv = AE::cv;
+	$cv->begin(sub {
 		for(my $idx = 0; $idx < @{$self->{_list}}; ++$idx) {
 			my $entry = $self->{_list}[$idx];
 			foreach my $key (keys %{$entry}) {
@@ -26,6 +27,7 @@ sub new
 					carp 'Name mismatch with the same key' if $self->{_type}{$key}[0] ne $entry->{$key};
 					push @{$self->{_type}{$key}[1]}, $idx;
 				} else {
+					$self->{_type}{$key}[0] = $entry->{$key};
 					$self->{_type}{$key}[1] = [ $idx ];
 				}
 			}
@@ -33,16 +35,16 @@ sub new
 		delete $self->{_list};
 	});
 	foreach my $idx (0..$#{$arg{backend}}) {
-		AE::cv->begin();
+		$cv->begin();
 		my $handle = $self->_handle($idx);
 		$handle->push_write(storable => { command => 'list' });
-		$handle->push_read(storable => sub {
+		$handle->push_read(storable => sub { 
 			my ($handle_, $obj) = @_;
 			$self->{_list}[$idx] = $obj;
-			AE::cv->end;
+			$cv->end;
 		});
 	}
-	AE::cv->end;
+	$cv->end;
 	return $self;
 }
 
@@ -92,6 +94,16 @@ sub post_adjust_id
 	if(exists $obj->{id}) {
 		$obj->{id} = CCF::Base64Like::encode($idx) . CCF::Base64Like::encode($obj->{id});
 	}
+}
+
+sub list
+{
+	my ($self) = @_;
+	my $obj = {};
+	foreach my $key (keys %{$self->{_type}}) {
+		$obj->{$key} = $self->{_type}{$key}[0];
+	}
+	return $obj;
 }
 
 1;
