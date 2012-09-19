@@ -210,7 +210,7 @@ my %handler = (
 );
 
 $opts{v} and print STDERR "listening on port $port...\n";
-tcp_server '127.0.0.1', $port, sub {
+tcp_server undef, $port, sub {
 	my ($fh, $host, $port) = @_;
 
 	$opts{v} and print STDERR "connect\n";
