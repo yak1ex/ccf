@@ -34,8 +34,9 @@ sub dispatcher
 
 sub _show
 {
-	my ($self, $obj, $responders, $handle) = @_;
+	my ($self, $obj, $responders) = @_;
 
+	my ($handle, $idx) = $self->dispatcher->handle_and_pre_adjust_id($obj);
 	my $id = $obj->{id};
 	$handle->push_write(storable => { command => 'status', id => $id });
 	$handle->push_read(storable => sub {
@@ -74,11 +75,39 @@ EOF
 
 sub _list
 {
-	my ($self, $obj, $responders, $handle) = @_;
+	my ($self, $obj, $responders) = @_;
 	$responders->{json}($self->dispatcher->list);
 }
 
+sub _invoke
+{
+	my ($self, $obj, $responders) = @_;
+
+	my $cv = AE::cv;
+	my $result = {};
+
+	$cv->begin(sub {
+		$responders->{json}($result);
+	});
+	foreach my $key (@{$obj->{type}}) {
+		$cv->begin;
+		my ($handle, $idx) = $self->dispatcher->handle_and_idx($key);
+		$handle->push_write(storable => {
+			%$obj,
+			type => $key,
+		});
+		$handle->push_read(storable => sub {
+			my ($handle, $obj) = @_;
+			$self->dispatcher->post_adjust_id($obj, $idx);
+			$result->{$key} = $obj->{id};
+			$cv->end;
+		});
+	}
+	$cv->end;
+}
+
 my %dispatch = (
+	invoke => \&_invoke,
 	list => \&_list,
 	show => \&_show,
 );
@@ -102,12 +131,12 @@ sub call
 			}
 		};
 
-		my (%obj) = map { $_, $q->param($_) } $q->param;
-		my ($handle, $idx) = $self->dispatcher->handle_and_pre_adjust_id(\%obj);
+		my (%obj) = map { my (@t) = $q->param($_); $_, @t == 1 ? $t[0] : [ @t ] } $q->param;
 
 		if(exists $dispatch{$obj{command}}) {
-			$dispatch{$obj{command}}->($self, \%obj, $responders, $handle);
+			$dispatch{$obj{command}}->($self, \%obj, $responders);
 		} else {
+			my ($handle, $idx) = $self->dispatcher->handle_and_pre_adjust_id(\%obj);
 			$handle->push_write(storable => \%obj);
 			$handle->push_read(storable => sub {
 				my ($handle_, $obj) = @_;

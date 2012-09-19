@@ -78,20 +78,20 @@ sub _idx
 	return $self->{_type}{$type}[1][0]; # TODO: Currently, always return the first entry.
 }
 
+sub handle_and_idx
+{
+	my ($self, $key) = @_;
+	my $idx = $self->_idx($key);
+	return ($self->_handle($idx), $idx);
+}
+
 sub handle_and_pre_adjust_id
 {
 	my ($self, $obj) = @_;
-	if(exists $obj->{command} && $obj->{command} eq 'list') {
-		return (undef, undef);
-	} elsif(exists $obj->{id}) {
-		my $idx = CCF::Base64Like::decode(substr($obj->{id}, 0, 1));
-		$obj->{id} = CCF::Base64Like::decode(substr($obj->{id}, 1));
-		return ($self->_handle($idx), $idx);
-	} else {
-		croak('id or type must exist') if ! exists $obj->{type};
-		my $idx = $self->_idx($obj->{type});
-		return ($self->_handle($idx), $idx);
-	}
+	croak('id must exist in hash keys') if ! exists $obj->{id};
+	my $idx = CCF::Base64Like::decode(substr($obj->{id}, 0, 1));
+	$obj->{id} = CCF::Base64Like::decode(substr($obj->{id}, 1));
+	return ($self->_handle($idx), $idx);
 }
 
 sub post_adjust_id

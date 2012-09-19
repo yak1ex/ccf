@@ -66,25 +66,29 @@ $(function() {
 		}
 		$('#result').tabs('destroy');
 		$('#result').tabs(tabopts);
-		$.each($('.ctypes:checked'), function(idx, obj) {
-            $.ajax({
-            	type: 'POST',
-				url: 'ccf.cgi',
-				data: {
-					command: 'invoke',
-					source: $('#source').val(),
-					type: obj.name,
-					execute: ($('#compile:checked').length == 0 ? 'true' : 'false'),
-				},
-                dataType: 'json'
-			}).done(function(msg) {
-				status[obj.name].id = msg.id;
-				idmap[msg.id] = obj.name;
-				$('#result').tabs('url', status[obj.name].idx, 'ccf.cgi?command=show&id=' + msg.id);
+		var types = $.map($('.ctypes:checked'), function(obj, idx) { return obj.name; });
+		$.ajax({
+			type: 'POST',
+			url: 'ccf.cgi',
+			traditional: true,
+			data: {
+				command: 'invoke',
+				source: $('#source').val(),
+				type: types,
+				execute: ($('#compile:checked').length == 0 ? 'true' : 'false'),
+			},
+			dataType: 'json'
+		}).done(function(msg) {
+			$.each(msg, function(key, id) {
+				status[key].id = id;
+				idmap[id] = key;
+				$('#result').tabs('url', status[key].idx, 'ccf.cgi?command=show&id=' + id);
 			});
-			$('#result').tabs('add', 'ccf.dummy.html', obj.name);
-			status[obj.name] = { status: 0, idx: $('#result').tabs('length')-1 };
-			idxmap[$('#result').tabs('length')-1] = obj.name;
+		});
+		$.each(types, function(idx, obj) {
+			$('#result').tabs('add', 'ccf.dummy.html', obj);
+			status[obj] = { status: 0, idx: $('#result').tabs('length')-1 };
+			idxmap[$('#result').tabs('length')-1] = obj;
 		});
 		return false;
 	});
