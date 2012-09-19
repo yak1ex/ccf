@@ -37,6 +37,13 @@ cygwin:
       - -o
       - $output
       - $input
+cygwin-win:
+  GLOBAL:
+    memlimit-compile: 0
+    memlimit-execute: 0
+    cpulimit-compile: 0
+    cpulimit-execute: 0
+    sandbox: none
   'vc 7':
     name: '.NET 2003 / VC7 / 13.10.3077'
     cygwin2native: true
