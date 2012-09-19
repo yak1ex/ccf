@@ -49,13 +49,14 @@ my $conf = YAML::LoadFile($confname);
 my $confkey = $opts{k} // $OSNAME;
 ! exists $conf->{$confkey} and pod2usage(-msg => "\n$0: ERROR: Configuration key `$confkey' does not exist in configuration file.\n", -exitval => 1, -verbose => 0);
 my $port = $opts{p} // 8888;
+$conf = $conf->{$confkey};
 
 # TODO: Separate cygwin2native handling to module?
 
 sub is_cygwin2native
 {
 	my ($type) = @_;
-	return exists $conf->{$OSNAME}{$type}{cygwin2native} && $conf->{$OSNAME}{$type}{cygwin2native} eq 'true';
+	return exists $conf->{$type}{cygwin2native} && $conf->{$type}{cygwin2native} eq 'true';
 }
 
 sub setenv
@@ -63,7 +64,7 @@ sub setenv
 	my ($type) = @_;
 
 	return sub {
-		foreach my $hash (@{$conf->{$OSNAME}{$type}{env}}) {
+		foreach my $hash (@{$conf->{$type}{env}}) {
 			foreach my $name (keys %$hash) {
 				my $t = $hash->{$name};
 				$t =~ s/%([^%]*)%/exists($ENV{$1}) ? $ENV{$1} : ''/eg;
@@ -86,12 +87,11 @@ sub make_arg
 	if(is_cygwin2native($type)) {
 		$input = Cygwin::posix_to_win_path($input);
 		$output = Cygwin::posix_to_win_path($output);
-		(@arg) = (on_prepare => setenv($type)) if exists($conf->{$OSNAME}{$type}{env});
+		(@arg) = (on_prepare => setenv($type)) if exists($conf->{$type}{env});
 	}
 
 # TODO: error check
-#	return map { $_ eq '$input' ? $input : $_ eq '$output' ?  $output : $_ } @{$conf->{$OSNAME}{$type}{$mode}};
-	my @res = map { my $t = $_; $t =~ s/\$input/$input/; $t =~ s/\$output/$output/; $t; } @{$conf->{$OSNAME}{$type}{$mode}}; 
+	my @res = map { my $t = $_; $t =~ s/\$input/$input/; $t =~ s/\$output/$output/; $t; } @{$conf->{$type}{$mode}}; 
 	$opts{v} and print STDERR join(' ', @res), "\n";
 	return ([@res], '<', '/dev/null', '>', $capture, '2>', $capture, @arg);
 }
@@ -115,7 +115,7 @@ sub invoke
 	$status{$curid}{status} = REQUESTED;
 	$handle->push_write(storable => { id => $curid });
 # TODO: Other sanity check
-	if(!exists $obj->{type} || !exists $conf->{$OSNAME}{$obj->{type}}) {
+	if(!exists $obj->{type} || !exists $conf->{$obj->{type}}) {
 		$status{$curid}{status} = FINISHED;
 		$status{$curid}{compile} = 'CCF: Unknown compiler type.';
 		return;
@@ -198,7 +198,7 @@ sub list
 {
 	my ($handle, $obj) = @_;
 
-	$handle->push_write(storable => { map { $_ => $conf->{$OSNAME}{$_}{name} } grep { $_ ne 'GLOBAL' } keys %{$conf->{$OSNAME}} });
+	$handle->push_write(storable => { map { $_ => $conf->{$_}{name} } grep { $_ ne 'GLOBAL' } keys %$conf });
 }
 
 my %handler = (
