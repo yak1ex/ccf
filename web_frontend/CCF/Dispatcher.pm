@@ -14,9 +14,36 @@ sub new
 {
 	my ($self, %arg) = @_;
 	my $class = ref($self) || $self;
-	return bless {
-		_backend => $arg{backend}
+	$self = bless {
+		_backend => $arg{backend},
+		_type => {}
 	}, $class;
+	AE::cv->begin(sub {
+		for(my $idx = 0; $idx < @{$self->{_list}}; ++$idx) {
+			my $entry = $self->{_list}[$idx];
+			foreach my $key (keys %{$entry}) {
+				if(exists $self->{_type}{$key}) {
+					carp 'Name mismatch with the same key' if $self->{_type}{$key}[0] ne $entry->{$key};
+					push @{$self->{_type}{$key}[1]}, $idx;
+				} else {
+					$self->{_type}{$key}[1] = [ $idx ];
+				}
+			}
+		}
+		delete $self->{_list};
+	});
+	foreach my $idx (0..$#{$arg{backend}}) {
+		AE::cv->begin();
+		my $handle = $self->_handle($idx);
+		$handle->push_write(storable => { command => 'list' });
+		$handle->push_read(storable => sub {
+			my ($handle_, $obj) = @_;
+			$self->{_list}[$idx] = $obj;
+			AE::cv->end;
+		});
+	}
+	AE::cv->end;
+	return $self;
 }
 
 sub _host
