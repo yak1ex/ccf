@@ -34,14 +34,9 @@ sub dispatcher
 
 sub _show
 {
-	my ($self, $q, $responder, $handle) = @_;
+	my ($self, $obj, $html_responder, $handle) = @_;
 
-	my $html_responder = sub {
-		my $str = shift;
-		$responder->([$q->psgi_header(-type => 'text/html', -charset => 'utf-8'), [ Encode::encode_utf8($str) ] ]);
-	};
-
-	my $id = $q->param('id');
+	my $id = $obj->{id};
 	$handle->push_write(storable => { command => 'status', id => $id });
 	$handle->push_read(storable => sub {
 		my ($handle, $obj) = @_;
@@ -77,7 +72,7 @@ EOF
 	});
 }
 
-my %command = (show => \&_show);
+my %dispatch = (show => \&_show);
 
 sub call
 {
@@ -87,18 +82,21 @@ sub call
 		my $responder = shift;
 
 		my $q = CGI::PSGI->new($env);
+		my $html_responder = sub {
+			my $str = shift;
+			$responder->([$q->psgi_header(-type => 'text/html', -charset => 'utf-8'), [ Encode::encode_utf8($str) ] ]);
+		};
 
-		my $command = $q->param('command');
+		my (%obj) = map { $_, $q->param($_) } $q->param;
+		my ($handle, $idx) = $self->dispatcher->handle_and_pre_adjust_id(\%obj);
 
-		my $handle = $self->dispatcher->handle();
-
-		if(exists $command{$command}) {
-			$command{$command}->($self, $q, $responder, $handle);
+		if(exists $dispatch{$obj{command}}) {
+			$dispatch{$obj{command}}->($self, \%obj, $html_responder, $handle);
 		} else {
-			my (@names) = $q->param;
-			$handle->push_write(storable => { map { $_, $q->param($_) } @names });
+			$handle->push_write(storable => \%obj);
 			$handle->push_read(storable => sub {
 				my ($handle_, $obj) = @_;
+				$self->dispatcher->post_adjust_id($obj, $idx);
 				$responder->([$q->psgi_header(-type => 'application/json', -charset => 'utf-8'), [Encode::encode_utf8(encode_json($obj))] ]);
 			});
 		}
