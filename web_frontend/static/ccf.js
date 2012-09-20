@@ -1,3 +1,10 @@
+// ccf.js - Javascript source for C++ Compiler Farm client
+//     Written by Yak! <yak_ex@mx.scn.tv>
+//
+//     Distributed under the Boost Software License, Version 1.0.
+//     (See accompanying file LICENSE_1_0.txt or copy at
+//      http://www.boost.org/LICENSE_1_0.txt)
+
 var tabopts = { spinner: '', cache: true };
 $(function() {
 	var status = {};

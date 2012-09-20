@@ -148,3 +148,42 @@ sub call
 }
 
 1;
+__END__
+=head1 NAME
+
+CCF - PSGI application module for C++ Compiler Farm
+
+=head1 SYNOPSIS
+
+  use Plack::Builder;
+  use CCF;
+
+  builder {
+    mount '/ccf.cgi' => CCF->new(backend => [['127.0.0.1', 8888]]):
+  };
+
+=head1 DESCRIPTION
+
+CCF is a PSGI application module for C++ Compiler Farm.
+
+=head1 CONFIGURATION
+
+=over 4
+
+=item backend => I<array-ref-of-array-ref>
+
+Specify array reference of pairs of host and port.
+
+=back
+
+
+=head1 AUTHOR
+
+Yak! <yak_ex@mx.scn.tv>
+
+=head1 LICENSE
+
+Distributed under the Boost Software License, Version 1.0.
+(See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+=cut

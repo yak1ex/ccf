@@ -114,3 +114,64 @@ $handle->push_read(json => sub {
 });
 
 $cv->recv;
+__END__
+
+=head1 NAME
+
+test_client.pl - Test client for compile server in C++ Compiler Farm
+
+=head1 SYNOPSIS
+
+test_client.pl [-h] [-l] [-t I<type>] [-c] [-v]
+
+  # show help and exit
+  test_client.pl -h
+  
+  # show compiler types and exit
+  test_client.pl -l
+  
+  # invoke gcc45 as compile only
+  test_client.pl -t gcc45 -c
+  
+
+=head1 DESCRIPTION
+
+test_client.pl is a tiny client for test of compile server.
+It is not intended to be used by users.
+
+=head1 OPTIONS
+
+=over 4
+
+=item -h
+
+Show help and exit
+
+=item -l
+
+Show compiler type list and exit
+
+=item -t I<type>
+
+MANDATORY. Compiler type key. You can get compiler type list by specifying -l.
+
+=item -c
+
+Flag to specify compile only.
+
+=item -v
+
+Currntly, none of effect.
+
+=back
+
+=head1 AUTHOR
+
+Yak! <yak_ex@mx.scn.tv>
+
+=head1 LICENSE
+
+Distributed under the Boost Software License, Version 1.0.
+(See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+=cut

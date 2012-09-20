@@ -113,3 +113,18 @@ sub list
 }
 
 1;
+__END__
+=head1 NAME
+
+CCF::Dispatcher - C++ Compiler Farm backend dispatcher module
+
+=head1 AUTHOR
+
+Yak! <yak_ex@mx.scn.tv>
+
+=head1 LICENSE
+
+Distributed under the Boost Software License, Version 1.0.
+(See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+=cut

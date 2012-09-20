@@ -247,7 +247,7 @@ compile_server.pl - Compile server for C++ Compiler Farm
 
 =head1 SYNOPSIS
 
-compile_server [-h] [-p I<port>] [-c I<filename>] [-k I<key>] [-v]
+compile_server.pl [-h] [-p I<port>] [-c I<filename>] [-k I<key>] [-v]
 
   # show help (this POD) and exit
   compile_server.pl -h
@@ -296,5 +296,10 @@ Enable verbose logging.
 =head1 AUTHOR
 
 Yak! <yak_ex@mx.scn.tv>
+
+=head1 LICENSE
+
+Distributed under the Boost Software License, Version 1.0.
+(See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 =cut
