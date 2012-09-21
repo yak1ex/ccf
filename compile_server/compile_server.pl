@@ -15,6 +15,8 @@ use File::Temp;
 use Getopt::Std;
 use Pod::Usage;
 
+use CCF::IDCounter;
+
 BEGIN {
 	if($^O eq 'cygwin') {
 		require Win32::Codepage::Simple;
@@ -42,7 +44,7 @@ our ($VERSION) = '0.01';
 
 my %opts;
 $Getopt::Std::STANDARD_HELP_VERSION = 1;
-getopts('hp:c:k:v', \%opts);
+getopts('hp:c:k:iI:v', \%opts);
 pod2usage(-verbose => 1) if exists $opts{h};
 my $confname = $opts{c} // 'config.yaml';
 ! -f $confname and pod2usage(-msg => "\n$0: ERROR: Configuration file `$confname' does not exist.\n", -exitval => 1, -verbose => 0);
@@ -106,6 +108,8 @@ sub dec
 
 my %status;
 my $id = 0;
+tie $id, 'CCF::IDCounter', file => 'id.yaml', key => $confkey if ! exists $opts{i};
+$id = $opts{I} if exists $opts{I};
 
 sub invoke
 {
@@ -247,7 +251,7 @@ compile_server.pl - Compile server for C++ Compiler Farm
 
 =head1 SYNOPSIS
 
-compile_server.pl [-h] [-p I<port>] [-c I<filename>] [-k I<key>] [-v]
+compile_server.pl [-h] [-p I<port>] [-c I<filename>] [-k I<key>] [-i] [-I I<number>] [-v]
 
   # show help (this POD) and exit
   compile_server.pl -h
@@ -257,6 +261,9 @@ compile_server.pl [-h] [-p I<port>] [-c I<filename>] [-k I<key>] [-v]
   
   # read configuration from conf.yaml and cygwin-test is used for configuration key
   compile_server.pl -c conf.yaml -k cygwin-test
+
+  # don't use persistent ID management and set initial ID as 10
+  compile_server.pl -i -I 10
 
   # listen on port 8880 with logging
   compile_server.pl -p 8880 -v
@@ -286,6 +293,14 @@ Configuration YAML file name. Defaults to config.yaml.
 
 Configuration key. The key must exist in the configuration file.
 Defaults to $OSNAME.
+
+=item -i
+
+Don't use persistent ID management.
+
+=item -I I<number>
+
+Set initial ID as the specified number. Defaults to the value read from persistent ID if -i is not specified. Otherwise, defaults to 0.
 
 =item -v
 

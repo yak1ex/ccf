@@ -28,3 +28,6 @@
 # Temporary folders for MSVS
 Debug/
 ipch/
+
+# Files depending on server
+compile_server/id.yaml
