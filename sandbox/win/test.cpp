@@ -2,6 +2,8 @@
 #include <fstream>
 #include <vector>
 #include <numeric>
+#include <cstdlib>
+#include <cstdio>
 
 int main(int argc, char** argv)
 {
@@ -25,15 +27,10 @@ int main(int argc, char** argv)
 #endif
 #endif
 
-	int n;
-	std::cin >> n;
-	std::vector<int> v(n);
-	for(int i=0;i<n;++i) std::cin >> v[i];
-	std::cout << std::accumulate(v.begin(), v.end(), 0) << std::endl;
-
-// TODO: Set appropriate path automatically
-	std::ofstream ofs("d:\\home\\atarashi\\work-git\\ccf\\sandbox\\win\\sandbox.log", std::ios::out|std::ios::app);
-	ofs << "Test" << std::endl;
+	int v[5] = { 3, 4, 5, 6, 7 };
+	std::cout << std::accumulate(v, v+sizeof(v)/sizeof(v[0]), 0) << std::endl;
+	unlink("sandbox.log");
+	system("cl.exe /? > help.txt 2>&1");
 
 	return 0;
 }
