@@ -2,7 +2,7 @@ CFLAGS=-DSECCOMP_BPF_STANDALONE -Wall -Werror -Wextra -Wno-missing-field-initial
 CXXFLAGS=-std=gnu++0x -DSECCOMP_BPF_STANDALONE -Wall -Werror -Wextra -Wno-missing-field-initializers -I../../chromium
 LDFLAGS=
 
-CHROMIUM_DIR=../../chromium/sandbox/linu/seccomp-bpf
+CHROMIUM_DIR=../../chromium/sandbox/linux/seccomp-bpf
 
 limit: libseccomp_bpf_sa.a
 limit: limit.o test_.o syscall-names.o
