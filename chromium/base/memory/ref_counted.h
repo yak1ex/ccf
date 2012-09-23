@@ -165,7 +165,12 @@ class RefCountedData : public base::RefCounted< base::RefCountedData<T> > {
   T data;
 
  private:
+#if defined(_MSC_VER) && _MSC_VER <= 1400
+  typedef base::RefCounted<base::RefCountedData<T> > base_type;
+  friend class base_type;
+#else
   friend class base::RefCounted<base::RefCountedData<T> >;
+#endif
   ~RefCountedData() {}
 };
 

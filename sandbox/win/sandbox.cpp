@@ -16,23 +16,34 @@ extern "C" int main_(int argc, char** argv);
 class StdHandleSaver
 {
 	std::streambuf *cin, *cout, *cerr, *clog;
+	struct CStreamHandler
+	{
+		CStreamHandler(const char* in, const char* out)
+		{
+			_close(0); _close(1); _close(2);
+
+			freopen(in, "r", stdin);
+			freopen(out, "w", stdout);
+			freopen(out, "w", stderr);
+			setbuf(stderr, NULL);
+		}
+		~CStreamHandler()
+		{
+			fclose(stdin);
+			fclose(stdout);
+			fclose(stderr);
+		}
+	} csh;
 	std::ofstream ofs;
 	std::ifstream ifs;
 public:
 	StdHandleSaver(const char* in, const char* out) :
-		cin(std::cin.rdbuf()), cout(std::cout.rdbuf()), cerr(std::cerr.rdbuf()), clog(std::clog.rdbuf())
-	{
-		_close(0); _close(1); _close(2);
-
-		freopen(in, "r", stdin);
-		freopen(out, "w", stdout);
-		freopen(out, "w", stderr);
-		setbuf(stderr, NULL);
-
+		cin(std::cin.rdbuf()), cout(std::cout.rdbuf()), cerr(std::cerr.rdbuf()), clog(std::clog.rdbuf()),
+		csh(in, out),
 //	NOTE: Using undocumented constructor accepting FILE*
-		std::ifstream(stdin).swap(ifs);
-		std::ofstream(stdout).swap(ofs);
-
+//	      Only onstructor accepts FILE* and swap is spcified since C++11, so we need to use constructor
+		ifs(stdin), ofs(stdout)
+	{
 		std::cin.rdbuf(ifs.rdbuf());
 		std::cout.rdbuf(ofs.rdbuf());
 		std::cerr.rdbuf(ofs.rdbuf());
@@ -44,13 +55,6 @@ public:
 		std::cout.rdbuf(cout);
 		std::cerr.rdbuf(cerr);
 		std::clog.rdbuf(clog);
-
-		ifs.close();
-		ofs.close();
-
-		fclose(stdin);
-		fclose(stdout);
-		fclose(stderr);
 	}
 };
 
