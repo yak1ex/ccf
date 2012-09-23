@@ -9,20 +9,12 @@ use AnyEvent::Socket; # tcp_server
 use AnyEvent::Util; # run_cmd
 
 use English;
-use Encode;
 use YAML;
-use File::Temp;
 use Getopt::Std;
 use Pod::Usage;
 
 use CCF::IDCounter;
-
-BEGIN {
-	if($^O eq 'cygwin') {
-		require Win32::Codepage::Simple;
-		Win32::Codepage::Simple->import(qw(get_codepage));
-	}
-}
+use CCF::Invoker;
 
 use constant {
 	REQUESTED => 1,
@@ -53,58 +45,7 @@ my $confkey = $opts{k} // $OSNAME;
 ! exists $conf->{$confkey} and pod2usage(-msg => "\n$0: ERROR: Configuration key `$confkey' does not exist in configuration file.\n", -exitval => 1, -verbose => 0);
 my $port = $opts{p} // 8888;
 $conf = $conf->{$confkey};
-
-# TODO: Separate cygwin2native handling to module?
-
-sub is_cygwin2native
-{
-	my ($type) = @_;
-	return exists $conf->{$type}{cygwin2native} && $conf->{$type}{cygwin2native} eq 'true';
-}
-
-sub setenv
-{
-	my ($type) = @_;
-
-	return sub {
-		foreach my $hash (@{$conf->{$type}{env}}) {
-			foreach my $name (keys %$hash) {
-				my $t = $hash->{$name};
-				$t =~ s/%([^%]*)%/exists($ENV{$1}) ? $ENV{$1} : ''/eg;
-				if($name eq 'PATH') {
-# NOTE: I can not understand but the following line causes out of memory error on my environment.
-#					$t = join ':', map { Cygwin::win_to_posix_path($_, 'true') } split /;/, $t;
-					$t = join ':', map { $_ = `cygpath -u '$_'`; s/\s*$//; $_ } split /;/, $t;
-#					$t .= ':' . $ENV{PATH};
-				}
-				$ENV{$name} = $t;
-			}
-		}
-	};
-}
-
-sub make_arg
-{
-	my ($type, $mode, $input, $output, $capture) = @_;
-	my @arg;
-	if(is_cygwin2native($type)) {
-		$input = Cygwin::posix_to_win_path($input);
-		$output = Cygwin::posix_to_win_path($output);
-		(@arg) = (on_prepare => setenv($type)) if exists($conf->{$type}{env});
-	}
-
-# TODO: error check
-	my @res = map { my $t = $_; $t =~ s/\$input/$input/; $t =~ s/\$output/$output/; $t; } @{$conf->{$type}{$mode}}; 
-	$opts{v} and print STDERR join(' ', @res), "\n";
-	return ([@res], '<', '/dev/null', '>', $capture, '2>', $capture, @arg);
-}
-
-sub dec
-{
-	my ($type, $str) = @_;
-	return Encode::decode_utf8($str) unless is_cygwin2native($type);
-	return Encode::decode('CP'.get_codepage(), $str);
-}
+my $invoker = CCF::Invoker->new(config => $conf, verbose => $opts{v});
 
 my %status;
 my $id = 0;
@@ -131,50 +72,34 @@ sub invoke
 		return;
 	}
 
-	my $fh = File::Temp->new(UNLINK=>0,SUFFIX=>'.cpp');
-	print $fh $obj->{source};
-	close $fh;
-	my $source = $fh->filename;
-	my $fho = File::Temp->new(UNLINK=>0,SUFFIX=>($obj->{execute} eq 'true' ? '.exe' : '.o'));
-	close $fho;
-	my $out = $fho->filename;
-
 	$status{$curid}{status} = COMPILING;
 	if($obj->{execute} eq 'true') {
-		run_cmd(make_arg($obj->{type}, 'link', $source, $out, \$status{$curid}{compile}))->cb(sub {
-			my $rc = shift->recv;
-			$status{$curid}{compile} = dec($obj->{type}, $status{$curid}{compile});
-			if($rc) {
-				$status{$curid}{compile} .= sprintf "CCF: compilation failed by status: 0x%04X\n", $rc;
-			}
-			$opts{v} and print STDERR "---compile begin---\n$status{$curid}{compile}---compile  end ---\n";
+		$invoker->link($obj->{type}, $obj->{source}, sub {
+			my ($rc, $result, $out) = @_;
+			$opts{v} and print STDERR "---compile begin---\n$result---compile  end ---\n";
+			$status{$curid}{compile} = $result;
 			if($rc) {
 				$status{$curid}{status} = FINISHED;
 			} else {
 				$status{$curid}{status} = RUNNING;
-				chmod 0711, $out if is_cygwin2native($obj->{type});
-				run_cmd([$out], '<', '/dev/null', '>', \$status{$curid}{execute}, '2>', \$status{$curid}{execute})->cb(sub{
-					my $rc = shift->recv;
-					if($rc) {
-						$status{$curid}{execute} .= sprintf "CCF: execution failed by status: 0x%04X\n", $rc;
+				$invoker->execute($obj->{type}, $out, sub{
+					my ($rc, $result) = @_;
+					if(length $result > 10 * 1024) {
+						$result = substr $result, 0, 10 * 1024;
+						$result .= 'CCF: Output size is over 10KiB.';
 					}
-					$opts{v} and print STDERR "---execute begin---\n$status{$curid}{execute}---execute  end ---\n";
+					$opts{v} and print STDERR "---execute begin---\n$result---execute  end ---\n";
+					$status{$curid}{execute} = $result;
 					unlink $out;
-					unlink $source;
 					$status{$curid}{status} = FINISHED;
 				});
 			}
 		});
 	} else {
-		run_cmd(make_arg($obj->{type}, 'compile', $source, $out, \$status{$curid}{compile}))->cb(sub {
-			my $rc = shift->recv;
-			$status{$curid}{compile} = dec($obj->{type}, $status{$curid}{compile});
-			if($rc) {
-				$status{$curid}{compile} .= sprintf "CCF: compilation failed by status: 0x%04X\n", $rc;
-			}
-			$opts{v} and print STDERR "---compile begin---\n$status{$curid}{compile}---compile  end ---\n";
-			unlink $out;
-			unlink $source;
+		$invoker->compile($obj->{type}, $obj->{source}, sub {
+			my ($rc, $result) = @_;
+			$opts{v} and print STDERR "---compile begin---\n$result---compile  end ---\n";
+			$status{$curid}{compile} = $result;
 			$status{$curid}{status} = FINISHED;
 		});
 	}

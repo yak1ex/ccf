@@ -32,7 +32,6 @@ cygwin:
       - /nologo
       - /W3
       - /EHsc
-      - /Fo$input
       - /Fe$output
       - $input
   'vc 9':
@@ -69,7 +68,6 @@ cygwin:
       - /nologo
       - /W3
       - /EHsc
-      - /Fo$input
       - /Fe$output
       - $input
   vc10:
@@ -103,7 +101,6 @@ cygwin:
       - /nologo
       - /W3
       - /EHsc
-      - /Fo$input
       - /Fe$output
       - $input
 cygwin-test:
@@ -179,7 +176,6 @@ cygwin-win:
       - /nologo
       - /W3
       - /EHsc
-      - /Fo$input
       - /Fe$output
       - $input
   vc10:
@@ -213,7 +209,6 @@ cygwin-win:
       - /nologo
       - /W3
       - /EHsc
-      - /Fo$input
       - /Fe$output
       - $input
 linux:
