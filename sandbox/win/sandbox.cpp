@@ -109,10 +109,14 @@ int main(int argc, char** argv)
 
 		broker_service->WaitForAllTargets();
 
-		if(broker_service->IsMemoryLimitTargets())
-			std::ofstream(getenv("SANDBOX_OUT"), std::ios::out | std::ios::app) << "CCF: Memory limit exceeded." << std::endl;
-		if(broker_service->IsTimeLimitTargets())
-			std::ofstream(getenv("SANDBOX_OUT"), std::ios::out | std::ios::app) << "CCF: Time limit exceeded." << std::endl;
+		if(broker_service->IsMemoryLimitTargets()) {
+			std::ofstream ofs(getenv("SANDBOX_OUT"), std::ios::out | std::ios::app);
+			ofs << "CCF: Memory limit exceeded." << std::endl;
+		}
+		if(broker_service->IsTimeLimitTargets()) {
+			std::ofstream ofs(getenv("SANDBOX_OUT"), std::ios::out | std::ios::app);
+			ofs << "CCF: Time limit exceeded." << std::endl;
+		}
 
 	} else {
 
