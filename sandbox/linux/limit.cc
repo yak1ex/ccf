@@ -157,14 +157,14 @@ int main(int argc, char** argv)
 	sigaction(SIGXCPU, &sa, NULL);
 
 	struct rlimit rl;
-	int limit = atoi(getenv("SANDBOX_MEMLIMIT"));
-	if(limit) {
-		rl.rlim_max = rl.rlim_cur = limit;
+	int memlimit = atoi(getenv("SANDBOX_MEMLIMIT"));
+	if(memlimit) {
+		rl.rlim_max = rl.rlim_cur = memlimit;
 		setrlimit(RLIMIT_AS, &rl);
 	}
-	int limit = atoi(getenv("SANDBOX_CPULIMIT"));
-	if(limit) {
-		rl.rlim_max = RLIM_INFINITY; rl.rlim_cur = limit;
+	int cpulimit = atoi(getenv("SANDBOX_CPULIMIT"));
+	if(cpulimit) {
+		rl.rlim_max = RLIM_INFINITY; rl.rlim_cur = cpulimit;
 		setrlimit(RLIMIT_CPU, &rl);
 	}
 
