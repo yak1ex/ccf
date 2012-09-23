@@ -140,7 +140,7 @@ static Sandbox::ErrorCode evaluator(int sysno) {
 void xcpu(int sig)
 {
 	UNUSED(sig);
-	write(0, "\n===xcpu===\n", 12);
+	write(0, "\nCCF: Time limit exceeded.\n", 27);
 	exit(2);
 }
 
@@ -148,8 +148,7 @@ extern "C" int main_(int argc, char **argv);
 
 int main(int argc, char** argv)
 {
-	UNUSED(argc);
-	UNUSED(argv);
+	if(!getenv("SANDBOX_MEMLIMIT") || !getenv("SANDBOX_CPULIMIT")) return 250;
 
 	struct sigaction sa;
 	sa.sa_handler = xcpu;
@@ -158,14 +157,16 @@ int main(int argc, char** argv)
 	sigaction(SIGXCPU, &sa, NULL);
 
 	struct rlimit rl;
-	rl.rlim_max = rl.rlim_cur = 4 * 1024 * 1024;
-	setrlimit(RLIMIT_AS, &rl);
-	getrlimit(RLIMIT_AS, &rl);
-	std::cout << "RLIMIT_AS: hard: " << rl.rlim_max << " soft: " << rl.rlim_cur << std::endl;
-	rl.rlim_max = 2; rl.rlim_cur = 1;
-	setrlimit(RLIMIT_CPU, &rl);
-	getrlimit(RLIMIT_CPU, &rl);
-	std::cout << "RLIMIT_CPU: hard: " << rl.rlim_max << " soft: " << rl.rlim_cur << std::endl;
+	int limit = atoi(getenv("SANDBOX_MEMLIMIT"));
+	if(limit) {
+		rl.rlim_max = rl.rlim_cur = limit;
+		setrlimit(RLIMIT_AS, &rl);
+	}
+	int limit = atoi(getenv("SANDBOX_CPULIMIT"));
+	if(limit) {
+		rl.rlim_max = RLIM_INFINITY; rl.rlim_cur = limit;
+		setrlimit(RLIMIT_CPU, &rl);
+	}
 
 	int proc_fd = open("/proc", O_RDONLY|O_DIRECTORY);
 	if(Sandbox::supportsSeccompSandbox(proc_fd) != Sandbox::STATUS_AVAILABLE) {
