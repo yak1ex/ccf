@@ -4,7 +4,7 @@ LDFLAGS=
 
 CHROMIUM_DIR=../../chromium/sandbox/linux/seccomp-bpf
 
-limit: limit.o libsandbox.a
+limit: test_.o libsandbox.a
 	$(CXX) -o $@ $^ ${LDFLAGS}
 
 test_.o: test.o
