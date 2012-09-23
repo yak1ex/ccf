@@ -4,15 +4,17 @@ LDFLAGS=
 
 CHROMIUM_DIR=../../chromium/sandbox/linux/seccomp-bpf
 
-limit: libseccomp_bpf_sa.a
-limit: limit.o test_.o syscall-names.o
+limit: limit.o libsandbox.a
 	$(CXX) -o $@ $^ ${LDFLAGS}
 
 test_.o: test.o
 	objcopy --redefine-sym main=main_ test.o test_.o
 
-libseccomp_bpf_sa.a: sandbox_bpf.o util.o verifier.o
+libsandbox.a: sandbox_bpf.o util.o verifier.o limit.o syscall-names.o
 	$(AR) r $@ $+
+
+#libseccomp_bpf_sa.a: sandbox_bpf.o util.o verifier.o
+#	$(AR) r $@ $+
 
 sandbox_bpf.o: $(CHROMIUM_DIR)/sandbox_bpf.cc
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
