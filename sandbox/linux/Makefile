@@ -1,6 +1,6 @@
 CFLAGS=-DSECCOMP_BPF_STANDALONE -Wall -Werror -Wextra -Wno-missing-field-initializers -I../../chromium
 CXXFLAGS=-std=gnu++0x -DSECCOMP_BPF_STANDALONE -Wall -Werror -Wextra -Wno-missing-field-initializers -I../../chromium
-LDFLAGS=
+LDFLAGS=-lrt
 
 CHROMIUM_DIR=../../chromium/sandbox/linux/seccomp-bpf
 

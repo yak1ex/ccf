@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <signal.h>
+#include <time.h>
 #include <sys/time.h>
 #include <sys/resource.h>
 
@@ -144,17 +145,29 @@ void xcpu(int sig)
 	exit(2);
 }
 
+void alrm(int sig)
+{
+	UNUSED(sig);
+	write(0, "\nCCF: Time(real) limit exceeded.\n", 33);
+	exit(3);
+}
+
 extern "C" int main_(int argc, char **argv);
 
 int main(int argc, char** argv)
 {
-	if(!getenv("SANDBOX_MEMLIMIT") || !getenv("SANDBOX_CPULIMIT")) return 250;
+	if(!getenv("SANDBOX_MEMLIMIT") || !getenv("SANDBOX_CPULIMIT") || !getenv("SANDBOX_RTLIMIT")) return 250;
 
 	struct sigaction sa;
 	sa.sa_handler = xcpu;
 	sigemptyset(&sa.sa_mask);
 	sa.sa_flags = 0;
 	sigaction(SIGXCPU, &sa, NULL);
+
+	sa.sa_handler = alrm;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;
+	sigaction(SIGALRM, &sa, NULL);
 
 	struct rlimit rl;
 	int memlimit = atoi(getenv("SANDBOX_MEMLIMIT"));
@@ -166,6 +179,13 @@ int main(int argc, char** argv)
 	if(cpulimit) {
 		rl.rlim_max = RLIM_INFINITY; rl.rlim_cur = cpulimit;
 		setrlimit(RLIMIT_CPU, &rl);
+	}
+	int rtlimit = atoi(getenv("SANDBOX_RTLIMIT"));
+	if(rtlimit) {
+		timer_t tid;
+		timer_create(CLOCK_REALTIME, NULL, &tid);
+		itimerspec its = { { 0, 0 }, { rtlimit, 0 } };
+		timer_settime(tid, 0, &its, NULL);
 	}
 
 	int proc_fd = open("/proc", O_RDONLY|O_DIRECTORY);
