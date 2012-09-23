@@ -60,7 +60,7 @@ public:
 
 int main(int argc, char** argv)
 {
-	if(!getenv("SANDBOX_IN") || !getenv("SANDBOX_OUT") || !getenv("SANDBOX_MEMLIMIT") || !getenv("SANDBOX_CPULIMIT")) return 250;
+	if(!getenv("SANDBOX_IN") || !getenv("SANDBOX_OUT") || !getenv("SANDBOX_MEMLIMIT") || !getenv("SANDBOX_CPULIMIT") || !getenv("SANDBOX_RTLIMIT")) return 250;
 
 	sandbox::BrokerServices* broker_service = sandbox::SandboxFactory::GetBrokerServices();
 	sandbox::ResultCode result;
@@ -104,8 +104,17 @@ int main(int argc, char** argv)
 
 		::ResumeThread(target_.hThread);
 
-		::CloseHandle(target_.hProcess);
 		::CloseHandle(target_.hThread);
+		int rtlimit = std::atoi(getenv("SANDBOX_RTLIMIT"));
+		if(WaitForSingleObject(target_.hProcess, rtlimit ? rtlimit * 1000 : INFINITE) == WAIT_TIMEOUT) {
+			TerminateProcess(target_.hProcess, 3);
+			WaitForSingleObject(target_.hProcess, INFINITE);
+			std::ofstream ofs(getenv("SANDBOX_OUT"), std::ios::out | std::ios::app);
+			ofs << "CCF: Time(real) limit exceeded." << std::endl;
+		}
+		DWORD dwRet;
+		if(GetExitCodeProcess(target_.hProcess, &dwRet)) ret = dwRet;
+		::CloseHandle(target_.hProcess);
 
 		broker_service->WaitForAllTargets();
 
