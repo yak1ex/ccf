@@ -224,15 +224,21 @@ DWORD WINAPI BrokerServicesBase::TargetEventsThread(PVOID param) {
           break;
         }
 
+        case JOB_OBJECT_MSG_PROCESS_MEMORY_LIMIT: {
+          {
+            AutoLock lock(&broker->lock_);
+            broker->memlimit_child_process_ids_.insert(reinterpret_cast<DWORD>(ovl));
+          }
+          break;
+        }
+
         case JOB_OBJECT_MSG_EXIT_PROCESS:
         case JOB_OBJECT_MSG_ABNORMAL_EXIT_PROCESS:
-        case JOB_OBJECT_MSG_END_OF_PROCESS_TIME:
-        case JOB_OBJECT_MSG_PROCESS_MEMORY_LIMIT: {
+        case JOB_OBJECT_MSG_END_OF_PROCESS_TIME: {
           {
             AutoLock lock(&broker->lock_);
             broker->child_process_ids_.erase(reinterpret_cast<DWORD>(ovl));
             if (JOB_OBJECT_MSG_END_OF_PROCESS_TIME == events) broker->timelimit_child_process_ids_.insert(reinterpret_cast<DWORD>(ovl));
-            if (JOB_OBJECT_MSG_PROCESS_MEMORY_LIMIT == events) broker->memlimit_child_process_ids_.insert(reinterpret_cast<DWORD>(ovl));
           }
           --target_counter;
           if (0 == target_counter)
