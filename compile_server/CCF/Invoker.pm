@@ -220,7 +220,7 @@ sub _obj_adjust
 	if($self->_is_sandbox($type)) {
 		my $obj2 = __mktemp(($self->_is_cygwin2native($type) || $OSNAME eq 'MSWin32') ? '.obj' : '.o');
 		my $result;
-		run_cmd(['objcopy', '--redefine-sym', '_main=_main_', $obj, $obj2], '<', '/dev/null', '>', \$result, '2>', \$result)->cb(sub {
+		run_cmd(['objcopy', '--redefine-sym', ($self->_config($type, 'sandbox') eq 'win' ? '_main=_main_' : 'main=main_'), $obj, $obj2], '<', '/dev/null', '>', \$result, '2>', \$result)->cb(sub {
 			my $rc = shift->recv;
 			if($rc) {
 				$result .= $self->_dec($type, $result);
