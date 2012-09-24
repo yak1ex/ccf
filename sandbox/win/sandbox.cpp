@@ -173,6 +173,6 @@ extern "C" int main_(int argc, char** argv)
 	args[2] = actualarg.c_str();
 	args[3] = 0;
 	_execvp(args[0], args); // Basically, no return
-	return 250;
+	return 251;
 }
 #endif
