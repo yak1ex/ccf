@@ -1,4 +1,4 @@
-<html>
+ <html>
 <!-- TOOD: Adjust UI theme -->
 <head>
 <title>C++ Compiler Farm</title>
@@ -14,6 +14,7 @@
 <div id="source-label"><label for="source">Source:</label></div>
 <textarea id="source" name="source">// Input source here
 #include <iostream>
+#include <boost/version.hpp>
 
 int main(void)
 {
@@ -29,6 +30,7 @@ int main(void)
 	std::cout << "     with C++0X mode" << std::endl;
 #endif
 #endif
+	std::cout << "BOOST_LIB_VERSION: " << BOOST_LIB_VERSION << std::endl;
 	return 0;
 }
 </textarea>

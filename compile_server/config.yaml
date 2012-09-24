@@ -46,6 +46,7 @@ cygwin:
       - /W3
       - /EHsc
       - /MDd
+      - '/Ic:\boost'
       - /c
       - /Fo$output
       - $input
@@ -87,6 +88,7 @@ cygwin:
       - /W3
       - /EHsc
       - /MDd
+      - '/Ic:\boost'
       - /c
       - /Fo$output
       - $input
@@ -131,6 +133,7 @@ cygwin:
       - /W3
       - /EHsc
       - /MDd
+      - '/Ic:\boost'
       - /c
       - /Fo$output
       - $input
@@ -201,7 +204,7 @@ cygwin-win:
         WindowsSdkDir: 'C:\Program Files\Microsoft SDKs\Windows\v6.0A\'
         DevEnvDir: 'C:\Program Files (x86)\Application\Microsoft Visual Studio 8\Common7\IDE'
       - PATH: '%VSINSTALLDIR%\Common7\IDE;%VCINSTALLDIR%\BIN;%VSINSTALLDIR%\Common7\Tools;%VSINSTALLDIR%\SDK\v2.0\bin;%FrameworkDir%\%FrameworkVersion%;%VCINSTALLDIR%\VCPackages;%PATH%'
-        INCLUDE: '%VCINSTALLDIR%\INCLUDE;%WindowsSdkDir%include;%INCLUDE%'
+        INCLUDE: '%VCINSTALLDIR%\INCLUDE;%WindowsSdkDir%include;C:\Program Files (x86)\Library\boost\boost_1_50;%INCLUDE%'
         LIB: '%VCINSTALLDIR%\LIB;%FrameworkSDKDir%\v2.0\lib;%WindowsSdkDir%lib;%LIB%'
         LIBPATH: '%FrameworkDir%\%FrameworkVersion%'
     sandbox-prearg:
@@ -242,7 +245,7 @@ cygwin-win:
         WindowsSdkDir: 'C:\Program Files\Microsoft SDKs\Windows\v6.0A\'
         DevEnvDir: 'C:\Program Files (x86)\Microsoft Visual Studio 9.0\Common7\IDE'
       - PATH: '%VSINSTALLDIR%\Common7\IDE;%VCINSTALLDIR%\BIN;%VSINSTALLDIR%\Common7\Tools;%FrameworkDir%\%Framework35Version%;%FrameworkDir%\%FrameworkVersion%;%VCINSTALLDIR%\VCPackages;%WindowsSdkDir%bin;%PATH%'
-        INCLUDE: '%VCINSTALLDIR%\INCLUDE;%WindowsSdkDir%include;%INCLUDE%'
+        INCLUDE: '%VCINSTALLDIR%\INCLUDE;%WindowsSdkDir%include;C:\Program Files (x86)\Library\boost\boost_1_50;%INCLUDE%'
         LIB: '%VCINSTALLDIR%\LIB;%WindowsSdkDir%lib;%LIB%'
         LIBPATH: '%FrameworkDir%\%Framework35Version%;%FrameworkDir%\%FrameworkVersion%;%VCINSTALLDIR%\LIB;%LIBPATH%'
     sandbox-prearg:
@@ -286,7 +289,7 @@ cygwin-win:
         FrameworkDir: %FrameworkDir32%
         FrameworkVersion: %FrameworkVersion32%
       - PATH: '%FrameworkDir%%Framework35Version%;%FrameworkDir%%FrameworkVersion%;%VSINSTALLDIR%Common7\Tools;%VCINSTALLDIR%BIN;%DevEnvDir%;%WindowsSdkDir%bin\NETFX 4.0 Tools;%WindowsSdkDir%bin;%PATH%'
-        INCLUDE: '%VCINSTALLDIR%INCLUDE;%WindowsSdkDir%include;%INCLUDE%'
+        INCLUDE: '%VCINSTALLDIR%INCLUDE;%WindowsSdkDir%include;C:\Program Files (x86)\Library\boost\boost_1_50;%INCLUDE%'
         LIB: '%VCINSTALLDIR%LIB;%WindowsSdkDir%lib;%LIB%'
         LIBPATH: '%FrameworkDir%%FrameworkVersion%;%FrameworkDir%%Framework35Version%;%VCINSTALLDIR%LIB;%LIBPATH%'
     sandbox-prearg:
