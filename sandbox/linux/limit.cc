@@ -96,7 +96,7 @@ extern const char* syscall_names[];
 // safe. This restricts the libary functions that we can call.
 static intptr_t defaultHandler(const struct arch_seccomp_data& data,
                                void *) {
-  static const char msg0[] = "Disallowed system call #";
+  static const char msg0[] = "CCF: Disallowed system call #";
   static const char msg1[] = "\n";
   char buf[sizeof(msg0) - 1 + 25 + sizeof(msg1) + 30]; // append name
 
