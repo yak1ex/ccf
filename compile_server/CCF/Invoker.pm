@@ -24,6 +24,7 @@ sub new
 	return bless {
 		_config => $arg{config},
 		(exists $arg{verbose} ? (_verbose => $arg{verbose}) : ()),
+		(exists $arg{debug} ? (_debug => $arg{debug}) : ()),
 	}, $class;
 }
 
@@ -42,6 +43,12 @@ sub _verbose
 {
 	my ($self) = @_;
 	return exists $self->{_verbose} && $self->{_verbose};
+}
+
+sub _debug
+{
+	my ($self) = @_;
+	return exists $self->{_debug} && $self->{_debug};
 }
 
 sub _is_cygwin2native
@@ -65,6 +72,7 @@ sub _prepare_env
 					$t = join ':', map { $_ = `cygpath -u '$_'`; s/\s*$//; $_ } split /;/, $t;
 #					$t .= ':' . $ENV{PATH};
 				}
+				$self->_debug and print "envset: $name => $t\n";
 				$ENV{$name} = $t;
 			}
 		}
@@ -94,6 +102,9 @@ sub _sandbox_env
 		$ENV{SANDBOX_MEMLIMIT} = $self->_config($type, "memlimit-$mode") // 0;
 		$ENV{SANDBOX_CPULIMIT} = $self->_config($type, "cpulimit-$mode") // 0;
 		$ENV{SANDBOX_RTLIMIT}  = $self->_config($type, "rtlimit-$mode")  // 0;
+
+		if($self->_debug) {
+			print "envset: $_ => $ENV{$_}\n" for(grep { exists $ENV{$_} } qw(SANDBOX_IN SANDBOX_OUT SANDBOX_CPULIMIT SANDBOX_MEMLIMIT SANDBOX_RTLIMIT));
 		}
 
 		$prev->() if defined $prev;
