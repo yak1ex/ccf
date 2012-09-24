@@ -29,8 +29,13 @@ sub new
 
 sub _config
 {
-	my ($self) = @_;
-	return $self->{_config};
+	my $self = shift;
+	return $self->{_config} if @_ == 0;
+
+	my ($type, $key) = @_;
+	return $self->_config->{$type}{$key} if exists $self->_config->{$type} && exists $self->_config->{$type}{$key};
+	return $self->_config->{GLOBAL}{$key} if exists $self->_config->{GLOBAL} && exists $self->_config->{GLOBAL}{$key};
+	return undef;
 }
 
 sub _verbose
@@ -47,7 +52,7 @@ sub _is_cygwin2native
 
 sub _prepare_env
 {
-	my ($self, $type) = @_;
+	my ($self, $type, $prev) = @_;
 
 	return sub {
 		foreach my $hash (@{$self->_config->{$type}{env}}) {
@@ -63,23 +68,101 @@ sub _prepare_env
 				$ENV{$name} = $t;
 			}
 		}
+		$prev->() if defined $prev;
 	};
 }
 
+sub _is_sandbox
+{
+	my ($self, $type) = @_;
+	my $res = $self->_config($type, 'sandbox');
+	return defined $res && ($res eq 'win' || $res eq 'linux');
+}
+
+sub _sandbox_env
+{
+	my ($self, $type, $mode, $prev, $output) = @_;
+
+	return sub {
+		if(defined $output) {
+			my $input = Cygwin::posix_to_win_path('/dev/null');
+			$output = Cygwin::posix_to_win_path($output);
+
+			$ENV{SANDBOX_IN} = $input;
+			$ENV{SANDBOX_OUT} = $output;
+		}
+		$ENV{SANDBOX_MEMLIMIT} = $self->_config($type, "memlimit-$mode") // 0;
+		$ENV{SANDBOX_CPULIMIT} = $self->_config($type, "cpulimit-$mode") // 0;
+		$ENV{SANDBOX_RTLIMIT}  = $self->_config($type, "rtlimit-$mode")  // 0;
+		}
+
+		$prev->() if defined $prev;
+	};
+}
+
+# TODO: Refactor
 sub _make_arg
 {
 	my ($self, $type, $mode, $input, $output, $capture) = @_;
-	my @arg;
-	if($self->_is_cygwin2native($type)) {
-		$input = Cygwin::posix_to_win_path($input);
-		$output = Cygwin::posix_to_win_path($output);
-		(@arg) = (on_prepare => $self->_prepare_env($type)) if exists($self->_config->{$type}{env});
-	}
+	my (@arg, $on_prepare);
 
 # TODO: error check
-	my @res = map { my $t = $_; $t =~ s/\$input/$input/; $t =~ s/\$output/$output/; $t; } @{$self->_config->{$type}{$mode}}; 
+	my @res;
+	if($mode eq 'execute') {
+		@res = ($input);
+	} else {
+		if($self->_is_cygwin2native($type)) {
+			$input = Cygwin::posix_to_win_path($input);
+			$output = Cygwin::posix_to_win_path($output);
+			$on_prepare = $self->_prepare_env($type, $on_prepare) if exists($self->_config->{$type}{env});
+		}
+		@res = map {
+			my $t = $_;
+			$t =~ s/\$output/$output/;
+			$t =~ s/\$input/$input/ && $mode eq 'link' && $self->_is_sandbox($type) && defined $self->_config($type, 'sandbox-prearg') ?
+			(@{$self->_config($type, 'sandbox-prearg')}, $t) : $t;
+		} @{$self->_config->{$type}{$mode}};
+	}
+	if($mode eq 'link' && $self->_is_sandbox($type) && defined $self->_config($type, 'sandbox-arg')) {
+		push @res, @{$self->_config($type, 'sandbox-arg')};
+	}
+# in/out setup in run_cmd arguments
+	if($self->_is_sandbox($type) && $self->_config($type, 'sandbox') eq 'win') {
+		push @arg, '<', '/dev/null';
+	} else {
+		push @arg, '<', '/dev/null', '>', $capture, '2>', $capture;
+	}
+	if($self->_is_sandbox($type)) {
+# in/out setup in sandbox environment variables
+		if($self->_config($type, 'sandbox') eq 'win') {
+			$$capture = __mktemp('.txt');
+			$on_prepare = $self->_sandbox_env($type, $mode, $on_prepare, $$capture);
+		} else {
+			$on_prepare = $self->_sandbox_env($type, $mode, $on_prepare);
+		}
+		unshift @res, $self->_config($type, 'sandbox-path') if $mode ne 'execute';
+	}
+# set on_prepare if any
+	push @arg, (on_prepare => $on_prepare) if defined $on_prepare;
+
 	$self->_verbose and print STDERR join(' ', @res), "\n";
-	return ([@res], '<', '/dev/null', '>', $capture, '2>', $capture, @arg);
+	return ([@res], @arg);
+}
+
+sub _recover_result
+{
+	my ($self, $type, $capture) = @_;
+	if($self->_is_sandbox($type) && $self->_config($type, 'sandbox') eq 'win') {
+		my $result;
+		local $/;
+		open my $fh, '<', $capture;
+		$result = <$fh>;
+		close $fh;
+		unlink $capture;
+		return $result;
+	} else {
+		return $capture;
+	}
 }
 
 sub _dec
@@ -108,6 +191,7 @@ sub compile
 
 	run_cmd($self->_make_arg($type, 'compile', $input, $obj, \$result))->cb(sub {
 		my $rc = shift->recv;
+		$result = $self->_recover_result($type, $result);
 		$result = $self->_dec($type, $result);
 		if($rc) {
 			$result .= sprintf "CCF: compilation failed by status: 0x%04X\n", $rc;
@@ -116,6 +200,28 @@ sub compile
 		unlink $input;
 		$callback->($rc, $result, $obj);
 	});
+}
+
+sub _obj_adjust
+{
+	my ($self, $type, $obj, $callback) = @_;
+
+	if($self->_is_sandbox($type)) {
+		my $obj2 = __mktemp(($self->_is_cygwin2native($type) || $OSNAME eq 'MSWin32') ? '.obj' : '.o');
+		my $result;
+		run_cmd(['objcopy', '--redefine-sym', '_main=_main_', $obj, $obj2], '<', '/dev/null', '>', \$result, '2>', \$result)->cb(sub {
+			my $rc = shift->recv;
+			if($rc) {
+				$result .= $self->_dec($type, $result);
+			} else {
+				$result = '';
+			}
+			unlink $obj;
+			$callback->($rc, $result, $obj2);
+		});
+	} else {
+		$callback->(0, '', $obj);
+	}
 }
 
 sub link
@@ -129,18 +235,31 @@ sub link
 			$callback->($rc, $result);
 			return;
 		}
-		my $result2;
-		my $out = __mktemp('.exe');
-
-		run_cmd($self->_make_arg($type, 'link', $obj, $out, \$result2))->cb(sub {
-			my $rc = shift->recv;
+		$self->_obj_adjust($type, $obj, sub {
+			my ($rc, $result2, $obj) = @_;
 			$result .= $self->_dec($type, $result2);
 			if($rc) {
-				$result .= sprintf "CCF: link failed by status: 0x%04X\n", $rc;
+				unlink $obj;
+				$result .= sprintf "CCF: Adjujstment of obj prior to link failed by status: 0x%04X\n", $rc;
+				$callback->($rc, $result);
+				return;
 			}
-			unlink $obj;
-			chmod 0711, $out if $self->_is_cygwin2native($type);
-			$callback->($rc, $result, $out);
+			my $result3;
+			my $out = __mktemp('.exe');
+			run_cmd($self->_make_arg($type, 'link', $obj, $out, \$result3))->cb(sub {
+				my $rc = shift->recv;
+				$result3 = $self->_recover_result($type, $result3);
+				$result .= $self->_dec($type, $result3);
+				if($rc) {
+					unlink $obj;
+					$result .= sprintf "CCF: link failed by status: 0x%04X\n", $rc;
+					$callback->($rc, $result);
+					return;
+				}
+				unlink $obj;
+				chmod 0711, $out if $self->_is_cygwin2native($type);
+				$callback->($rc, $result, $out);
+			});
 		});
 	}, 1);
 }
@@ -150,8 +269,9 @@ sub execute
 	my ($self, $type, $out, $callback) = @_;
 	my $result;
 
-	run_cmd([$out], '<', '/dev/null', '>', \$result, '2>', \$result)->cb(sub{
+	run_cmd($self->_make_arg($type, 'execute', $out, undef, \$result))->cb(sub {
 		my $rc = shift->recv;
+		$result = $self->_recover_result($type, $result);
 		if($rc) {
 			$result .= sprintf "CCF: execution failed by status: 0x%04X\n", $rc;
 		}
@@ -183,13 +303,14 @@ CCF::Invoker is a helper module for compiler invocation in C++ Compiler Farm.
 
   {
     GLOBAL => {
+      sandbox: I<sandbox-type>
       memlimit-compile: I<integer>
       memlimit-execute: I<integer>
       cpulimit-compile: I<integer>
       cpulimit-execute: I<integer>
       rtlimit-compile:  I<integer>
       rtlimit-execute:  I<integer>
-      sandbox: I<sandbox-type>
+      sandbox-path: I<string>
       sandbox-args: I<string>
     },
     <compilerkey> => {

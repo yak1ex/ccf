@@ -159,7 +159,7 @@ int main(int argc, char** argv)
 #ifdef SANDBOX_COMPILER
 extern "C" int main_(int argc, char** argv)
 {
-	const char* args[3];
+	const char* args[4];
 	std::string actualarg;
 	args[0] = "cmd.exe";
 	args[1] = "/c";
