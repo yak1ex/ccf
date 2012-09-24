@@ -36,7 +36,7 @@ our ($VERSION) = '0.01';
 
 my %opts;
 $Getopt::Std::STANDARD_HELP_VERSION = 1;
-getopts('hp:c:k:iI:vd', \%opts);
+getopts('hp:c:k:iI:vdr:', \%opts);
 pod2usage(-verbose => 1) if exists $opts{h};
 my $confname = $opts{c} // 'config.yaml';
 ! -f $confname and pod2usage(-msg => "\n$0: ERROR: Configuration file `$confname' does not exist.\n", -exitval => 1, -verbose => 0);
@@ -52,11 +52,14 @@ my $id = 0;
 tie $id, 'CCF::IDCounter', file => 'id.yaml', key => $confkey if ! exists $opts{i};
 $id = $opts{I} if exists $opts{I};
 
+my @ids;
+
 sub invoke
 {
 	my ($handle, $obj) = @_;
 
 	my $curid = $id++;
+	push @ids, $curid;
 
 	$status{$curid}{status} = REQUESTED;
 	$handle->push_write(storable => { id => $curid });
@@ -166,6 +169,20 @@ tcp_server undef, $port, sub {
 	$handle->push_read(@handler);
 };
 
+my $w;
+if(exists $opts{r}) {
+	my ($interval, $count) = split /:/, $opts{r};
+	$w = AE::timer $interval, $interval, sub {
+		print 'reaper called at ', scalar(localtime(AE::time)), ' with ', scalar(@ids), ".\n";
+		return if @ids <= $count;
+		my (@clear) = splice @ids, 0, @ids - $count;
+		foreach my $id (@clear) {
+			$opts{v} and print "reap $id\n";
+			delete $status{$id};
+		}
+	};
+}
+
 AnyEvent->condvar->recv;
 
 __END__
@@ -176,7 +193,7 @@ compile_server.pl - Compile server for C++ Compiler Farm
 
 =head1 SYNOPSIS
 
-compile_server.pl [-h] [-p I<port>] [-c I<filename>] [-k I<key>] [-i] [-I I<number>] [-v] [-d]
+compile_server.pl [-h] [-p I<port>] [-c I<filename>] [-k I<key>] [-i] [-I I<number>] [-r I<interval>:I<count>] [-v] [-d]
 
   # show help (this POD) and exit
   compile_server.pl -h
@@ -226,6 +243,11 @@ Don't use persistent ID management.
 =item -I I<number>
 
 Set initial ID as the specified number. Defaults to the value read from persistent ID if -i is not specified. Otherwise, defaults to 0.
+
+=item -r I<interval>:I<count>
+
+Reaper configuration. Reaper is repeatedly called with the specified interval (in seconds).
+When called, stored results are shrinked to the specified count. Newer entries are kept.
 
 =item -v
 
