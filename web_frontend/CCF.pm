@@ -112,6 +112,8 @@ my %dispatch = (
 	show => \&_show,
 );
 
+my %multikey = ( type => 1 );
+
 sub call
 {
 	my ($self, $env) = @_;
@@ -131,7 +133,7 @@ sub call
 			}
 		};
 
-		my (%obj) = map { my (@t) = $q->param($_); $_, @t == 1 ? $t[0] : [ @t ] } $q->param;
+		my (%obj) = map { my (@t) = $q->param($_); $_, exists $multikey{$_} ? [ @t ] : $t[0] } $q->param;
 
 		if(exists $dispatch{$obj{command}}) {
 			$dispatch{$obj{command}}->($self, \%obj, $responders);
