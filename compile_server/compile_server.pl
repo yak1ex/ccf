@@ -36,7 +36,7 @@ our ($VERSION) = '0.01';
 
 my %opts;
 $Getopt::Std::STANDARD_HELP_VERSION = 1;
-getopts('hp:c:k:iI:v', \%opts);
+getopts('hp:c:k:iI:vd', \%opts);
 pod2usage(-verbose => 1) if exists $opts{h};
 my $confname = $opts{c} // 'config.yaml';
 ! -f $confname and pod2usage(-msg => "\n$0: ERROR: Configuration file `$confname' does not exist.\n", -exitval => 1, -verbose => 0);
@@ -45,7 +45,7 @@ my $confkey = $opts{k} // $OSNAME;
 ! exists $conf->{$confkey} and pod2usage(-msg => "\n$0: ERROR: Configuration key `$confkey' does not exist in configuration file.\n", -exitval => 1, -verbose => 0);
 my $port = $opts{p} // 8888;
 $conf = $conf->{$confkey};
-my $invoker = CCF::Invoker->new(config => $conf, verbose => $opts{v});
+my $invoker = CCF::Invoker->new(config => $conf, verbose => $opts{v}, debug => $opts{d});
 
 my %status;
 my $id = 0;
@@ -176,7 +176,7 @@ compile_server.pl - Compile server for C++ Compiler Farm
 
 =head1 SYNOPSIS
 
-compile_server.pl [-h] [-p I<port>] [-c I<filename>] [-k I<key>] [-i] [-I I<number>] [-v]
+compile_server.pl [-h] [-p I<port>] [-c I<filename>] [-k I<key>] [-i] [-I I<number>] [-v] [-d]
 
   # show help (this POD) and exit
   compile_server.pl -h
@@ -191,7 +191,7 @@ compile_server.pl [-h] [-p I<port>] [-c I<filename>] [-k I<key>] [-i] [-I I<numb
   compile_server.pl -i -I 10
 
   # listen on port 8880 with logging
-  compile_server.pl -p 8880 -v
+  compile_server.pl -p 8880 -v -d
 
 =head1 DESCRIPTION
 
@@ -230,6 +230,10 @@ Set initial ID as the specified number. Defaults to the value read from persiste
 =item -v
 
 Enable verbose logging.
+
+=item -d
+
+Enable debug logging.
 
 =back
 
