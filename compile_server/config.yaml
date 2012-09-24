@@ -9,9 +9,10 @@ cygwin:
     cpulimit-compile: 10000000
     cpulimit-link: 10000000
     cpulimit-execute: 10000000
+# 5sec
+    rtlimit-compile: 5
+    rtlimit-link: 5
 # 2sec
-    rtlimit-compile: 2
-    rtlimit-link: 2
     rtlimit-execute: 2
     sandbox: win
     sandbox-path: ../sandbox/win/sandbox-compiler.exe
@@ -316,11 +317,27 @@ cygwin-win:
       - $input
 linux:
   GLOBAL:
-    memlimit-compile: 0
-    memlimit-execute: 0
-    cpulimit-compile: 0
-    cpulimit-execute: 0
-    sandbox: none
+# 48MiB
+    memlimit-compile: 50331648
+# 32MiB
+    memlimit-link: 33554432
+# 4MiB
+    memlimit-execute: 4194304
+# 1sec
+    cpulimit-compile: 1
+    cpulimit-link: 1
+    cpulimit-execute: 1
+# 10sec
+    rtlimit-compile: 10
+# 5sec
+    rtlimit-link: 5
+# 2sec
+    rtlimit-execute: 2
+    sandbox: linux
+    sandbox-path: ../sandbox/linux/sandbox-compiler
+    sandbox-arg:
+      - ../sandbox/linux/libsandbox.a
+      - -lrt
   gcc44:
     name: 'gcc 4.4.7'
     compile:
@@ -483,6 +500,8 @@ linux:
       - $input
   clang30:
     name: 'Ubuntu clang 3.0-6ubuntu3'
+# 48MiB
+    memlimit-link: 50331648
     compile:
       - clang++
       - -Wall
@@ -498,6 +517,8 @@ linux:
       - $input
   clang30-c++11:
     name: 'Ubuntu clang 3.0-6ubuntu3'
+# 48MiB
+    memlimit-link: 50331648
     compile:
       - clang++
       - -Wall
@@ -509,7 +530,6 @@ linux:
     link:
       - clang++
       - -Wall
-      - -std=c++0x
       - -o
       - $output
       - $input
