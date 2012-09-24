@@ -25,11 +25,6 @@ use constant {
 
 our ($VERSION) = '0.01';
 
-# TODO: clear command
-# TODO: FINISHED reaper
-# TODO: Optional log
-# TODO: Using sandbox
-
 #
 # Init
 #
