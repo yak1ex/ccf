@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+ <html>
+<!-- TOOD: Adjust UI theme -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.23/themes/cupertino/jquery-ui.css" rel="stylesheet" type="text/css">
+<link href="ccf.css" rel="stylesheet" type="text/css">
+<link rel="shortcut icon" href="favicon.ico" type="image/vnd.microsoft.icon" />
+<link rel="icon" href="favicon.ico" type="image/vnd.microsoft.icon" />
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.23/jquery-ui.min.js"></script>
+<script src="ccf.js" type="text/javascript"></script>
+<title>C++ Compiler Farm</title>
+</head>
+<body>
+<div id="header">
+<img src="ccf.png" alt="C++ Compiler Farm" title="C++ Compiler Farm" />
+<p id="owner-notice">ownered by <a href="http://twitter.com/yak_ex">@yak_ex</a></p>
+<p id="menu"><a href="ccf.html"><img src="home.png" alt="Home" title="Home" /></a><img src="FAQ.png" alt="FAQ" title="FAQ" /></p>
+</div>
+<p>
+<h1>FAQ</h1>
+<ul id="qa-list">
+<li><a href="#what_is_this">これは何？</a>
+<li><a href="#no_fee">無料？</a>
+<li><a href="#save_content">内容を保存して後から参照できないの？</a>
+<li><a href="#opensource">オープンソース？</a>
+<li><a href="#new_compiler">○○コンパイラはないの？</a>
+<li><a href="#boost">Boost は？</a>
+<li><a href="#port5000">なんでポート 5000 なの？</a>
+<li><a href="#message_including_CCF">CCF: ... とかいうメッセージが表示される</a>
+<li><a href="#unavailable">落ちてる？</a>
+</ul>
+</p>
+<p class="question"><a name="what_is_this">これは何？</a></p>
+<p class="answer"><a href="http://twitter.com/yak_ex">@yak_ex</a> による実験的サイトです。ソースを投げることで複数の C++ コンパイラでの実行結果が得られます。</p>
+<p class="question"><a name="no_fee">無料？</a></p>
+<p class="answer">とりあえず <a href="http://aws.amazon.com/jp/free/">Amazon Web Services 無料利用枠</a>(+$0.80/月)</a>で運用されています。無料利用枠終了後にどうするか、というかそれまでに運用し続けるのかも含めて未定です。</p>
+<p class="question"><a name="save_content">内容を保存して後から参照できないの？</a></p>
+<p class="answer">現状できません。Amazon S3 使ってみるぜプロジェクト発動によって実装してみるつもりはあります。</p>
+<p class="question"><a name="opensource">オープンソース？</a></p>
+<p class="answer">はい。自分の書いた部分については <a href="http://www.boost.org/users/license.html">Boost Software License, Version 1.0</a> です。<a href="http://www.chromium.org/Home">The Chromium Project の Chromium</a> から一部ソースを改変して使用していますが、その部分はオリジナルと同じライセンスになります。ソースコードについては <a href="https://github.com/yak1ex/ccf">Github</a> に置いてあります。</p>
+<p class="question"><a name="new_compiler">○○コンパイラはないの？</a></p>
+<p class="answer">とりあえず無償使用可能として公開されてるものが対象になります。VC7 (.NET 2003) は使用している sandbox ライブラリがそのままではコンパイルできないのでとりあえずパス。VC11 (2012) はまぁ追々。clang の別バージョン等 Linux 上で走るものについては Ubuntu 12.04 でバージョン共存可能なパッケージがあれば早いと思います。</p>
+<p class="question"><a name="boost">Boost は？</a></p>
+<p class="answer">ライブラリのビルドをしていないのでヘッダオンリーであれば 1.46.1 が使用可能です。1.46.1 なのは Ubuntu のパッケージに合わせただけなのでファイルを差し替えれば更新は可能です。反響次第でしょうか。</p>
+<p class="question"><a name="port5000">なんでポート 5000 なの？</a></p>
+<p class="answer"><a href="http://search.cpan.org/dist/Plack/">Plack</a> のデフォルトのままです。まぁ 80 番よりはアタック少ないかも、というのもあります。</p>
+<p class="question"><a name="message_including_CCF">CCF: ... とかいうメッセージが表示される</a></p>
+<p class="answer">コンパイル/実行中のエラー/制限超過です。とりあえず、かなりぎりぎりの制限設定にしてあるためちょっと混んでたり複雑だったりするとすぐに制限超過に引っかかるかもしれません。その辺は今後調整できればと思っています。CCF を含むメッセージとしては以下のものがあります。</p>
+<ul class="list-inside">
+<li>実行時エラー<br>コンパイラの実行等でのエラーです。上位 8bit が戻り値、下位 8bit がシグナルの情報になります。
+<ul>
+<li>CCF: compilation failed by status: 0xXXXX
+<li>CCF: Adjujstment of obj prior to link failed by status: 0xXXXX
+<li>CCF: execution failed by status: 0xXXXX
+<li>CCF: link failed by status: 0xXXXX<br>
+</ul>
+<li>サイズ制限<br>現状、ソース、出力とも 10KiB 制限としています。
+<ul>
+<li>CCF: Source size is over 10KiB
+<li>CCF: Output size is over 10KiB
+</ul>
+<li>その他リソース制限<br>実時間、メモリ、CPU時間で制限があります。
+<ul>
+<li>CCF: Time(real) limit exceeded
+<li>CCF: Memory limit exceeded
+<li>CCF: Time limit exceeded
+</ul>
+<li>システムコール制限<br>Linux 上だと使用可能なシステムコールが制限されています。ここも厳しめなので要調整かとは思っています。なお、Windows 上では制限が無いわけではなくてメッセージ無しで失敗し処理が継続します。
+<ul>
+<li>CCF: Disallowed system call #...
+</ul>
+</ul>
+<p class="question"><a name="unavailable">落ちてる？</a></p>
+<p class="answer">まぁそういう事もあります、多分、いや結構？ 個人による実験的サイトということでご容赦ください。おかしいなという場合には <a href="http://twitter.com/yak_ex">@yak_ex</a> などにご連絡頂ければ。</p>
+</body>
+</html>
