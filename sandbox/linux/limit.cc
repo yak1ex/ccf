@@ -15,6 +15,9 @@ using playground2::Sandbox;
 
 #define ERR EPERM
 
+#ifdef SANDBOX_COMPILER
+static pid_t child = 0;
+#else
 // POSIX doesn't define any async-signal safe function for converting
 // an integer to ASCII. We'll have to define our own version.
 // itoa_r() converts a (signed) integer to ASCII. It returns "buf", if the
@@ -137,10 +140,14 @@ static Sandbox::ErrorCode evaluator(int sysno) {
 		return Sandbox::ErrorCode(defaultHandler, NULL);
 	}
 }
+#endif
 
 void xcpu(int sig)
 {
 	UNUSED(sig);
+#ifdef SANDBOX_COMPILER
+	kill(child, SIGKILL);
+#endif
 	write(0, "\nCCF: Time limit exceeded.\n", 27);
 	exit(2);
 }
@@ -148,6 +155,9 @@ void xcpu(int sig)
 void alrm(int sig)
 {
 	UNUSED(sig);
+#ifdef SANDBOX_COMPILER
+	kill(child, SIGKILL);
+#endif
 	write(0, "\nCCF: Time(real) limit exceeded.\n", 33);
 	exit(3);
 }
@@ -188,6 +198,17 @@ int main(int argc, char** argv)
 		timer_settime(tid, 0, &its, NULL);
 	}
 
+#ifdef SANDBOX_COMPILER
+	UNUSED(argc);
+	if((child = fork())) {
+		int status = 0;
+		wait(&status);
+		return WEXITSTATUS(status);
+	} else {
+		execvp(argv[1], argv+1);
+		return 251; // Not reached, basically.
+	}
+#else
 	int proc_fd = open("/proc", O_RDONLY|O_DIRECTORY);
 	if(Sandbox::supportsSeccompSandbox(proc_fd) != Sandbox::STATUS_AVAILABLE) {
 		perror("sandbox");
@@ -198,4 +219,5 @@ int main(int argc, char** argv)
 	Sandbox::startSandbox();
 
 	return main_(argc, argv);
+#endif
 }
