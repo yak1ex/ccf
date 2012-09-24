@@ -1,10 +1,20 @@
 cygwin:
   GLOBAL:
-    memlimit-compile: 0
-    memlimit-execute: 0
-    cpulimit-compile: 0
-    cpulimit-execute: 0
+# 32MiB
+    memlimit-compile: 33554432
+    memlimit-link: 33554432
+# 4MiB
+    memlimit-execute: 4194304
+# 1sec
+    cpulimit-compile: 10000000
+    cpulimit-link: 10000000
+    cpulimit-execute: 10000000
+# 2sec
+    rtlimit-compile: 2
+    rtlimit-link: 2
+    rtlimit-execute: 2
     sandbox: win
+    sandbox-path: ../sandbox/win/sandbox-compiler.exe
   'vc 8':
     name: '2005 / VC8 / 14.00.50727.42'
     cygwin2native: true
@@ -20,11 +30,21 @@ cygwin:
         INCLUDE: '%VCINSTALLDIR%\INCLUDE;%WindowsSdkDir%include;%INCLUDE%'
         LIB: '%VCINSTALLDIR%\LIB;%FrameworkSDKDir%\v2.0\lib;%WindowsSdkDir%lib;%LIB%'
         LIBPATH: '%FrameworkDir%\%FrameworkVersion%'
+    sandbox-prearg:
+      - '..\sandbox\win\vc8\sandbox.obj'
+    sandbox-arg:
+      - '..\sandbox\win\vc8\sandbox-win-standalone.lib'
+      - advapi32.lib
+      - user32.lib
+      - shell32.lib
+      - dbghelp.lib
+      - psapi.lib
     compile:
       - cl
       - /nologo
       - /W3
       - /EHsc
+      - /MDd
       - /c
       - /Fo$output
       - $input
@@ -33,6 +53,7 @@ cygwin:
       - /nologo
       - /W3
       - /EHsc
+      - /MDd
       - /Fe$output
       - $input
   'vc 9':
@@ -50,11 +71,21 @@ cygwin:
         INCLUDE: 'C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\INCLUDE;%WindowsSdkDir%include;%INCLUDE%'
         LIB: 'C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\LIB;%WindowsSdkDir%lib;%LIB%'
         LIBPATH: 'C:\Windows\Microsoft.NET\Framework\v3.5;C:\Windows\Microsoft.NET\Framework\v2.0.50727;C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\LIB;%LIBPATH%'
+    sandbox-prearg:
+      - '..\sandbox\win\vc9\sandbox.obj'
+    sandbox-arg:
+      - '..\sandbox\win\vc9\sandbox-win-standalone.lib'
+      - advapi32.lib
+      - user32.lib
+      - shell32.lib
+      - dbghelp.lib
+      - psapi.lib
     compile:
       - cl
       - /nologo
       - /W3
       - /EHsc
+      - /MDd
       - /c
       - /Fo$output
       - $input
@@ -63,6 +94,7 @@ cygwin:
       - /nologo
       - /W3
       - /EHsc
+      - /MDd
       - /Fe$output
       - $input
   vc10:
@@ -79,15 +111,25 @@ cygwin:
         VS100COMNTOOLS: '%VSINSTALLDIR%Common7\Tools\'
         FrameworkDir: %FrameworkDir32%
         FrameworkVersion: %FrameworkVersion32%
-      - PATH: '%FrameworkDir%%Framework35Version%;%FrameworkDir%%FrameworkVersion%;%VSINSTALLDIR%Common7\Tools;%VCINSTALLDIR%BIN;%DevEnvDir%;%WindowsSdkDir%bin\NETFX 4.0 Tools;%WindowsSdkDir%bin;'
+      - PATH: '%FrameworkDir%%Framework35Version%;%FrameworkDir%%FrameworkVersion%;%VSINSTALLDIR%Common7\Tools;%VCINSTALLDIR%BIN;%DevEnvDir%;%WindowsSdkDir%bin\NETFX 4.0 Tools;%WindowsSdkDir%bin;%PATH%'
         INCLUDE: '%VCINSTALLDIR%INCLUDE;%WindowsSdkDir%include;%INCLUDE%'
         LIB: '%VCINSTALLDIR%LIB;%WindowsSdkDir%lib;%LIB%'
         LIBPATH: '%FrameworkDir%%FrameworkVersion%;%FrameworkDir%%Framework35Version%;%VCINSTALLDIR%LIB;%LIBPATH%'
+    sandbox-prearg:
+      - '..\sandbox\win\vc10\sandbox.obj'
+    sandbox-arg:
+      - '..\sandbox\win\vc10\sandbox-win-standalone.lib'
+      - advapi32.lib
+      - user32.lib
+      - shell32.lib
+      - dbghelp.lib
+      - psapi.lib
     compile:
       - cl
       - /nologo
       - /W3
       - /EHsc
+      - /MDd
       - /c
       - /Fo$output
       - $input
@@ -96,6 +138,7 @@ cygwin:
       - /nologo
       - /W3
       - /EHsc
+      - /MDd
       - /Fe$output
       - $input
 cygwin-test:
