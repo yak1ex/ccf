@@ -7,14 +7,15 @@ use AnyEvent;
 use AnyEvent::Handle;
 use AnyEvent::Socket; # tcp_server
 use AnyEvent::Util; # run_cmd
+use AnyEvent::Net::Amazon::S3::Client;
 
 use English;
 use YAML;
 use Getopt::Std;
 use Pod::Usage;
 
-use CCF::IDCounter;
 use CCF::Invoker;
+use CCF::S3Storage;
 
 use constant {
 	REQUESTED => 1,
@@ -31,76 +32,97 @@ our ($VERSION) = '0.01';
 
 my %opts;
 $Getopt::Std::STANDARD_HELP_VERSION = 1;
-getopts('hp:c:k:iI:vdr:', \%opts);
+getopts('hp:c:k:vd', \%opts);
 pod2usage(-verbose => 1) if exists $opts{h};
 my $confname = $opts{c} // 'config.yaml';
 ! -f $confname and pod2usage(-msg => "\n$0: ERROR: Configuration file `$confname' does not exist.\n", -exitval => 1, -verbose => 0);
 my $conf = YAML::LoadFile($confname);
+my $bucketname = $conf->{GLOBAL}{bucket};
 my $confkey = $opts{k} // $OSNAME;
 ! exists $conf->{$confkey} and pod2usage(-msg => "\n$0: ERROR: Configuration key `$confkey' does not exist in configuration file.\n", -exitval => 1, -verbose => 0);
 my $port = $opts{p} // 8888;
 $conf = $conf->{$confkey};
 my $invoker = CCF::Invoker->new(config => $conf, verbose => $opts{v}, debug => $opts{d});
 
-my %status;
-my $id = 0;
-tie $id, 'CCF::IDCounter', file => 'id.yaml', key => $confkey if ! exists $opts{i};
-$id = $opts{I} if exists $opts{I};
-
-my @ids;
+my $storage = CCF::S3Storage->new(bucket => $bucketname);
 
 sub invoke
 {
 	my ($handle, $obj) = @_;
 
-	my $curid = $id++;
-	push @ids, $curid;
+	my $curid = $obj->{id};
 
-	$status{$curid}{status} = REQUESTED;
+	my $cv = $storage->update_compile_status_async($curid, {
+		id => $curid,
+		status => REQUESTED,
+	});
 	$handle->push_write(storable => { id => $curid });
+$cv->cb(sub {
 # TODO: Other sanity check
 	if(!exists $obj->{type} || !exists $conf->{$obj->{type}}) {
-		$status{$curid}{status} = FINISHED;
-		$status{$curid}{compile} = 'CCF: Unknown compiler type.';
+		$storage->update_compile_status_async($curid, {
+			status => FINISHED,
+			compile => 'CCF: Unknown compiler type.',
+		});
 		return;
 	}
 	if(exists $obj->{source} && length $obj->{source} > 10 * 1024) {
-		$status{$curid}{status} = FINISHED;
-		$status{$curid}{compile} = 'CCF: Source size is over 10KiB.';
+		$storage->update_compile_status_async($curid, {
+			status => FINISHED,
+			compile => 'CCF: Source size is over 10KiB.',
+		});
 		return;
 	}
 
-	$status{$curid}{status} = COMPILING;
+	$cv = $storage->update_compile_status_async($curid, {
+		status => COMPILING
+	});
 	if($obj->{execute} eq 'true') {
 		$invoker->link($obj->{type}, $obj->{source}, sub {
 			my ($rc, $result, $out) = @_;
+		$cv->cb(sub {
 			$opts{v} and print STDERR "---compile begin---\n$result---compile  end ---\n";
-			$status{$curid}{compile} = $result;
 			if($rc) {
-				$status{$curid}{status} = FINISHED;
+				$storage->update_compile_status_async($curid, {
+					status => FINISHED,
+					compile => $result,
+				});
 			} else {
-				$status{$curid}{status} = RUNNING;
+				$cv = $storage->update_compile_status_async($curid, {
+					status => RUNNING,
+					compile => $result,
+				});
 				$invoker->execute($obj->{type}, $out, sub{
 					my ($rc, $result) = @_;
+				$cv->cb(sub {
 					if(length $result > 10 * 1024) {
 						$result = substr $result, 0, 10 * 1024;
 						$result .= 'CCF: Output size is over 10KiB.';
 					}
 					$opts{v} and print STDERR "---execute begin---\n$result---execute  end ---\n";
-					$status{$curid}{execute} = $result;
 					unlink $out;
-					$status{$curid}{status} = FINISHED;
+					$storage->update_compile_status_async($curid, {
+						status => FINISHED,
+						execute => $result,
+					});
+				});
 				});
 			}
+		});
 		});
 	} else {
 		$invoker->compile($obj->{type}, $obj->{source}, sub {
 			my ($rc, $result) = @_;
+		$cv->cb(sub {
 			$opts{v} and print STDERR "---compile begin---\n$result---compile  end ---\n";
-			$status{$curid}{compile} = $result;
-			$status{$curid}{status} = FINISHED;
+			$storage->update_compile_status_async($curid, {
+				status => FINISHED,
+				compile => $result,
+			});
+		});
 		});
 	}
+});
 }
 
 sub status
@@ -108,18 +130,25 @@ sub status
 	my ($handle, $obj) = @_;
 
 # TODO: check unknown ID
-	$handle->push_write(storable => { id => $obj->{id}, status => $status{$obj->{id}}{status} });
+	$storage->get_compile_status_async($obj->{id})->cb(sub {
+		my $status = shift->recv;
+		$status = { status => 0 } if ! defined $status;
+		$handle->push_write(storable => { id => $obj->{id}, status => $status->{status} });
+	});
 }
 
 sub result
 {
 	my ($handle, $obj) = @_;
 
-	if(exists $status{$obj->{id}}{execute}) {
-		$handle->push_write(storable => { id => $obj->{id}, execute => $status{$obj->{id}}{execute}, compile => $status{$obj->{id}}{compile} });
-	} else {
-		$handle->push_write(storable => { id => $obj->{id}, compile => $status{$obj->{id}}{compile} });
-	}
+	$storage->get_compile_status_async($obj->{id})->cb(sub {
+		my $status = shift->recv;
+		if(exists $status->{execute}) {
+			$handle->push_write(storable => { id => $obj->{id}, execute => $status->{execute}, compile => $status->{compile} });
+		} else {
+			$handle->push_write(storable => { id => $obj->{id}, compile => $status->{compile} });
+		}
+	});
 }
 
 sub list
@@ -163,20 +192,6 @@ tcp_server undef, $port, sub {
 	});
 	$handle->push_read(@handler);
 };
-
-my $w;
-if(exists $opts{r}) {
-	my ($interval, $count) = split /:/, $opts{r};
-	$w = AE::timer $interval, $interval, sub {
-		print 'reaper called at ', scalar(localtime(AE::time)), ' with ', scalar(@ids), ".\n";
-		return if @ids <= $count;
-		my (@clear) = splice @ids, 0, @ids - $count;
-		foreach my $id (@clear) {
-			$opts{v} and print "reap $id\n";
-			delete $status{$id};
-		}
-	};
-}
 
 AnyEvent->condvar->recv;
 
@@ -230,19 +245,6 @@ Configuration YAML file name. Defaults to config.yaml.
 
 Configuration key. The key must exist in the configuration file.
 Defaults to $OSNAME.
-
-=item -i
-
-Don't use persistent ID management.
-
-=item -I I<number>
-
-Set initial ID as the specified number. Defaults to the value read from persistent ID if -i is not specified. Otherwise, defaults to 0.
-
-=item -r I<interval>:I<count>
-
-Reaper configuration. Reaper is repeatedly called with the specified interval (in seconds).
-When called, stored results are shrinked to the specified count. Newer entries are kept.
 
 =item -v
 

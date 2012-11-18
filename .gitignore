@@ -31,3 +31,4 @@ ipch/
 
 # Files depending on server
 compile_server/id.yaml
+web_frontend/id.yaml

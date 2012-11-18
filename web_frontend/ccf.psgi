@@ -1,5 +1,7 @@
 #!/usr/bin/env plackup
 
+use lib qw(../lib);
+
 use Plack::Builder;
 use Plack::App::WrapCGI;
 use Plack::App::File;
@@ -10,11 +12,11 @@ use YAML;
 my $conf = YAML::LoadFile('config.yaml');
 
 builder {
-# Because recursive AnyEvent is prohibited, execute option is required
-	mount '/ccf.cgi' => CCF->new(backend => $conf);
+	mount '/ccf.cgi' => CCF->new(bucket => $conf->{bucket}, backend => $conf->{backend});
 	mount '/' => Plack::App::File->new(root => './static');
 };
 __END__
+
 =head1 NAME
 
 ccf.psgi - .psgi configuration for C++ Compiler Farm
@@ -26,6 +28,7 @@ ccf.psgi - .psgi configuration for C++ Compiler Farm
 =head1 DESCRIPTION
 
 ccf.psgi is a .psgi configuration for C++ Compiler Farm.
+Configutaion is read from F<config.yaml>.
 
 =head1 AUTHOR
 

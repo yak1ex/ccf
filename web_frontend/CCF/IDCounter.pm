@@ -25,7 +25,7 @@ sub TIESCALAR
 	return bless {
 		_file => $arg{file},
 		_key => $arg{key},
-		_obj => -f $arg{file} ? YAML::LoadFile($arg{file}) : {},
+		_obj => (-f $arg{file} ? YAML::LoadFile($arg{file}) : {}),
 	}, $class;
 }
 
@@ -48,6 +48,7 @@ sub STORE
 }
 1;
 __END__
+
 =head1 NAME
 
 CCF::IDCounter - Tied Persistent ID counter

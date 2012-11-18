@@ -1,4 +1,6 @@
+bucket: cpp-compiler-farm-test
 # local
--
-  - '127.0.0.1'
-  - 8888
+backend:
+  -
+    - '127.0.0.1'
+    - 8888

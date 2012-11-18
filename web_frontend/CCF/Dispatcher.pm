@@ -8,8 +8,6 @@ use AnyEvent::Handle;
 
 use Carp;
 
-use CCF::Base64Like;
-
 sub new
 {
 	my ($self, %arg) = @_;
@@ -78,28 +76,11 @@ sub _idx
 	return $self->{_type}{$type}[1][0]; # TODO: Currently, always return the first entry.
 }
 
-sub handle_and_idx
+sub handle
 {
 	my ($self, $key) = @_;
 	my $idx = $self->_idx($key);
-	return ($self->_handle($idx), $idx);
-}
-
-sub handle_and_pre_adjust_id
-{
-	my ($self, $obj) = @_;
-	croak('id must exist in hash keys') if ! exists $obj->{id};
-	my $idx = CCF::Base64Like::decode(substr($obj->{id}, 0, 1));
-	$obj->{id} = CCF::Base64Like::decode(substr($obj->{id}, 1));
-	return ($self->_handle($idx), $idx);
-}
-
-sub post_adjust_id
-{
-	my ($self, $obj, $idx) = @_;
-	if(exists $obj->{id}) {
-		$obj->{id} = CCF::Base64Like::encode($idx) . CCF::Base64Like::encode($obj->{id});
-	}
+	return $self->_handle($idx);
 }
 
 sub list
@@ -114,6 +95,7 @@ sub list
 
 1;
 __END__
+
 =head1 NAME
 
 CCF::Dispatcher - C++ Compiler Farm backend dispatcher module

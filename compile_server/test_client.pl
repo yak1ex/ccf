@@ -8,6 +8,7 @@ use AnyEvent::Handle;
 use Getopt::Std;
 
 # TODO: type should be checked with configuration
+# TODO: Use Pod::Usage
 
 sub usage
 {
@@ -22,6 +23,7 @@ option:
 	-h: Show this help
 	-t <type>: Target type (required)
 	-c: compile only
+	-i <ID>: compilation ID
 	-l: List types from configuration file
 	-v: Verbose
 
@@ -31,7 +33,7 @@ EOF
 }
 
 my %opts;
-getopts('ht:clv', \%opts);
+getopts('ht:ci:lv', \%opts);
 
 usage if exists $opts{h};
 if(exists $opts{l}) {
@@ -47,6 +49,7 @@ if(exists $opts{l}) {
 	exit;
 }
 usage('-t option must be specified.') if ! exists $opts{t};
+usage('-i option must be specified.') if ! exists $opts{i};
 
 my $cv = AnyEvent->condvar;
 
@@ -55,7 +58,7 @@ my $handle = AnyEvent::Handle->new(
 #	on_drain => sub { $cv->send },
 );
 
-$handle->push_write(json => {command=>'invoke',type=>$opts{t},execute=>(exists $opts{c} ? 'false' : 'true'),source=><<'EOF'});
+$handle->push_write(storable => {command=>'invoke',type=>$opts{t},id=>$opts{i},execute=>(exists $opts{c} ? 'false' : 'true'),source=><<'EOF'});
 #include <iostream>
 
 int main(void)
@@ -77,35 +80,35 @@ int main(void)
 }
 EOF
 my $is_compile_output = 0;
-$handle->push_read(json => sub {
-	my ($handle, $json) = @_;
-	print "ID $json->{id}\n";
-	$handle->push_write(json => {command=>'status',id=>$json->{id}});
+$handle->push_read(storable => sub {
+	my ($handle, $obj) = @_;
+	print "ID $obj->{id}\n";
+	$handle->push_write(storable => {command=>'status',id=>$obj->{id}});
 	my @handler; @handler = (
-		json => sub {
-			my ($handle, $json) = @_;
-			if($json->{status} == 4) {
-				$handle->push_write(json => {command=>'result',id=>$json->{id}});
-				$handle->push_read(json => sub {
-					my ($handle, $json) = @_;
-					print "---compile---\n$json->{compile}---compile---\n" if $is_compile_output == 0;
-					print "---execute---\n$json->{execute}---execute---\n";
+		storable => sub {
+			my ($handle, $obj) = @_;
+			if($obj->{status} == 4) {
+				$handle->push_write(storable => {command=>'result',id=>$obj->{id}});
+				$handle->push_read(storable => sub {
+					my ($handle, $obj) = @_;
+					print "---compile---\n$obj->{compile}---compile---\n" if $is_compile_output == 0;
+					print "---execute---\n$obj->{execute}---execute---\n";
 					$cv->send;
 				});
-			} elsif($json->{status} == 3 && $is_compile_output == 0) {
+			} elsif($obj->{status} == 3 && $is_compile_output == 0) {
 				$is_compile_output = 1;
-				$handle->push_write(json => {command=>'result',id=>$json->{id}});
-				$handle->push_read(json => sub {
-					my ($handle, $json) = @_;
-					print "---compile---\n$json->{compile}---compile---\n";
-					$handle->push_write(json => {command=>'status',id=>$json->{id}});
+				$handle->push_write(storable => {command=>'result',id=>$obj->{id}});
+				$handle->push_read(storable => sub {
+					my ($handle, $obj) = @_;
+					print "---compile---\n$obj->{compile}---compile---\n";
+					$handle->push_write(storable => {command=>'status',id=>$obj->{id}});
 					$handle->push_read(@handler);
 				});
 			} else {
 				# TODO: async
-				print "ID $json->{id} $json->{status}\n";
+				print "ID $obj->{id} $obj->{status}\n";
 				sleep 1;
-				$handle->push_write(json => {command=>'status',id=>$json->{id}});
+				$handle->push_write(storable => {command=>'status',id=>$obj->{id}});
 				$handle->push_read(@handler);
 			}
 		}
@@ -154,6 +157,10 @@ Show compiler type list and exit
 =item -t I<type>
 
 MANDATORY. Compiler type key. You can get compiler type list by specifying -l.
+
+=item -I I<ID>
+
+MANDATORY. Compilation ID.
 
 =item -c
 

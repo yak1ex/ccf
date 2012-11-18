@@ -1,3 +1,5 @@
+GLOBAL:
+    bucket: cpp-compiler-farm-test
 cygwin:
   GLOBAL:
 # 32MiB

@@ -14,6 +14,9 @@ use JSON;
 use Encode qw(decode);
 
 use CCF::Dispatcher;
+use CCF::Base64Like;
+use CCF::IDCounter;
+use CCF::S3Storage;
 
 # TODO: Error check
 
@@ -21,55 +24,80 @@ sub new
 {
 	my ($self, %arg) = @_;
 	my $class = ref($self) || $self;
+
+	my $id = 0;
+	tie $id, 'CCF::IDCounter', file => 'id.yaml', key => 'ccf';
+
 	return bless {
-		_dispatcher => CCF::Dispatcher->new(backend => $arg{backend})
+		_DISPATCHER => CCF::Dispatcher->new(backend => $arg{backend}),
+		_STORAGE => CCF::S3Storage->new(bucket => $arg{bucket}),
+		_ID => \$id,
 	}, $class;
 }
 
 sub dispatcher
 {
 	my ($self) = @_;
-	return $self->{_dispatcher};
+	return $self->{_DISPATCHER};
+}
+
+sub storage
+{
+	my ($self) = @_;
+	return $self->{_STORAGE};
+}
+
+sub id
+{
+	my ($self) = @_;
+	return $self->{_ID};
 }
 
 sub _show
 {
 	my ($self, $obj, $responders) = @_;
 
-	my ($handle, $idx) = $self->dispatcher->handle_and_pre_adjust_id($obj);
 	my $id = $obj->{id};
-	$handle->push_write(storable => { command => 'status', id => $id });
-	$handle->push_read(storable => sub {
-		my ($handle, $obj) = @_;
+print STDERR "SHOW_ID: $id\n";
+	$self->storage->get_compile_status_async($id)->cb(sub {
+		my $obj = shift->recv;
 		my $html;
 		my $status = $obj->{status};
 		given($status) {
 			when (1)     { $responders->{html}('<html><body>Invoked.</body></html>'); }
 			when (2)     { $responders->{html}('<html><body>Compiling.</body></html>'); }
 			when ([3,4]) {
-				$handle->push_write(storable => { command => 'result', id => $id });
-				$handle->push_read(storable => sub {
-					my ($handle, $obj) = @_;
 # TODO: HTML escape
 # TODO: Apply CSS
-					if($status == 3 || ! exists $obj->{execute}) {
-						my $compile = $obj->{compile};
-						$compile = '&nbsp;' if $compile eq '';
-						$responders->{html}(<<EOF);
+				if($status == 3 || ! exists $obj->{execute}) {
+					my $compile = $obj->{compile};
+					$compile = '&nbsp;' if $compile eq '';
+					$responders->{html}(<<EOF);
 <html><body><p>Compiled.</p><p>compilation result:</p><pre style="background:#fff;">$compile</pre></body></html>
 EOF
-					} else {
-						my $compile = $obj->{compile};
-						$compile = '&nbsp;' if $compile eq '';
-						my $execute = $obj->{execute};
-						$execute = '&nbsp;' if $execute eq '';
-						$responders->{html}(<<EOF);
+				} else {
+					my $compile = $obj->{compile};
+					$compile = '&nbsp;' if $compile eq '';
+					my $execute = $obj->{execute};
+					$execute = '&nbsp;' if $execute eq '';
+					$responders->{html}(<<EOF);
 <html><body><p>Executed.</p><p>compilation result:</p><pre style="background:#fff;">$compile</pre><p>execution result:</p><pre style="background:#fff;">$execute</pre></body></html>
 EOF
-					}
-				});
+				}
 			}
 		}
+	});
+}
+
+sub _status
+{
+	my ($self, $obj, $responders) = @_;
+
+	my $id = $obj->{id};
+print STDERR "STATUS_ID: $id\n";
+	$self->storage->get_compile_status_async($id)->cb(sub {
+		my $obj = shift->recv;
+		$responders->{json}($obj);
 	});
 }
 
@@ -79,6 +107,7 @@ sub _list
 	$responders->{json}($self->dispatcher->list);
 }
 
+# TODO: store mapping between an invocation and compilations
 sub _invoke
 {
 	my ($self, $obj, $responders) = @_;
@@ -91,14 +120,15 @@ sub _invoke
 	});
 	foreach my $key (@{$obj->{type}}) {
 		$cv->begin;
-		my ($handle, $idx) = $self->dispatcher->handle_and_idx($key);
+		my $handle = $self->dispatcher->handle($key);
+		my $id = CCF::Base64Like::encode(${$self->id}++);
 		$handle->push_write(storable => {
 			%$obj,
 			type => $key,
+			id => $id,
 		});
 		$handle->push_read(storable => sub {
 			my ($handle, $obj) = @_;
-			$self->dispatcher->post_adjust_id($obj, $idx);
 			$result->{$key} = $obj->{id};
 			$cv->end;
 		});
@@ -110,6 +140,7 @@ my %dispatch = (
 	invoke => \&_invoke,
 	list => \&_list,
 	show => \&_show,
+	status => \&_status,
 );
 
 my %multikey = ( type => 1 );
@@ -138,13 +169,7 @@ sub call
 		if(exists $dispatch{$obj{command}}) {
 			$dispatch{$obj{command}}->($self, \%obj, $responders);
 		} else {
-			my ($handle, $idx) = $self->dispatcher->handle_and_pre_adjust_id(\%obj);
-			$handle->push_write(storable => \%obj);
-			$handle->push_read(storable => sub {
-				my ($handle_, $obj) = @_;
-				$self->dispatcher->post_adjust_id($obj, $idx);
-				$responders->{json}($obj);
-			});
+			warn "Unknown command: $obj{command}";
 		}
 	};
 }
