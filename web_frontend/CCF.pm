@@ -27,7 +27,9 @@ sub new
 	my $class = ref($self) || $self;
 
 	my $id = 0;
-	tie $id, 'CCF::IDCounter', file => 'id.yaml', key => 'ccf';
+	tie $id, 'CCF::IDCounter', file => 'id.yaml', key => 'compile';
+	my $rid = 0;
+	tie $rid, 'CCF::IDCounter', file => 'id.yaml', key => 'request';
 
 	return bless {
 		_DISPATCHER => CCF::Dispatcher->new(backend => $arg{backend}),
@@ -35,6 +37,7 @@ sub new
 			CCF::S3Storage::Dummy->new(bucket => $arg{bucket}) :
 			CCF::S3Storage->new(bucket => $arg{bucket}),
 		_ID => \$id,
+		_RID => \$rid,
 	}, $class;
 }
 
@@ -54,6 +57,12 @@ sub id
 {
 	my ($self) = @_;
 	return $self->{_ID};
+}
+
+sub req_id
+{
+	my ($self) = @_;
+	return $self->{_RID};
 }
 
 sub _show
@@ -115,8 +124,14 @@ sub _invoke
 
 	my $cv = AE::cv;
 	my $result = {};
+	my $req_id = CCF::Base64Like::encode(${$self->req_id}++);
 
 	$cv->begin(sub {
+		$self->storage->update_request_status_async($req_id, {
+			execute => $obj->{execute},
+			source => $obj->{source},
+			keys => $result,
+		});
 		$responders->{json}($result);
 	});
 	foreach my $key (@{$obj->{type}}) {

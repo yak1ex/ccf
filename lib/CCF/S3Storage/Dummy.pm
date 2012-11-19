@@ -20,6 +20,7 @@ sub new
 	croak "ROOT folder is not properly set" if ! length $arg{root};
 	File::Path::make_path($arg{root}) if ! -d $arg{root};
 	File::Path::make_path("$arg{root}/compile") if ! -d "$arg{root}/compile";
+	File::Path::make_path("$arg{root}/request") if ! -d "$arg{root}/request";
 
 	return bless {
 		_BUCKETNAME => $arg{bucket},
@@ -45,11 +46,10 @@ sub _path
 	return $self->{_ROOT}.'/'.$frag;
 }
 
-sub update_compile_status_async
+sub _update_status_async
 {
 	my $cv = AE::cv;
-	my ($self, $id, $new) = @_;
-	my $key = "compile/${id}.json";
+	my ($self, $key, $new) = @_;
 	my $path = $self->_path($key);
 	my $obj;
 	if(-f $path) {
@@ -69,11 +69,10 @@ sub update_compile_status_async
 	return $cv;
 }
 
-sub get_compile_status_async
+sub _get_status_async
 {
 	my $cv = AE::cv;
-	my ($self, $id) = @_;
-	my $key = "compile/${id}.json";
+	my ($self, $key) = @_;
 	my $path = $self->_path($key);
 	if(-f $path) {
 		local $/;
@@ -85,6 +84,34 @@ sub get_compile_status_async
 		$cv->send;
 	}
 	return $cv;
+}
+
+sub update_compile_status_async
+{
+	my ($self, $id, $new) = @_;
+	my $key = "compile/${id}.json";
+	return $self->_update_status_async($key, $new);
+}
+
+sub get_compile_status_async
+{
+	my ($self, $id, $new) = @_;
+	my $key = "compile/${id}.json";
+	return $self->_get_status_async($key);
+}
+
+sub update_request_status_async
+{
+	my ($self, $id, $new) = @_;
+	my $key = "request/${id}.json";
+	return $self->_update_status_async($key, $new);
+}
+
+sub get_request_status_async
+{
+	my ($self, $id, $new) = @_;
+	my $key = "request/${id}.json";
+	return $self->_get_status_async($key);
 }
 
 1;

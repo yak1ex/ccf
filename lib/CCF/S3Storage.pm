@@ -55,11 +55,10 @@ sub __update_json
 	}
 }
 
-sub update_compile_status_async
+sub _update_status_async
 {
 	my $cv = AE::cv;
-	my ($self, $id, $new) = @_;
-	my $key = "compile/${id}.json";
+	my ($self, $key, $new) = @_;
 	my $obj = $self->_bucket->object(
 		key => $key,
 		acl_short => 'public-read',
@@ -85,11 +84,10 @@ sub update_compile_status_async
 	return $cv;
 }
 
-sub get_compile_status_async
+sub _get_status_async
 {
 	my $cv = AE::cv;
-	my ($self, $id) = @_;
-	my $key = "compile/${id}.json";
+	my ($self, $key) = @_;
 	my $obj = $self->_bucket->object(
 		key => $key,
 		acl_short => 'public-read',
@@ -107,6 +105,34 @@ sub get_compile_status_async
 		}
 	});
 	return $cv;
+}
+
+sub update_compile_status_async
+{
+	my ($self, $id, $new) = @_;
+	my $key = "compile/${id}.json";
+	return $self->_update_status_async($key, $new);
+}
+
+sub get_compile_status_async
+{
+	my ($self, $id) = @_;
+	my $key = "compile/${id}.json";
+	return $self->_get_status_async($key);
+}
+
+sub update_request_status_async
+{
+	my ($self, $id, $new) = @_;
+	my $key = "request/${id}.json";
+	return $self->_update_status_async($key, $new);
+}
+
+sub get_request_status_async
+{
+	my ($self, $id) = @_;
+	my $key = "request/${id}.json";
+	return $self->_get_status_async($key);
 }
 
 1;
