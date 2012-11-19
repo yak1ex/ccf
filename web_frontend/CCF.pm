@@ -17,6 +17,7 @@ use CCF::Dispatcher;
 use CCF::Base64Like;
 use CCF::IDCounter;
 use CCF::S3Storage;
+use CCF::S3Storage::Dummy;
 
 # TODO: Error check
 
@@ -30,7 +31,9 @@ sub new
 
 	return bless {
 		_DISPATCHER => CCF::Dispatcher->new(backend => $arg{backend}),
-		_STORAGE => CCF::S3Storage->new(bucket => $arg{bucket}),
+		_STORAGE => exists $ENV{CCF_S3_DUMMY_ROOT} ?
+			CCF::S3Storage::Dummy->new(bucket => $arg{bucket}) :
+			CCF::S3Storage->new(bucket => $arg{bucket}),
 		_ID => \$id,
 	}, $class;
 }

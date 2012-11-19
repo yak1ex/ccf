@@ -16,6 +16,7 @@ use Pod::Usage;
 
 use CCF::Invoker;
 use CCF::S3Storage;
+use CCF::S3Storage::Dummy;
 
 use constant {
 	REQUESTED => 1,
@@ -44,7 +45,9 @@ my $port = $opts{p} // 8888;
 $conf = $conf->{$confkey};
 my $invoker = CCF::Invoker->new(config => $conf, verbose => $opts{v}, debug => $opts{d});
 
-my $storage = CCF::S3Storage->new(bucket => $bucketname);
+my $storage = exists $ENV{CCF_S3_DUMMY_ROOT} ? 
+	CCF::S3Storage::Dummy->new(bucket => $bucketname) :
+	CCF::S3Storage->new(bucket => $bucketname);
 
 sub invoke
 {
@@ -74,9 +77,11 @@ $cv->cb(sub {
 		return;
 	}
 
+print STDERR "TH1\n";
 	$cv = $storage->update_compile_status_async($curid, {
 		status => COMPILING
 	});
+print STDERR "TH2\n";
 	if($obj->{execute} eq 'true') {
 		$invoker->link($obj->{type}, $obj->{source}, sub {
 			my ($rc, $result, $out) = @_;

@@ -29,6 +29,9 @@
 Debug/
 ipch/
 
+# Temporary folders
+s3/
+
 # Files depending on server
 compile_server/id.yaml
 web_frontend/id.yaml
