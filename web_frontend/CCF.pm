@@ -61,7 +61,6 @@ sub _show
 	my ($self, $obj, $responders) = @_;
 
 	my $id = $obj->{id};
-print STDERR "SHOW_ID: $id\n";
 	$self->storage->get_compile_status_async($id)->cb(sub {
 		my $obj = shift->recv;
 		my $html;
@@ -97,7 +96,6 @@ sub _status
 	my ($self, $obj, $responders) = @_;
 
 	my $id = $obj->{id};
-print STDERR "STATUS_ID: $id\n";
 	$self->storage->get_compile_status_async($id)->cb(sub {
 		my $obj = shift->recv;
 		$responders->{json}($obj);

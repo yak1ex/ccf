@@ -77,11 +77,9 @@ $cv->cb(sub {
 		return;
 	}
 
-print STDERR "TH1\n";
 	$cv = $storage->update_compile_status_async($curid, {
 		status => COMPILING
 	});
-print STDERR "TH2\n";
 	if($obj->{execute} eq 'true') {
 		$invoker->link($obj->{type}, $obj->{source}, sub {
 			my ($rc, $result, $out) = @_;
