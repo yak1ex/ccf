@@ -29,7 +29,8 @@ sub new
 	my $id = 0;
 	tie $id, 'CCF::IDCounter', file => 'id.yaml', key => 'compile';
 	my $rid = 0;
-	tie $rid, 'CCF::IDCounter', file => 'id.yaml', key => 'request';
+# TODO: share idcounter file between different keys
+	tie $rid, 'CCF::IDCounter', file => 'id2.yaml', key => 'request';
 
 	return bless {
 		_DISPATCHER => CCF::Dispatcher->new(backend => $arg{backend}),
@@ -117,7 +118,6 @@ sub _list
 	$responders->{json}($self->dispatcher->list);
 }
 
-# TODO: store mapping between an invocation and compilations
 sub _invoke
 {
 	my ($self, $obj, $responders) = @_;
@@ -152,11 +152,58 @@ sub _invoke
 	$cv->end;
 }
 
+# TODO: Apply CSS
+# TODO: Adjust IFRAME size and layout
+# TODO: Show link in client side
+sub _results
+{
+	my ($self, $obj, $responders) = @_;
+
+	my $req_id = $obj->{id};
+	$self->storage->get_request_status_async($req_id)->cb(sub {
+		my $req = shift->recv;
+# TODO: HTML escape
+		my $res = <<EOF;
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link href="ccf.css" rel="stylesheet" type="text/css">
+<link rel="shortcut icon" href="favicon.ico" type="image/vnd.microsoft.icon" />
+<link rel="icon" href="favicon.ico" type="image/vnd.microsoft.icon" />
+<title>C++ Compiler Farm - Results for Request: $req_id</title>
+</head>
+<body>
+<div id="header">
+<img src="ccf.png" alt="C++ Compiler Farm" title="C++ Compiler Farm" />
+<p id="owner-notice">ownered by <a href="http://twitter.com/yak_ex">\@yak_ex</a></p>
+<p id="menu"><a href="ccf.html"><img src="home.png" alt="Home" title="Home" /></a><a href="FAQ.html"><img src="FAQ.png" alt="FAQ" title="FAQ" /></a></p>
+</div>
+<h1>Results for Request: $req_id</h1>
+<h2>Source</h2>
+<pre>$req->{source}</pre>
+<h2>Results</h2>
+EOF
+		foreach my $key (sort keys %{$req->{keys}}) {
+			$res .= <<EOF;
+<h3>$key</h3>
+<iframe src="ccf.cgi?command=show&id=$req->{keys}{$key}"></iframe>
+EOF
+		}
+		$res .= <<EOF;
+</body>
+</html>
+EOF
+		$responders->{html}($res);
+
+	});
+}
+
 my %dispatch = (
 	invoke => \&_invoke,
 	list => \&_list,
 	show => \&_show,
 	status => \&_status,
+	results => \&_results,
 );
 
 my %multikey = ( type => 1 );
@@ -192,6 +239,7 @@ sub call
 
 1;
 __END__
+
 =head1 NAME
 
 CCF - PSGI application module for C++ Compiler Farm
