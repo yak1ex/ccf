@@ -20,6 +20,8 @@ use CCF::IDCounter;
 use CCF::S3Storage;
 use CCF::S3Storage::Dummy;
 
+# TODO: Cut out HTML to external template
+
 # TODO: Error check
 
 sub new
@@ -84,14 +86,17 @@ sub _show
 # TODO: Apply CSS
 				if($status == 3 || ! exists $obj->{execute}) {
 					my $compile = $obj->{compile};
+					$compile = Plack::Util::encode_html($compile);
 					$compile = '&nbsp;' if $compile eq '';
 					$responders->{html}(<<EOF);
 <html><body><p>Compiled.</p><p>compilation result:</p><pre style="background:#fff;">$compile</pre></body></html>
 EOF
 				} else {
 					my $compile = $obj->{compile};
+					$compile = Plack::Util::encode_html($compile);
 					$compile = '&nbsp;' if $compile eq '';
 					my $execute = $obj->{execute};
+					$execute = Plack::Util::encode_html($execute);
 					$execute = '&nbsp;' if $execute eq '';
 					$responders->{html}(<<EOF);
 <html><body><p>Executed.</p><p>compilation result:</p><pre style="background:#fff;">$compile</pre><p>execution result:</p><pre style="background:#fff;">$execute</pre></body></html>
@@ -153,9 +158,6 @@ sub _invoke
 	$cv->end;
 }
 
-# TODO: Apply CSS
-# TODO: Adjust IFRAME size and layout
-# TODO: Show link in client side
 sub _result
 {
 	my ($self, $obj, $responders) = @_;
@@ -164,7 +166,6 @@ sub _result
 	$self->storage->get_request_status_async($req_id)->cb(sub {
 		my $req = shift->recv;
 		my $source = Plack::Util::encode_html($req->{source});
-# TODO: HTML escape
 		my $res = <<EOF;
 <html>
 <head>
@@ -200,12 +201,27 @@ EOF
 	});
 }
 
+sub _rlist
+{
+	my ($self, $obj, $responders) = @_;
+	my ($from, $number) = @{$obj}{'from','number'};
+	$responders->{html}(<<EOF);
+<html>
+<body>
+Not yet implemented.
+$from $number
+</body>
+</html>
+EOF
+}
+
 my %dispatch = (
 	invoke => \&_invoke,
 	list => \&_list,
 	show => \&_show,
 	status => \&_status,
 	result => \&_result,
+	rlist => \&_rlist,
 );
 
 my %multikey = ( type => 1 );
@@ -230,11 +246,29 @@ sub call
 		};
 
 		my (%obj) = map { my (@t) = $q->param($_); $_, exists $multikey{$_} ? [ @t ] : $t[0] } $q->param;
-		if(length $q->path_info) {
-			my $req_id = $q->path_info;
-			$req_id =~ s#^/##;
-			$obj{command} = 'result';
-			$obj{id} = $req_id;
+		if($env->{SCRIPT_NAME} ne '/ccf.cgi') {
+			if($env->{SCRIPT_NAME} eq '/result') {
+				if(length $env->{PATH_INFO} > 1) {
+					my $req_id = $q->path_info;
+					$req_id =~ s#^/##;
+					$obj{command} = 'result';
+					$obj{id} = $req_id;
+				} else {
+					$obj{command} = 'rlist';
+					$obj{from} = 0;
+					$obj{number} = 100;
+				}
+			} else { # '/results'
+				$obj{command} = 'rlist';
+				if(length $env->{PATH_INFO} > 1) {
+					$env->{PATH_INFO} =~ m,^/(\d+)(?:/(\d+)?)?$,;
+					$obj{from} = $1;
+					$obj{number} = length($2) ? $2 : 100;
+				} else {
+					$obj{from} = 0;
+					$obj{number} = 100;
+				}
+			}
 		}
 
 		if(exists $dispatch{$obj{command}}) {

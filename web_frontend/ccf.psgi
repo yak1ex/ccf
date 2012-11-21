@@ -14,6 +14,7 @@ my $app = CCF->new(bucket => $conf->{bucket}, backend => $conf->{backend});
 builder {
 	mount '/ccf.cgi' => $app;
 	mount '/result' => $app;
+	mount '/results' => $app;
 	mount '/' => Plack::App::File->new(root => './static');
 };
 __END__
