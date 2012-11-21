@@ -6,6 +6,7 @@ use feature 'switch';
 
 use parent qw(Plack::Component);
 use CGI::PSGI;
+use Plack::Util;
 
 use AnyEvent;
 use AnyEvent::Handle;
@@ -162,6 +163,7 @@ sub _results
 	my $req_id = $obj->{id};
 	$self->storage->get_request_status_async($req_id)->cb(sub {
 		my $req = shift->recv;
+		my $source = Plack::Util::encode_html($req->{source});
 # TODO: HTML escape
 		my $res = <<EOF;
 <html>
@@ -180,7 +182,7 @@ sub _results
 </div>
 <h1>Results for Request: $req_id</h1>
 <h2>Source</h2>
-<pre>$req->{source}</pre>
+<pre id="result-source" class="result-box">$source</pre>
 <h2>Results</h2>
 EOF
 		foreach my $key (sort keys %{$req->{keys}}) {
