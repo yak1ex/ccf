@@ -86,7 +86,8 @@ $(function() {
 			},
 			dataType: 'json'
 		}).done(function(msg) {
-			$.each(msg, function(key, id) {
+			$('#note').html('Other tabs show results.<br><br>You can see results in a page with <a href="/result/' + msg.id + '">'+location.protocol+'//'+location.host+'/result/'+msg.id+'</a>.<br>NOTE: You may need update manually for this URL until completed.');
+			$.each(msg.keys, function(key, id) {
 				status[key].id = id;
 				idmap[id] = key;
 				$('#result').tabs('url', status[key].idx, 'ccf.cgi?command=show&id=' + id);

@@ -124,14 +124,14 @@ sub _invoke
 	my ($self, $obj, $responders) = @_;
 
 	my $cv = AE::cv;
-	my $result = {};
 	my $req_id = CCF::Base64Like::encode(${$self->req_id}++);
+	my $result = { keys => {}, id => $req_id };
 
 	$cv->begin(sub {
 		$self->storage->update_request_status_async($req_id, {
 			execute => $obj->{execute},
 			source => $obj->{source},
-			keys => $result,
+			keys => $result->{keys},
 		});
 		$responders->{json}($result);
 	});
@@ -146,7 +146,7 @@ sub _invoke
 		});
 		$handle->push_read(storable => sub {
 			my ($handle, $obj) = @_;
-			$result->{$key} = $obj->{id};
+			$result->{keys}{$key} = $obj->{id};
 			$cv->end;
 		});
 	}
