@@ -3,16 +3,17 @@
 use lib qw(../lib);
 
 use Plack::Builder;
-use Plack::App::WrapCGI;
 use Plack::App::File;
 use CCF;
 
 use YAML;
 
 my $conf = YAML::LoadFile('config.yaml');
+my $app = CCF->new(bucket => $conf->{bucket}, backend => $conf->{backend});
 
 builder {
-	mount '/ccf.cgi' => CCF->new(bucket => $conf->{bucket}, backend => $conf->{backend});
+	mount '/ccf.cgi' => $app;
+	mount '/result' => $app;
 	mount '/' => Plack::App::File->new(root => './static');
 };
 __END__
