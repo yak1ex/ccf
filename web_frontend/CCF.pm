@@ -13,6 +13,7 @@ use AnyEvent::Handle;
 
 use JSON;
 use Encode qw(decode);
+use Text::Template;
 
 use CCF::Dispatcher;
 use CCF::Base64Like;
@@ -20,7 +21,9 @@ use CCF::IDCounter;
 use CCF::S3Storage;
 use CCF::S3Storage::Dummy;
 
-# TODO: Cut out HTML to external template
+opendir DIR, 'tmpl';
+my @tmpl = map { s/\.tmpl$//; uc($_) } grep { /\.tmpl$/ } readdir DIR;
+my %tmpl = map { $_ => Text::Template->new(TYPE => 'FILE', SOURCE => 'tmpl/'.lc($_).'.tmpl') } @tmpl;
 
 # TODO: Error check
 
@@ -79,8 +82,8 @@ sub _show
 		my $html;
 		my $status = $obj->{status};
 		given($status) {
-			when (1)     { $responders->{html}('<html><body>Invoked.</body></html>'); }
-			when (2)     { $responders->{html}('<html><body>Compiling.</body></html>'); }
+			when (1)     { $responders->{html}($tmpl{INVOKED}->fill_in(HASH => {})); }
+			when (2)     { $responders->{html}($tmpl{COMPILING}->fill_in(HASH => {})); }
 			when ([3,4]) {
 # TODO: HTML escape
 # TODO: Apply CSS
@@ -88,9 +91,7 @@ sub _show
 					my $compile = $obj->{compile};
 					$compile = Plack::Util::encode_html($compile);
 					$compile = '&nbsp;' if $compile eq '';
-					$responders->{html}(<<EOF);
-<html><body><p>Compiled.</p><p>compilation result:</p><pre style="background:#fff;">$compile</pre></body></html>
-EOF
+					$responders->{html}($tmpl{COMPILED}->fill_in(HASH => { compile => \$compile }));
 				} else {
 					my $compile = $obj->{compile};
 					$compile = Plack::Util::encode_html($compile);
@@ -98,9 +99,7 @@ EOF
 					my $execute = $obj->{execute};
 					$execute = Plack::Util::encode_html($execute);
 					$execute = '&nbsp;' if $execute eq '';
-					$responders->{html}(<<EOF);
-<html><body><p>Executed.</p><p>compilation result:</p><pre style="background:#fff;">$compile</pre><p>execution result:</p><pre style="background:#fff;">$execute</pre></body></html>
-EOF
+					$responders->{html}($tmpl{EXECUTED}->fill_in(HASH => { compile => \$compile, execute => \$execute }));
 				}
 			}
 		}
@@ -166,38 +165,7 @@ sub _result
 	$self->storage->get_request_status_async($req_id)->cb(sub {
 		my $req = shift->recv;
 		my $source = Plack::Util::encode_html($req->{source});
-		my $res = <<EOF;
-<html>
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<link href="/ccf.css" rel="stylesheet" type="text/css">
-<link rel="shortcut icon" href="/favicon.ico" type="image/vnd.microsoft.icon" />
-<link rel="icon" href="/favicon.ico" type="image/vnd.microsoft.icon" />
-<title>C++ Compiler Farm - Results for Request: $req_id</title>
-</head>
-<body>
-<div id="header">
-<img src="/ccf.png" alt="C++ Compiler Farm" title="C++ Compiler Farm" />
-<p id="owner-notice">ownered by <a href="http://twitter.com/yak_ex">\@yak_ex</a></p>
-<p id="menu"><a href="/ccf.html"><img src="/home.png" alt="Home" title="Home" /></a><a href="/FAQ.html"><img src="/FAQ.png" alt="FAQ" title="FAQ" /></a></p>
-</div>
-<h1>Results for Request: $req_id</h1>
-<h2>Source</h2>
-<pre id="result-source" class="result-box">$source</pre>
-<h2>Results</h2>
-EOF
-		foreach my $key (sort keys %{$req->{keys}}) {
-			$res .= <<EOF;
-<h3>$key</h3>
-<iframe class="result-box" src="/ccf.cgi?command=show&id=$req->{keys}{$key}"></iframe>
-EOF
-		}
-		$res .= <<EOF;
-</body>
-</html>
-EOF
-		$responders->{html}($res);
-
+		$responders->{html}($tmpl{RESULT}->fill_in(HASH => { id => \$req_id, 'keys' => $req->{keys}, source => \$source }));
 	});
 }
 
@@ -205,14 +173,7 @@ sub _rlist
 {
 	my ($self, $obj, $responders) = @_;
 	my ($from, $number) = @{$obj}{'from','number'};
-	$responders->{html}(<<EOF);
-<html>
-<body>
-Not yet implemented.
-$from $number
-</body>
-</html>
-EOF
+	$responders->{html}($tmpl{RLIST}->fill_in(HASH => { from => \$from, number => \$number }));
 }
 
 my %dispatch = (
