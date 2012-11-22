@@ -149,7 +149,8 @@ sub get_requests_async
 	});
 	$data->cb(sub {
 		my $objs = shift->recv;
-		$cv->send([ reverse map { $_->key } @$objs]);
+		$cv->send([ reverse map { my ($key) = $_->key =~ m,request/(.*)\.json$,; [ $key, $_->last_modified ]; } @$objs]);
+		return 0;
 	});
 	return $cv;
 }

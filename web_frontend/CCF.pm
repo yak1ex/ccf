@@ -14,6 +14,8 @@ use AnyEvent::Handle;
 use JSON;
 use Encode qw(decode);
 use Text::Template;
+use DateTime;
+use Time::Duration;
 
 use CCF::Dispatcher;
 use CCF::Base64Like;
@@ -169,13 +171,15 @@ sub _result
 	});
 }
 
+# FIXME: ID order is mismatched with S3 sort order
 sub _rlist
 {
 	my ($self, $obj, $responders) = @_;
 	$obj->{from} ||= ${$self->req_id};
-	$obj->{number} ||= 100;
+	$obj->{number} ||= 20;
 	$self->storage->get_requests_async($obj->{from}, $obj->{number})->cb(sub {
-		my $keys = shift->recv;
+		my $keys = [ map { [$_->[0], Time::Duration::ago(DateTime->now->epoch - $_->[1]->epoch, 1) ] } @{shift->recv} ];
+		
 		$responders->{html}($tmpl{RLIST}->fill_in(HASH => { keys => \$keys, from => $obj->{from}, number => $obj->{number} }));
 	});
 }

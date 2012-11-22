@@ -35,4 +35,6 @@ s3/
 # Files depending on server
 compile_server/id.yaml
 web_frontend/id.yaml
+web_frontend/id.yaml.s3
 web_frontend/id2.yaml
+web_frontend/id2.yaml.s3

@@ -127,7 +127,7 @@ sub get_requests_async
 		my $id = CCF::Base64Like::encode($idx);
 		my $key = "request/${id}.json";
 		my $file = $self->_path($key);
-		unshift @$result, $id if -f $file;
+		unshift @$result, [$id, DateTime->from_epoch(epoch => (stat($file))[9]) ] if -f $file;
 	}
 	$cv->send($result);
 	return $cv;
