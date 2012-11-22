@@ -172,8 +172,12 @@ sub _result
 sub _rlist
 {
 	my ($self, $obj, $responders) = @_;
-	my ($from, $number) = @{$obj}{'from','number'};
-	$responders->{html}($tmpl{RLIST}->fill_in(HASH => { from => \$from, number => \$number }));
+	$obj->{from} ||= ${$self->req_id};
+	$obj->{number} ||= 100;
+	$self->storage->get_requests_async($obj->{from}, $obj->{number})->cb(sub {
+		my $keys = shift->recv;
+		$responders->{html}($tmpl{RLIST}->fill_in(HASH => { keys => \$keys, from => $obj->{from}, number => $obj->{number} }));
+	});
 }
 
 my %dispatch = (
@@ -216,18 +220,13 @@ sub call
 					$obj{id} = $req_id;
 				} else {
 					$obj{command} = 'rlist';
-					$obj{from} = 0;
-					$obj{number} = 100;
 				}
 			} else { # '/results'
 				$obj{command} = 'rlist';
 				if(length $env->{PATH_INFO} > 1) {
 					$env->{PATH_INFO} =~ m,^/(\d+)(?:/(\d+)?)?$,;
 					$obj{from} = $1;
-					$obj{number} = length($2) ? $2 : 100;
-				} else {
-					$obj{from} = 0;
-					$obj{number} = 100;
+					$obj{number} = length($2) ? $2 : undef;
 				}
 			}
 		}

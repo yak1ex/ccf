@@ -1,6 +1,24 @@
 <html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link href="/ccf.css" rel="stylesheet" type="text/css">
+<link rel="shortcut icon" href="/favicon.ico" type="image/vnd.microsoft.icon" />
+<link rel="icon" href="/favicon.ico" type="image/vnd.microsoft.icon" />
+<title>C++ Compiler Farm - Recent {scalar @$keys} requests from ID: {$keys->[0]}</title>
+</head>
 <body>
-Not yet implemented.
-{$from} {$number}
+<div id="header">
+<img src="/ccf.png" alt="C++ Compiler Farm" title="C++ Compiler Farm" />
+<p id="owner-notice">ownered by <a href="http://twitter.com/yak_ex">@yak_ex</a></p>
+<p id="menu"><a href="/ccf.html"><img src="/home.png" alt="Home" title="Home" /></a><a href="/FAQ.html"><img src="/FAQ.png" alt="FAQ" title="FAQ" /></a></p>
+</div>
+<h1>Recent {scalar @$keys} requests from ID: {$keys->[0]}</h1>
+<ul>
+{
+	foreach my $key (@$keys) {
+		$OUT .= '<li><a href="/result/'.$key.'">Request: '.$key.'</a><br>';
+	}
+}
+</ul>
 </body>
 </html>

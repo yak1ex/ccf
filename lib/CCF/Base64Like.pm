@@ -37,6 +37,7 @@ sub decode
 
 1;
 __END__
+
 =head1 NAME
 
 CCF::Base64Like - string-number conversion like base64url scheme

@@ -10,6 +10,8 @@ use AnyEvent;
 use AnyEvent::Net::Amazon::S3;
 use AnyEvent::Net::Amazon::S3::Client;
 
+use CCF::Base64Like;
+
 sub new
 {
 	my ($self, %arg) = @_;
@@ -133,6 +135,23 @@ sub get_request_status_async
 	my ($self, $id) = @_;
 	my $key = "request/${id}.json";
 	return $self->_get_status_async($key);
+}
+
+sub get_requests_async
+{
+	my $cv = AE::cv;
+	my ($self, $from, $number) = @_;
+	my $start = $from <= $number ? 0 : $from - $number;
+	my $data = $self->_bucket->list_async({
+		prefix => 'request/',
+		marker => "request/${start}.json",
+		max_keys => $from < $number ? $from : $number,
+	});
+	$data->cb(sub {
+		my $objs = shift->recv;
+		$cv->send([ reverse map { $_->key } @$objs]);
+	});
+	return $cv;
 }
 
 1;

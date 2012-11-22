@@ -6,8 +6,11 @@ use warnings;
 use Carp;
 use JSON;
 use File::Path;
+use DateTime;
 
 use AnyEvent;
+
+use CCF::Base64Like;
 
 sub new
 {
@@ -112,6 +115,22 @@ sub get_request_status_async
 	my ($self, $id, $new) = @_;
 	my $key = "request/${id}.json";
 	return $self->_get_status_async($key);
+}
+
+sub get_requests_async
+{
+	my $cv = AE::cv;
+	my ($self, $from, $number) = @_;
+	my $result = [];
+	my $start = $from <= $number ? 0 : $from - $number;
+	foreach my $idx ($start..$from) {
+		my $id = CCF::Base64Like::encode($idx);
+		my $key = "request/${id}.json";
+		my $file = $self->_path($key);
+		unshift @$result, $id if -f $file;
+	}
+	$cv->send($result);
+	return $cv;
 }
 
 1;
