@@ -10,8 +10,6 @@ use AnyEvent;
 use AnyEvent::Net::Amazon::S3;
 use AnyEvent::Net::Amazon::S3::Client;
 
-use CCF::Base64Like;
-
 sub new
 {
 	my ($self, %arg) = @_;
@@ -112,28 +110,28 @@ sub _get_status_async
 sub update_compile_status_async
 {
 	my ($self, $id, $new) = @_;
-	my $key = "compile/${id}.json";
+	my $key = sprintf('compile/%08d.json', $id);
 	return $self->_update_status_async($key, $new);
 }
 
 sub get_compile_status_async
 {
 	my ($self, $id) = @_;
-	my $key = "compile/${id}.json";
+	my $key = sprintf('compile/%08d.json', $id);
 	return $self->_get_status_async($key);
 }
 
 sub update_request_status_async
 {
 	my ($self, $id, $new) = @_;
-	my $key = "request/${id}.json";
+	my $key = sprintf('request/%08d.json', $id);
 	return $self->_update_status_async($key, $new);
 }
 
 sub get_request_status_async
 {
 	my ($self, $id) = @_;
-	my $key = "request/${id}.json";
+	my $key = sprintf('request/%08d.json', $id);
 	return $self->_get_status_async($key);
 }
 
@@ -141,15 +139,15 @@ sub get_requests_async
 {
 	my $cv = AE::cv;
 	my ($self, $from, $number) = @_;
-	my $start = $from <= $number ? 0 : $from - $number;
+	my $start = ($from + 1 >= $number) ? $from - $number + 1 : 0;
 	my $data = $self->_bucket->list_async({
 		prefix => 'request/',
-		marker => "request/${start}.json",
-		max_keys => $from < $number ? $from : $number,
+		marker => ($start > 0 ? sprintf('request/%08d.json', $start - 1) :  undef),
+		max_keys => $from < $number ? $from + 1 : $number,
 	});
 	$data->cb(sub {
 		my $objs = shift->recv;
-		$cv->send([ reverse map { my ($key) = $_->key =~ m,request/(.*)\.json$,; [ $key, $_->last_modified ]; } @$objs]);
+		$cv->send([ reverse map { my ($key) = $_->key =~ m,request/(.*)\.json$,; [ 0+$key, $_->last_modified ]; } @$objs]);
 		return 0;
 	});
 	return $cv;

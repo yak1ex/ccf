@@ -18,7 +18,6 @@ use DateTime;
 use Time::Duration;
 
 use CCF::Dispatcher;
-use CCF::Base64Like;
 use CCF::IDCounter;
 use CCF::S3Storage;
 use CCF::S3Storage::Dummy;
@@ -130,7 +129,7 @@ sub _invoke
 	my ($self, $obj, $responders) = @_;
 
 	my $cv = AE::cv;
-	my $req_id = CCF::Base64Like::encode(${$self->req_id}++);
+	my $req_id = ${$self->req_id}++;
 	my $result = { keys => {}, id => $req_id };
 
 	$cv->begin(sub {
@@ -144,7 +143,7 @@ sub _invoke
 	foreach my $key (@{$obj->{type}}) {
 		$cv->begin;
 		my $handle = $self->dispatcher->handle($key);
-		my $id = CCF::Base64Like::encode(${$self->id}++);
+		my $id = ${$self->id}++;
 		$handle->push_write(storable => {
 			%$obj,
 			type => $key,
@@ -171,16 +170,14 @@ sub _result
 	});
 }
 
-# FIXME: ID order is mismatched with S3 sort order
 sub _rlist
 {
 	my ($self, $obj, $responders) = @_;
-	$obj->{from} ||= ${$self->req_id};
+	$obj->{from} = ${$self->req_id} - 1 if ! defined $obj->{from} || $obj->{from} > ${$self->req_id} - 1;
 	$obj->{number} ||= 20;
 	$self->storage->get_requests_async($obj->{from}, $obj->{number})->cb(sub {
 		my $keys = [ map { [$_->[0], Time::Duration::ago(DateTime->now->epoch - $_->[1]->epoch, 1) ] } @{shift->recv} ];
-		
-		$responders->{html}($tmpl{RLIST}->fill_in(HASH => { keys => \$keys, from => $obj->{from}, number => $obj->{number} }));
+		$responders->{html}($tmpl{RLIST}->fill_in(HASH => { keys => \$keys, from => $obj->{from}, number => $obj->{number}, max_id => ${$self->req_id}-1 }));
 	});
 }
 

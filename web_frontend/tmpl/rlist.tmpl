@@ -25,8 +25,13 @@
 }
 </ul>
 {
+	if($from < $max_id) {
+		$OUT = '<a href="/results/'.($from+$number).'/'.$number.'">Previous '.$number.' requests</a>';
+	}
+}
+{
 	if($from >= $number) {
-		$OUT = '<a href="/results/'.($from-$number+1).'/'.$number.'">Next '.$number.' requests</a>';
+		$OUT = '<a href="/results/'.($from-$number).'/'.$number.'">Next '.$number.' requests</a>';
 	}
 }
 </body>
