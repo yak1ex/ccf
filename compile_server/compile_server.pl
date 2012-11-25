@@ -13,6 +13,7 @@ use English;
 use YAML;
 use Getopt::Std;
 use Pod::Usage;
+use Socket;
 
 use CCF::Invoker;
 use CCF::S3Storage;
@@ -54,6 +55,14 @@ sub invoke
 	my ($handle, $obj) = @_;
 
 	my $curid = $obj->{id};
+
+	my ($myport, $myaddr) = sockaddr_in(getsockname($handle->fh));
+	$myaddr = inet_ntoa($myaddr);
+	$storage->update_compile_stat_async($curid, {
+		id => $curid,
+		addr => $myaddr,
+		port => $myport,
+	});
 
 	my $cv = $storage->update_compile_status_async($curid, {
 		id => $curid,
@@ -172,7 +181,9 @@ $opts{v} and print STDERR "listening on port $port...\n";
 tcp_server undef, $port, sub {
 	my ($fh, $host, $port) = @_;
 
-	$opts{v} and print STDERR "connect\n";
+	my ($myport, $myaddr) = sockaddr_in(getsockname($fh));
+	$myaddr = inet_ntoa($myaddr);
+	$opts{v} and print STDERR "connect with ${myaddr}:${myport} from ${host}:${port}\n";
 
 	my $handle; $handle = AnyEvent::Handle->new(
 		fh => $fh,

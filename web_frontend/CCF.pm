@@ -181,6 +181,15 @@ sub _rlist
 	});
 }
 
+sub _cstats
+{
+	my ($self, $obj, $responders) = @_;
+	$self->storage->get_compile_stats_async()->cb(sub {
+		my $stats = shift->recv;
+		$responders->{html}($tmpl{CSTATS}->fill_in(HASH => { stats => \$stats }));
+	});
+}
+
 my %dispatch = (
 	invoke => \&_invoke,
 	list => \&_list,
@@ -188,6 +197,7 @@ my %dispatch = (
 	status => \&_status,
 	result => \&_result,
 	rlist => \&_rlist,
+	cstats => \&_cstats,
 );
 
 my %multikey = ( type => 1 );

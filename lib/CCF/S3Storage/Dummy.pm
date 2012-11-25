@@ -22,6 +22,7 @@ sub new
 	File::Path::make_path($arg{root}) if ! -d $arg{root};
 	File::Path::make_path("$arg{root}/compile") if ! -d "$arg{root}/compile";
 	File::Path::make_path("$arg{root}/request") if ! -d "$arg{root}/request";
+	File::Path::make_path("$arg{root}/cstat") if ! -d "$arg{root}/cstat";
 
 	return bless {
 		_BUCKETNAME => $arg{bucket},
@@ -96,7 +97,7 @@ sub update_compile_status_async
 
 sub get_compile_status_async
 {
-	my ($self, $id, $new) = @_;
+	my ($self, $id) = @_;
 	my $key = sprintf('compile/%08d.json', $id);
 	return $self->_get_status_async($key);
 }
@@ -110,7 +111,7 @@ sub update_request_status_async
 
 sub get_request_status_async
 {
-	my ($self, $id, $new) = @_;
+	my ($self, $id) = @_;
 	my $key = sprintf('request/%08d.json', $id);
 	return $self->_get_status_async($key);
 }
@@ -127,6 +128,50 @@ sub get_requests_async
 		unshift @$result, [$id, DateTime->from_epoch(epoch => (stat($file))[9]) ] if -f $file;
 	}
 	$cv->send($result);
+	return $cv;
+}
+
+sub update_compile_stat_async
+{
+	my ($self, $id, $new) = @_;
+	my $key = sprintf('cstat/%08d.json', $id);
+	return $self->_update_status_async($key, $new);
+}
+
+sub get_compile_stat_async
+{
+	my ($self, $id) = @_;
+	my $key = sprintf('cstat/%08d.json', $id);
+	return $self->_get_status_async($key);
+}
+
+sub get_compile_stats_async
+{
+	my ($self) = @_;
+	my $dir = $self->_path('cstat');
+	opendir DIR, $dir;
+	my @stats = grep { -f "${dir}/$_" } readdir DIR;
+	my $result = {};
+	my $cv = AE::cv;
+	my $lcv = AE::cv;
+	$lcv->begin(sub {
+		$cv->send($result);
+	});
+	foreach my $stat (@stats) {
+		my ($id) = $stat =~ m,^(\d+)\.json$,;
+		$lcv->begin;
+		$self->get_compile_stat_async($id)->cb(sub {
+			my $obj = shift->recv;
+			my $key = $obj->{addr}.':'.$obj->{port};
+			if(exists $result->{$key}) {
+				++$result->{$key};
+			} else {
+				$result->{$key} = 1;
+			}
+			$lcv->end;
+		});
+	}
+	$lcv->end;
 	return $cv;
 }
 

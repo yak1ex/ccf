@@ -153,6 +153,59 @@ sub get_requests_async
 	return $cv;
 }
 
+sub update_compile_stat_async
+{
+	my ($self, $id, $new) = @_;
+	my $key = sprintf('cstat/%08d.json', $id);
+	return $self->_update_status_async($key, $new);
+}
+
+sub get_compile_stat_async
+{
+	my ($self, $id) = @_;
+	my $key = sprintf('cstat/%08d.json', $id);
+	return $self->_get_status_async($key);
+}
+
+sub get_compile_stats_async
+{
+	my $cv = AE::cv;
+	my ($self) = @_;
+	my $data = $self->_bucket->list_async({
+		prefix => 'cstat/',
+	});
+	my $result = {};
+	my $lcv = AE::cv;
+	$lcv->begin(sub {
+		$cv->send($result);
+	});
+	$data->cb(sub {
+		my $objs = shift->recv;
+		if(defined $objs) {
+			$lcv->begin;
+			foreach my $objs (@$objs) {
+				$lcv->begin;
+				$objs->get_async->cb(sub {
+					my $obj = decode_json(shift->recv);
+					my $key = $obj->{addr}.':'.$obj->{port};
+					if(exists $result->{$key}) {
+						++$result->{$key};
+					} else {
+						$result->{$key} = 1;
+					}
+					$lcv->end;
+				});
+			}
+			$lcv->end;
+			return 1;
+		} else {
+			$lcv->end;
+			return 0;
+		}
+	});
+	return $cv;
+}
+
 1;
 __END__
 
