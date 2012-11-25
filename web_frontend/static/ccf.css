@@ -59,7 +59,6 @@ body {
     line-height: 1.1em;
 }
 
-#result-source {
-	border: 1px solid;
-	overflow: scroll;
+.source-box {
+    border: 1px solid;
 }
