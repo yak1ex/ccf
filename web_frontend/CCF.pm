@@ -176,7 +176,7 @@ sub _rlist
 	$obj->{from} = ${$self->req_id} - 1 if ! defined $obj->{from} || $obj->{from} > ${$self->req_id} - 1;
 	$obj->{number} ||= 20;
 	$self->storage->get_requests_async($obj->{from}, $obj->{number})->cb(sub {
-		my $keys = [ map { [$_->[0], Time::Duration::ago(DateTime->now->epoch - $_->[1]->epoch, 1) ] } @{shift->recv} ];
+		my $keys = [ map { [$_->[0], Time::Duration::ago(DateTime->now->epoch - $_->[1]->epoch, 1), $_->[2] ] } @{shift->recv} ];
 		$responders->{html}($tmpl{RLIST}->fill_in(HASH => { keys => \$keys, from => $obj->{from}, number => $obj->{number}, max_id => ${$self->req_id}-1 }));
 	});
 }

@@ -147,7 +147,17 @@ sub get_requests_async
 	});
 	$data->cb(sub {
 		my $objs = shift->recv;
-		$cv->send([ reverse map { my ($key) = $_->key =~ m,request/(.*)\.json$,; [ 0+$key, $_->last_modified ]; } @$objs]);
+		my $result = [ reverse map { my ($key) = $_->key =~ m,request/(.*)\.json$,; [ 0+$key, $_->last_modified ]; } @$objs];
+		$cv->begin(sub { $cv->send($result); });
+		foreach my $idx (0..$#$result) {
+			$cv->begin;
+			$self->get_request_status_async($result->[$idx][0])->cb(sub {
+				my $obj = shift->recv;
+				push @{$result->[$idx]}, $obj;
+				$cv->end;
+			});
+		}
+		$cv->end;
 		return 0;
 	});
 	return $cv;
