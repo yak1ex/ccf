@@ -65,7 +65,6 @@ $(function() {
 		}
 	};
 	// Invoke
-	// TODO: actual implementation
 	$('#form').submit(function() {
 		if($('#source').val().length > 10 * 1024) {
 			window.alert('Currently, source size is limited to 10KiB.');
@@ -74,6 +73,10 @@ $(function() {
 		$('#result').tabs('destroy');
 		$('#result').tabs(tabopts);
 		var types = $.map($('.ctypes:checked'), function(obj, idx) { return obj.name; });
+		if(types.length == 0) {
+			window.alert('You MUST choose at least one compiler.');
+			return false;
+		}
 		$.ajax({
 			type: 'POST',
 			url: 'ccf.cgi',
