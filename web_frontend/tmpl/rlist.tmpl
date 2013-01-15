@@ -20,7 +20,7 @@
 <ul>
 {
 	foreach my $key (@$keys) {
-		$OUT .= '<li><a href="/result/'.$key->[0].'">Request: '.$key->[0].'</a>&nbsp;&nbsp;('.$key->[1].') ['.(1+$key->[2]{source} =~ s/\n(?!$)/\n/g).' lines] '.join(' / ', keys %{$key->[2]{keys}}).'<br>';
+		$OUT .= '<li><a href="/result/'.$key->[0].'">Request: '.$key->[0].'</a>&nbsp;&nbsp;('.$key->[1].') '.$key->[2]{title}.' ['.(1+$key->[2]{source} =~ s/\n(?!$)/\n/g).' lines] '.join(' / ', keys %{$key->[2]{keys}}).'<br>';
 	}
 }
 </ul>

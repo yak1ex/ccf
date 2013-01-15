@@ -42,6 +42,7 @@ $(function() {
 		});
 		$('#input-container').addClass('ui-widget ui-widget-content ui-corner-all');
 		$('#source-label').addClass('ui-widget-header ui-corner-all');
+		$('#title-row').addClass('ui-widget-header ui-corner-all');
 		$('#source').addClass('ui-corner-all');
 	});
 	// Status updater
@@ -84,6 +85,7 @@ $(function() {
 			data: {
 				command: 'invoke',
 				source: $('#source').val(),
+				title: $('#title').val(),
 				type: types,
 				execute: ($('#compile:checked').length == 0 ? 'true' : 'false'),
 			},

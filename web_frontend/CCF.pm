@@ -136,6 +136,7 @@ sub _invoke
 		$self->storage->update_request_status_async($req_id, {
 			execute => $obj->{execute},
 			source => $obj->{source},
+			title => $obj->{title},
 			keys => $result->{keys},
 		});
 		$responders->{json}($result);
@@ -166,7 +167,7 @@ sub _result
 	$self->storage->get_request_status_async($req_id)->cb(sub {
 		my $req = shift->recv;
 		my $source = Plack::Util::encode_html($req->{source});
-		$responders->{html}($tmpl{RESULT}->fill_in(HASH => { id => \$req_id, 'keys' => $req->{keys}, source => \$source }));
+		$responders->{html}($tmpl{RESULT}->fill_in(HASH => { id => \$req_id, 'keys' => $req->{keys}, source => \$source, title => \$req->{title} }));
 	});
 }
 
