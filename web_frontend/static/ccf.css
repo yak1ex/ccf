@@ -70,3 +70,7 @@ body {
 .source-box {
     border: 1px solid;
 }
+
+#powertip {
+    width: 300px;
+}
