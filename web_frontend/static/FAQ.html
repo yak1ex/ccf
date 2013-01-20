@@ -39,13 +39,13 @@
 <p class="question"><a name="what_is_this">これは何？</a></p>
 <p class="answer"><a href="http://twitter.com/yak_ex">@yak_ex</a> による実験的サイトです。ソースを投げることで複数の C++ コンパイラでの実行結果が得られます。</p>
 <p class="question"><a name="no_fee">無料？</a></p>
-<p class="answer">とりあえず <a href="http://aws.amazon.com/jp/free/">Amazon Web Services 無料利用枠</a>(+$0.80/月)</a>で運用されています。無料利用枠終了後にどうするか、というかそれまでに運用し続けるのかも含めて未定です。</p>
+<p class="answer">とりあえず <a href="http://aws.amazon.com/jp/free/">Amazon Web Services 無料利用枠</a>(+$0.80/月(EBS)+α(S3))</a>で運用されています。無料利用枠終了後にどうするか、というかそれまでに運用し続けるのかも含めて未定です。</p>
 <p class="question"><a name="save_content">内容を保存して後から参照できないの？</a></p>
-<p class="answer">現状できません。Amazon S3 使ってみるぜプロジェクト発動によって実装してみるつもりはあります。</p>
+<p class="answer">できるようになりました。<a href="http://ccf.myhome.cx:5000/result/0">http://ccf.myhome.cx:5000/result/0</a> のような形式で参照が可能です。また、<a href="http://ccf.myhome.cx:5000/results/">http://ccf.myhome.cx:5000/results/</a> から過去の結果を辿ることが出来ます。</p>
 <p class="question"><a name="opensource">オープンソース？</a></p>
 <p class="answer">はい。自分の書いた部分については <a href="http://www.boost.org/users/license.html">Boost Software License, Version 1.0</a> です。<a href="http://www.chromium.org/Home">The Chromium Project の Chromium</a> から一部ソースを改変して使用していますが、その部分はオリジナルと同じライセンスになります。ソースコードについては <a href="https://github.com/yak1ex/ccf">Github</a> に置いてあります。</p>
 <p class="question"><a name="new_compiler">○○コンパイラはないの？</a></p>
-<p class="answer">とりあえず無償使用可能として公開されてるものが対象になります。VC7 (.NET 2003) は使用している sandbox ライブラリがそのままではコンパイルできないのでとりあえずパス。VC11 (2012) はまぁ追々。clang の別バージョン等 Linux 上で走るものについては Ubuntu 12.04 でバージョン共存可能なパッケージがあれば早いと思います。</p>
+<p class="answer">とりあえず無償使用可能として公開されてるものが対象になります。VC7 (.NET 2003) は使用している sandbox ライブラリがそのままではコンパイルできないのでとりあえずパス。clang 3.1/3.2 は <a href="https://launchpad.net/~h-rayflood/+archive/llvm">https://launchpad.net/~h-rayflood/+archive/llvm</a> を使用させて頂いています。他、Ubuntu 12.04 でバージョン共存可能なパッケージがあれば早いと思います。</p>
 <p class="question"><a name="boost">Boost は？</a></p>
 <p class="answer">ライブラリのビルドをしていないのでヘッダオンリーであれば 1.46.1 が使用可能です。1.46.1 なのは Ubuntu のパッケージに合わせただけなのでファイルを差し替えれば更新は可能です。反響次第でしょうか。</p>
 <p class="question"><a name="port5000">なんでポート 5000 なの？</a></p>
