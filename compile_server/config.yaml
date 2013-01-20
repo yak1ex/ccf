@@ -538,3 +538,73 @@ linux:
       - -o
       - $output
       - $input
+  clang31:
+    name: 'Ubuntu clang 3.1-debian8ppa2'
+# 48MiB
+    memlimit-link: 50331648
+    compile:
+      - clang++-3.1
+      - -Wall
+      - -c
+      - -o
+      - $output
+      - $input
+    link:
+      - clang++-3.1
+      - -Wall
+      - -o
+      - $output
+      - $input
+  clang31-c++11:
+    name: 'Ubuntu clang 3.1-debian8ppa2'
+# 48MiB
+    memlimit-link: 50331648
+    compile:
+      - clang++-3.1
+      - -Wall
+      - -std=c++0x
+      - -c
+      - -o
+      - $output
+      - $input
+    link:
+      - clang++-3.1
+      - -Wall
+      - -o
+      - $output
+      - $input
+  clang32:
+    name: 'Ubuntu clang 3.2-debian1ppa1~exp5'
+# 48MiB
+    memlimit-link: 50331648
+    compile:
+      - clang++-3.2
+      - -Wall
+      - -c
+      - -o
+      - $output
+      - $input
+    link:
+      - clang++-3.2
+      - -Wall
+      - -o
+      - $output
+      - $input
+  clang32-c++11:
+    name: 'Ubuntu clang 3.2-debian1ppa1~exp5'
+# 48MiB
+    memlimit-link: 50331648
+    compile:
+      - clang++-3.2
+      - -Wall
+      - -std=c++0x
+      - -c
+      - -o
+      - $output
+      - $input
+    link:
+      - clang++-3.2
+      - -Wall
+      - -o
+      - $output
+      - $input
