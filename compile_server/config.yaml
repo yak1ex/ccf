@@ -2,20 +2,20 @@ GLOBAL:
     bucket: cpp-compiler-farm-test
 cygwin:
   GLOBAL:
-# 32MiB
-    memlimit-compile: 33554432
-    memlimit-link: 33554432
-# 4MiB
-    memlimit-execute: 4194304
-# 1sec
-    cpulimit-compile: 10000000
-    cpulimit-link: 10000000
-    cpulimit-execute: 10000000
-# 5sec
-    rtlimit-compile: 5
-    rtlimit-link: 5
+# 48MiB
+    memlimit-compile: 50331648
+    memlimit-link: 50331648
+# 6MiB
+    memlimit-execute: 6291456
 # 2sec
-    rtlimit-execute: 2
+    cpulimit-compile: 20000000
+    cpulimit-link: 20000000
+    cpulimit-execute: 20000000
+# 10sec
+    rtlimit-compile: 10
+    rtlimit-link: 10
+# 4sec
+    rtlimit-execute: 4
     sandbox: win
     sandbox-path: ../sandbox/win/sandbox-compiler.exe
   'vc 8':
@@ -124,6 +124,52 @@ cygwin:
       - '..\sandbox\win\vc10\sandbox.obj'
     sandbox-arg:
       - '..\sandbox\win\vc10\sandbox-win-standalone.lib'
+      - advapi32.lib
+      - user32.lib
+      - shell32.lib
+      - dbghelp.lib
+      - psapi.lib
+    compile:
+      - cl
+      - /nologo
+      - /W3
+      - /EHsc
+      - /MDd
+      - '/Ic:\boost'
+      - /c
+      - /Fo$output
+      - $input
+    link:
+      - cl
+      - /nologo
+      - /W3
+      - /EHsc
+      - /MDd
+      - /Fe$output
+      - $input
+  vc11:
+    name: '2012 / VC11 / 17.00.50727.1'
+    cygwin2native: true
+    env:
+      - VSINSTALLDIR: 'C:\Program Files (x86)\Microsoft Visual Studio 11.0\'
+        VCINSTALLDIR: 'C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\'
+        FrameworkDir32: 'C:\Windows\Microsoft.NET\Framework\'
+        FrameworkVersion32: 'v4.0.30319'
+        Framework35Version: 'v3.5'
+        WindowsSdkDir: 'C:\Program Files (x86)\Windows Kits\8.0\'
+        WindowsSdkDir_old: 'C:\Program Files (x86)\Microsoft SDKs\Windows\v8.0A\'
+      - DevEnvDir: '%VSINSTALLDIR%Common7\IDE\'
+        VS110COMNTOOLS: '%VSINSTALLDIR%Common7\Tools\'
+        FrameworkDir: %FrameworkDir32%
+        FrameworkVersion: %FrameworkVersion32%
+      - PATH: '%DevEnvDir%;%VCINSTALLDIR%BIN;%VSINSTALLDIR%Common7\Tools;%FrameworkDir%%FrameworkVersion%;%FrameworkDir%%Framework35Version%;%VCINSTALLDIR%VCPackages;%WindowsSdkDir%bin\x86;%WindowsSdkDir_old%bin\NETFX 4.0 Tools;%PATH%'
+        INCLUDE: '%VCINSTALLDIR%INCLUDE;%WindowsSdkDir%include\shared;%WindowsSdkDir%include\um;%WindowsSdkDir%include\winrt;%INCLUDE%'
+        LIB: '%VCINSTALLDIR%LIB;%WindowsSdkDir%lib\win8\um\x86;%LIB%'
+        LIBPATH: '%FrameworkDir%%FrameworkVersion%;%FrameworkDir%%Framework35Version%;%WindowsSdkDir%References\CommonConfiguration\Neutral;%ExtensionSDKDir%\Microsoft.VCLibs\11.0\References\CommonConfiguration\neutral;%LIBPATH%'
+    sandbox-prearg:
+      - '..\sandbox\win\vc11\sandbox.obj'
+    sandbox-arg:
+      - '..\sandbox\win\vc11\sandbox-win-standalone.lib'
       - advapi32.lib
       - user32.lib
       - shell32.lib
@@ -322,22 +368,22 @@ cygwin-win:
       - $input
 linux:
   GLOBAL:
+# 72MiB
+    memlimit-compile: 75497472
 # 48MiB
-    memlimit-compile: 50331648
-# 32MiB
-    memlimit-link: 33554432
-# 4MiB
-    memlimit-execute: 4194304
-# 1sec
-    cpulimit-compile: 1
-    cpulimit-link: 1
-    cpulimit-execute: 1
-# 10sec
-    rtlimit-compile: 10
-# 5sec
-    rtlimit-link: 5
+    memlimit-link: 50331648
+# 6MiB
+    memlimit-execute: 6291456
 # 2sec
-    rtlimit-execute: 2
+    cpulimit-compile: 2
+    cpulimit-link: 2
+    cpulimit-execute: 2
+# 20sec
+    rtlimit-compile: 20
+# 10sec
+    rtlimit-link: 10
+# 4sec
+    rtlimit-execute: 4
     sandbox: linux
     sandbox-path: ../sandbox/linux/sandbox-compiler
     sandbox-arg:
@@ -534,6 +580,76 @@ linux:
       - $input
     link:
       - clang++
+      - -Wall
+      - -o
+      - $output
+      - $input
+  clang31:
+    name: 'Ubuntu clang 3.1-debian8ppa2'
+# 48MiB
+    memlimit-link: 50331648
+    compile:
+      - clang++-3.1
+      - -Wall
+      - -c
+      - -o
+      - $output
+      - $input
+    link:
+      - clang++-3.1
+      - -Wall
+      - -o
+      - $output
+      - $input
+  clang31-c++11:
+    name: 'Ubuntu clang 3.1-debian8ppa2'
+# 48MiB
+    memlimit-link: 50331648
+    compile:
+      - clang++-3.1
+      - -Wall
+      - -std=c++0x
+      - -c
+      - -o
+      - $output
+      - $input
+    link:
+      - clang++-3.1
+      - -Wall
+      - -o
+      - $output
+      - $input
+  clang32:
+    name: 'Ubuntu clang 3.2-debian1ppa1~exp5'
+# 48MiB
+    memlimit-link: 50331648
+    compile:
+      - clang++-3.2
+      - -Wall
+      - -c
+      - -o
+      - $output
+      - $input
+    link:
+      - clang++-3.2
+      - -Wall
+      - -o
+      - $output
+      - $input
+  clang32-c++11:
+    name: 'Ubuntu clang 3.2-debian1ppa1~exp5'
+# 48MiB
+    memlimit-link: 50331648
+    compile:
+      - clang++-3.2
+      - -Wall
+      - -std=c++0x
+      - -c
+      - -o
+      - $output
+      - $input
+    link:
+      - clang++-3.2
       - -Wall
       - -o
       - $output

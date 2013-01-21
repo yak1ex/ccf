@@ -136,6 +136,7 @@ sub _invoke
 		$self->storage->update_request_status_async($req_id, {
 			execute => $obj->{execute},
 			source => $obj->{source},
+			title => $obj->{title},
 			keys => $result->{keys},
 		});
 		$responders->{json}($result);
@@ -166,7 +167,7 @@ sub _result
 	$self->storage->get_request_status_async($req_id)->cb(sub {
 		my $req = shift->recv;
 		my $source = Plack::Util::encode_html($req->{source});
-		$responders->{html}($tmpl{RESULT}->fill_in(HASH => { id => \$req_id, 'keys' => $req->{keys}, source => \$source }));
+		$responders->{html}($tmpl{RESULT}->fill_in(HASH => { id => \$req_id, 'keys' => $req->{keys}, source => \$source, title => \$req->{title} }));
 	});
 }
 
@@ -176,7 +177,7 @@ sub _rlist
 	$obj->{from} = ${$self->req_id} - 1 if ! defined $obj->{from} || $obj->{from} > ${$self->req_id} - 1;
 	$obj->{number} ||= 20;
 	$self->storage->get_requests_async($obj->{from}, $obj->{number})->cb(sub {
-		my $keys = [ map { [$_->[0], Time::Duration::ago(DateTime->now->epoch - $_->[1]->epoch, 1) ] } @{shift->recv} ];
+		my $keys = [ map { [$_->[0], Time::Duration::ago(DateTime->now->epoch - $_->[1]->epoch, 1), $_->[2] ] } @{shift->recv} ];
 		$responders->{html}($tmpl{RLIST}->fill_in(HASH => { keys => \$keys, from => $obj->{from}, number => $obj->{number}, max_id => ${$self->req_id}-1 }));
 	});
 }

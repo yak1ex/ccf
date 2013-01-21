@@ -127,7 +127,16 @@ sub get_requests_async
 		my $file = $self->_path($key);
 		unshift @$result, [$id, DateTime->from_epoch(epoch => (stat($file))[9]) ] if -f $file;
 	}
-	$cv->send($result);
+	$cv->begin(sub { $cv->send($result); });
+	foreach my $idx (0..$#$result) {
+		$cv->begin;
+		$self->get_request_status_async($result->[$idx][0])->cb(sub {
+			my $obj = shift->recv;
+			push @{$result->[$idx]}, $obj;
+			$cv->end;
+		});
+	}
+	$cv->end;
 	return $cv;
 }
 
