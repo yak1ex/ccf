@@ -2,20 +2,20 @@ GLOBAL:
     bucket: cpp-compiler-farm-test
 cygwin:
   GLOBAL:
-# 32MiB
-    memlimit-compile: 33554432
-    memlimit-link: 33554432
-# 4MiB
-    memlimit-execute: 4194304
-# 1sec
-    cpulimit-compile: 10000000
-    cpulimit-link: 10000000
-    cpulimit-execute: 10000000
-# 5sec
-    rtlimit-compile: 5
-    rtlimit-link: 5
+# 48MiB
+    memlimit-compile: 50331648
+    memlimit-link: 50331648
+# 6MiB
+    memlimit-execute: 6291456
 # 2sec
-    rtlimit-execute: 2
+    cpulimit-compile: 20000000
+    cpulimit-link: 20000000
+    cpulimit-execute: 20000000
+# 10sec
+    rtlimit-compile: 10
+    rtlimit-link: 10
+# 4sec
+    rtlimit-execute: 4
     sandbox: win
     sandbox-path: ../sandbox/win/sandbox-compiler.exe
   'vc 8':
@@ -322,22 +322,22 @@ cygwin-win:
       - $input
 linux:
   GLOBAL:
+# 72MiB
+    memlimit-compile: 75497472
 # 48MiB
-    memlimit-compile: 50331648
-# 32MiB
-    memlimit-link: 33554432
-# 4MiB
-    memlimit-execute: 4194304
-# 1sec
-    cpulimit-compile: 1
-    cpulimit-link: 1
-    cpulimit-execute: 1
-# 10sec
-    rtlimit-compile: 10
-# 5sec
-    rtlimit-link: 5
+    memlimit-link: 50331648
+# 6MiB
+    memlimit-execute: 6291456
 # 2sec
-    rtlimit-execute: 2
+    cpulimit-compile: 2
+    cpulimit-link: 2
+    cpulimit-execute: 2
+# 20sec
+    rtlimit-compile: 20
+# 10sec
+    rtlimit-link: 10
+# 4sec
+    rtlimit-execute: 4
     sandbox: linux
     sandbox-path: ../sandbox/linux/sandbox-compiler
     sandbox-arg:
