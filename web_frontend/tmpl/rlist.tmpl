@@ -43,8 +43,12 @@ $(function() \{
 {
 	foreach my $key (@$keys) {
 		my $str = $key->[2]{source};
-		$str =~ s/\n/<br>/g;
 		$str =~ s/'/\\'/g;
+		$str =~ s/&/&amp;/g;
+		$str =~ s/\t/&nbsp;&nbsp;/g;
+		$str =~ s/</&lt;/g;
+		$str =~ s/>/&gt;/g;
+		$str =~ s/\n/<br>/g;
 		$OUT .= "\t\$('#item-".$key->[0]."').data('powertip', '".$str."');\n";
 	}
 }
