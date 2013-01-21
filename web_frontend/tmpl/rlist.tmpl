@@ -23,7 +23,7 @@
 <ul>
 {
 	foreach my $key (@$keys) {
-		$OUT .= '<li><span class="item" id="item-'.$key->[0].'"><a href="/result/'.$key->[0].'">Request: '.$key->[0].'</a>&nbsp;&nbsp;('.$key->[1].') '.$key->[2]{title}.' ['.(1+$key->[2]{source} =~ s/\n(?!$)/\n/g).' lines] '.join(' / ', keys %{$key->[2]{keys}}).'</span><br>';
+		$OUT .= '<li><span class="item" id="item-'.$key->[0].'"><a href="/result/'.$key->[0].'">Request: '.$key->[0].'</a>&nbsp;&nbsp;('.$key->[1].') '.$key->[2]{title}.' ['.(1+$key->[2]{source} =~ s/\n(?!$)/\n/g).' lines] '.join(' / ', sort keys %{$key->[2]{keys}}).'</span><br>';
 	}
 }
 </ul>
