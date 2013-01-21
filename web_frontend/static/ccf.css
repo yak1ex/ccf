@@ -73,4 +73,6 @@ body {
 
 #powertip {
     width: 300px;
+    font-size: 10px;
+    overflow: hidden;
 }
