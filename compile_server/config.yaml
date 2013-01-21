@@ -147,6 +147,52 @@ cygwin:
       - /MDd
       - /Fe$output
       - $input
+  vc11:
+    name: '2012 / VC11 / 17.00.50727.1'
+    cygwin2native: true
+    env:
+      - VSINSTALLDIR: 'C:\Program Files (x86)\Microsoft Visual Studio 11.0\'
+        VCINSTALLDIR: 'C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\'
+        FrameworkDir32: 'C:\Windows\Microsoft.NET\Framework\'
+        FrameworkVersion32: 'v4.0.30319'
+        Framework35Version: 'v3.5'
+        WindowsSdkDir: 'C:\Program Files (x86)\Windows Kits\8.0\'
+        WindowsSdkDir_old: 'C:\Program Files (x86)\Microsoft SDKs\Windows\v8.0A\'
+      - DevEnvDir: '%VSINSTALLDIR%Common7\IDE\'
+        VS110COMNTOOLS: '%VSINSTALLDIR%Common7\Tools\'
+        FrameworkDir: %FrameworkDir32%
+        FrameworkVersion: %FrameworkVersion32%
+      - PATH: '%DevEnvDir%;%VCINSTALLDIR%BIN;%VSINSTALLDIR%Common7\Tools;%FrameworkDir%%FrameworkVersion%;%FrameworkDir%%Framework35Version%;%VCINSTALLDIR%VCPackages;%WindowsSdkDir%bin\x86;%WindowsSdkDir_old%bin\NETFX 4.0 Tools;%PATH%'
+        INCLUDE: '%VCINSTALLDIR%INCLUDE;%WindowsSdkDir%include\shared;%WindowsSdkDir%include\um;%WindowsSdkDir%include\winrt;%INCLUDE%'
+        LIB: '%VCINSTALLDIR%LIB;%WindowsSdkDir%lib\win8\um\x86;%LIB%'
+        LIBPATH: '%FrameworkDir%%FrameworkVersion%;%FrameworkDir%%Framework35Version%;%WindowsSdkDir%References\CommonConfiguration\Neutral;%ExtensionSDKDir%\Microsoft.VCLibs\11.0\References\CommonConfiguration\neutral;%LIBPATH%'
+    sandbox-prearg:
+      - '..\sandbox\win\vc11\sandbox.obj'
+    sandbox-arg:
+      - '..\sandbox\win\vc11\sandbox-win-standalone.lib'
+      - advapi32.lib
+      - user32.lib
+      - shell32.lib
+      - dbghelp.lib
+      - psapi.lib
+    compile:
+      - cl
+      - /nologo
+      - /W3
+      - /EHsc
+      - /MDd
+      - '/Ic:\boost'
+      - /c
+      - /Fo$output
+      - $input
+    link:
+      - cl
+      - /nologo
+      - /W3
+      - /EHsc
+      - /MDd
+      - /Fe$output
+      - $input
 cygwin-test:
   GLOBAL:
     memlimit-compile: 0
