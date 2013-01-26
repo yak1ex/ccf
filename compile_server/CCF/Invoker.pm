@@ -28,6 +28,7 @@ sub new
 	}, $class;
 }
 
+# Search configuration value from specific configuration and GLOBAL configuration.
 sub _config
 {
 	my $self = shift;
@@ -39,24 +40,28 @@ sub _config
 	return undef;
 }
 
+# Check verbose flag
 sub _verbose
 {
 	my ($self) = @_;
 	return exists $self->{_verbose} && $self->{_verbose};
 }
 
+# Check debug flag
 sub _debug
 {
 	my ($self) = @_;
 	return exists $self->{_debug} && $self->{_debug};
 }
 
+# Check cygwin2native configuration flag
 sub _is_cygwin2native
 {
 	my ($self, $type) = @_;
 	return exists $self->_config->{$type}{cygwin2native} && $self->_config->{$type}{cygwin2native} eq 'true';
 }
 
+# Setup general environment variables and call chain if necessary.
 sub _prepare_env
 {
 	my ($self, $type, $prev) = @_;
@@ -80,6 +85,7 @@ sub _prepare_env
 	};
 }
 
+# Check sandbox configuration flag
 sub _is_sandbox
 {
 	my ($self, $type) = @_;
@@ -87,6 +93,7 @@ sub _is_sandbox
 	return defined $res && ($res eq 'win' || $res eq 'linux');
 }
 
+# Setup sandbox environment variables and call chain if necessary.
 sub _sandbox_env
 {
 	my ($self, $type, $mode, $prev, $output) = @_;
@@ -112,6 +119,7 @@ sub _sandbox_env
 }
 
 # TODO: Refactor
+# Make arguments for run_cmd
 sub _make_arg
 {
 	my ($self, $type, $mode, $input, $output, $capture) = @_;
@@ -160,6 +168,7 @@ sub _make_arg
 	return ([@res], @arg);
 }
 
+# If necessary, a result is get from a file
 sub _recover_result
 {
 	my ($self, $type, $capture) = @_;
@@ -176,6 +185,7 @@ sub _recover_result
 	}
 }
 
+# Decode character encoding
 sub _dec
 {
 	my ($self, $type, $str) = @_;
@@ -183,6 +193,7 @@ sub _dec
 	return Encode::decode('CP'.get_codepage(), $str);
 }
 
+# Make temporary file without auto deletion
 sub __mktemp
 {
 	my ($suffix, $content) = @_;
@@ -192,6 +203,7 @@ sub __mktemp
 	return $fh->filename;
 }
 
+# External I/F for compilation
 sub compile
 {
 	my ($self, $type, $source, $callback, $not_unlink) = @_;
@@ -213,6 +225,7 @@ sub compile
 	});
 }
 
+# Adjust symbol name in an object file to hook
 sub _obj_adjust
 {
 	my ($self, $type, $obj, $callback) = @_;
@@ -235,6 +248,7 @@ sub _obj_adjust
 	}
 }
 
+# External I/F for link
 sub link
 {
 	my ($self, $type, $source, $callback) = @_;
@@ -275,6 +289,7 @@ sub link
 	}, 1);
 }
 
+# External I/F for execution
 sub execute
 {
 	my ($self, $type, $out, $callback) = @_;
@@ -293,6 +308,7 @@ sub execute
 
 1;
 __END__
+
 =head1 NAME
 
 CCF::Invoker - Compiler invocation handler for C++ Compiler Farm
