@@ -20,7 +20,7 @@ $(function() {
         // Setup compiler types
 		var keys = $.map(msg, function(value, key) { return key; }).sort();
 		$.each(keys, function(idx, key) {
-			$('#compiler_types').append('<input type="checkbox" class="ctypes" id="' + key + '" name="' + key + '"><label for="' + key + '">[' + key + '] ' + msg[key] + '</label>' + (idx % 2 == 1 ? '<br>' : ' '));
+			$('#compiler_types').append('<input type="checkbox" class="ctypes'+(msg[key][1] != 0 ? ' ctypes11' : '')+'" id="' + key + '" name="' + key + '"><label for="' + key + '">[' + key + '] ' + msg[key][0] + '</label>' + (idx % 2 == 1 ? '<br>' : ' '));
 		});
         // Apply jQuery theme and add icons
 		$('input:checkbox').button({ icons: { primary: 'ui-icon-minus' } })
@@ -36,6 +36,9 @@ $(function() {
         $('.selector').button();
         $('#selectall').click(function(e) {
 			$('.ctypes:not(:checked)').click();
+		});
+        $('#select11all').click(function(e) {
+			$('.ctypes11:not(:checked)').click();
 		});
         $('#deselectall').click(function(e) {
 			$('.ctypes:checked').click();

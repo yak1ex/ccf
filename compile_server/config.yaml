@@ -104,6 +104,7 @@ cygwin:
       - $input
   vc10:
     name: '2010 / VC10 / 16.00.30319.01'
+    c++11: true
     cygwin2native: true
     env:
       - VSINSTALLDIR: 'C:\Program Files (x86)\Microsoft Visual Studio 10.0\'
@@ -149,6 +150,7 @@ cygwin:
       - $input
   vc11:
     name: '2012 / VC11 / 17.00.50727.1'
+    c++11: true
     cygwin2native: true
     env:
       - VSINSTALLDIR: 'C:\Program Files (x86)\Microsoft Visual Studio 11.0\'
@@ -217,6 +219,7 @@ cygwin-test:
       - $input
   gcc45-c++11:
     name: 'gcc 4.5.3 with -std=c++0x'
+    c++11: true
     compile:
       - g++
       - -Wall
@@ -324,6 +327,7 @@ cygwin-win:
       - $input
   vc10:
     name: '2010 / VC10 / 16.00.40219.01'
+    c++11: true
     cygwin2native: true
     env:
       - VSINSTALLDIR: 'C:\Program Files (x86)\Application\Microsoft Visual Studio 10.0\'
@@ -406,6 +410,7 @@ linux:
       - $input
   gcc44-c++11:
     name: 'Ubuntu/Linaro 4.4.7-1ubuntu2'
+    c++11: true
     compile:
       - g++-4.4
       - -Wall
@@ -438,6 +443,7 @@ linux:
       - $input
   gcc45-c++11:
     name: 'Ubuntu/Linaro 4.5.3-12ubuntu2'
+    c++11: true
     compile:
       - g++-4.5
       - -Wall
@@ -470,6 +476,7 @@ linux:
       - $input
   gcc46-c++11:
     name: 'Ubuntu/Linaro 4.6.3-1ubuntu5'
+    c++11: true
     compile:
       - g++-4.6
       - -Wall
@@ -502,6 +509,7 @@ linux:
       - $input
   gcc47-c++11:
     name: 'Ubuntu/Linaro 4.7.2-11precise2'
+    c++11: true
     compile:
       - g++-4.7
       - -Wall
@@ -534,6 +542,7 @@ linux:
       - $input
   gcc48-c++11:
     name: 'gcc 4.8.0 20130210 (exp.)'
+    c++11: true
     compile:
       - g++-4.8
       - -Wall
@@ -568,6 +577,7 @@ linux:
       - $input
   clang30-c++11:
     name: 'Ubuntu clang 3.0-6ubuntu3'
+    c++11: true
 # 48MiB
     memlimit-link: 50331648
     compile:
@@ -603,6 +613,7 @@ linux:
       - $input
   clang31-c++11:
     name: 'Ubuntu clang 3.1-debian8ppa2'
+    c++11: true
 # 48MiB
     memlimit-link: 50331648
     compile:
@@ -638,6 +649,7 @@ linux:
       - $input
   clang32-c++11:
     name: 'Ubuntu clang 3.2-debian1ppa1~exp5'
+    c++11: true
 # 48MiB
     memlimit-link: 50331648
     compile:

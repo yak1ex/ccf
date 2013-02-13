@@ -22,11 +22,13 @@ sub new
 			my $entry = $self->{_list}[$idx];
 			foreach my $key (keys %{$entry}) {
 				if(exists $self->{_type}{$key}) {
-					carp 'Name mismatch with the same key' if $self->{_type}{$key}[0] ne $entry->{$key};
+					carp 'Name mismatch with the same key' if $self->{_type}{$key}[0] ne $entry->{$key}[0];
+					carp 'C++11 mismatch with the same key' if $self->{_type}{$key}[2] != (defined($entry->{$key}[1]) && $entry->{$key}[1] eq 'true');
 					push @{$self->{_type}{$key}[1]}, $idx;
 				} else {
-					$self->{_type}{$key}[0] = $entry->{$key};
+					$self->{_type}{$key}[0] = $entry->{$key}[0];
 					$self->{_type}{$key}[1] = [ $idx ];
+					$self->{_type}{$key}[2] = defined($entry->{$key}[1]) && $entry->{$key}[1] eq 'true';
 				}
 			}
 		}
@@ -88,7 +90,7 @@ sub list
 	my ($self) = @_;
 	my $obj = {};
 	foreach my $key (keys %{$self->{_type}}) {
-		$obj->{$key} = $self->{_type}{$key}[0];
+		$obj->{$key} = [ $self->{_type}{$key}[0], $self->{_type}{$key}[2] ];
 	}
 	return $obj;
 }
