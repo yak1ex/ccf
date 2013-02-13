@@ -34,6 +34,11 @@ $(function() {
         // Apply jQuery theme
         // TODO: Use table?
         $('.selector').button();
+		if($.cookie('last_compiler_types') !== undefined) {
+			$.each($.cookie('last_compiler_types').split('|'), function(idx, key) {
+				$('#'+key.replace(/([-+ ])/g, '\\$1')+':not(:checked)').click();
+			});
+		}
         $('#selectall').click(function(e) {
 			$('.ctypes:not(:checked)').click();
 		});
@@ -81,6 +86,7 @@ $(function() {
 			window.alert('You MUST choose at least one compiler.');
 			return false;
 		}
+		$.cookie('last_compiler_types', types.join('|'), { expires: 30 });
 		$.ajax({
 			type: 'POST',
 			url: 'ccf.cgi',
