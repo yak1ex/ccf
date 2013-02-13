@@ -172,7 +172,9 @@ extern "C" int main_(int argc, char** argv)
 	actualarg += " 2>&1";
 	args[2] = actualarg.c_str();
 	args[3] = 0;
-	_execvp(args[0], args); // Basically, no return
+	// Need to use _spawn() because _exec() does not transfer exit status
+	int ret = _spawnvp(_P_WAIT, args[0], args);
+	if(ret != -1) return ret;
 	return 251;
 }
 #endif
