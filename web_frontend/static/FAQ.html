@@ -53,6 +53,10 @@
 <p class="question"><a name="message_including_CCF">CCF: ... とかいうメッセージが表示される</a></p>
 <p class="answer">コンパイル/実行中のエラー/制限超過です。とりあえず、かなりぎりぎりの制限設定にしてあるためちょっと混んでたり複雑だったりするとすぐに制限超過に引っかかるかもしれません。その辺は今後調整できればと思っています。CCF を含むメッセージとしては以下のものがあります。</p>
 <ul class="list-inside">
+<li>終了ステータス<br>基本的にエラーではなくコンパイル結果の実行時に 0 以外の終了ステータスが返ってきた場合です。上位 8bit が戻り値、下位 8bit がシグナルの情報になります。意図的に 0 以外のステータスを返せばどのフローで終了したか判別できます。
+<ul>
+<li>CCF: exit with non-zero status: 0xXXXX
+</ul>
 <li>実行時エラー<br>コンパイラの実行等でのエラーです。上位 8bit が戻り値、下位 8bit がシグナルの情報になります。
 <ul>
 <li>CCF: compilation failed by status: 0xXXXX

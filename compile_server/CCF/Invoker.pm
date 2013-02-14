@@ -299,7 +299,7 @@ sub execute
 		my $rc = shift->recv;
 		$result = $self->_recover_result($type, $result);
 		if($rc) {
-			$result .= sprintf "CCF: execution failed by status: 0x%04X\n", $rc;
+			$result .= sprintf "CCF: exit with non-zero status: 0x%04X\n", $rc;
 		}
 		unlink $out;
 		$callback->($rc, $result);
