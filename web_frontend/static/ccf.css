@@ -31,10 +31,16 @@ body {
 }
 
 #source {
-    width: 100%;
+    background: #fff;
+    width: 99%;
     height: 300px;
-    line-height: 1.1em;
 }
+
+#source-box {
+    width: 100%;
+    height: 305px;
+}
+
 
 #qa-list {
     font-size: 16px;
