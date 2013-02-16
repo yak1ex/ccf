@@ -22,10 +22,30 @@ $(function() {
     editor.setTheme("ace/theme/eclipse");
     editor.getSession().setMode("ace/mode/c_cpp");
 	editor.commands.addCommand({
-		name: 'myCommand',
+		name: 'execute-compiler',
 		bindKey: 'F5',
 		exec: function(editor) {
 			$('#form').submit();
+		},
+		readonly: false
+	});
+	editor.commands.addCommand({
+		name: 'next-compiler-tab',
+		bindKey: 'Alt-PageDown',
+		exec: function(editor) {
+			var idx = $('#result').tabs('option', 'active');
+			var len = $('#result .ui-tabs-nav li').length;
+			$('#result').tabs('option', 'active', idx == len - 1 ? 0 : idx + 1);
+		},
+		readonly: false
+	});
+	editor.commands.addCommand({
+		name: 'prev-compiler-tab',
+		bindKey: 'Alt-PageUp',
+		exec: function(editor) {
+			var idx = $('#result').tabs('option', 'active');
+			var len = $('#result .ui-tabs-nav li').length;
+			$('#result').tabs('option', 'active', idx > 0 ? idx - 1 : len - 1);
 		},
 		readonly: false
 	});
