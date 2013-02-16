@@ -77,8 +77,9 @@ body {
     border: 1px solid;
 }
 
-#powertip {
+.tooltip {
     width: 300px;
     font-size: 10px;
+    line-height: 1.1em;
     overflow: hidden;
 }

@@ -1,12 +1,12 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<link href="/import/jquery.powertip.css" rel="stylesheet" type="text/css">
+<link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.1/themes/cupertino/jquery-ui.min.css" rel="stylesheet" type="text/css">
 <link href="/ccf.css" rel="stylesheet" type="text/css">
 <link rel="shortcut icon" href="/favicon.ico" type="image/vnd.microsoft.icon" />
 <link rel="icon" href="/favicon.ico" type="image/vnd.microsoft.icon" />
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
-<script src="/import/jquery.powertip-1.1.0.min.js" type="text/javascript"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.1/jquery-ui.min.js"></script>
 <title>C++ Compiler Farm - Recent {scalar @$keys} requests from ID: {$keys->[0][0]}</title>
 </head>
 <body>
@@ -50,10 +50,21 @@ $(function() \{
 		$str =~ s/</&lt;/g;
 		$str =~ s/>/&gt;/g;
 		$str =~ s/\n/<br>/g;
-		$OUT .= "\t\$('#item-".$key->[0]."').data('powertip', '".$str."');\n";
+		$OUT .= "\t\$('#item-".$key->[0]."').data('tooltip', '".$str."');\n";
 	}
 }
-	$('.item').powerTip(\{placement:'e',mouseOnToPopup:true\})
-\})
+	$('.item').tooltip(\{
+		items: '.item',
+		content: function() \{
+				return $(this).data('tooltip');
+			\},
+		position: \{
+				my: 'left+10 center+25%',
+				at: 'right center',
+				collision: 'fit'
+			\},
+		tooltipClass: 'tooltip'
+	\});
+\});
 </script>
 </html>
