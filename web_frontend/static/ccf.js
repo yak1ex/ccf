@@ -10,6 +10,14 @@ $(function() {
     var editor = ace.edit("source");
     editor.setTheme("ace/theme/eclipse");
     editor.getSession().setMode("ace/mode/c_cpp");
+	editor.commands.addCommand({
+		name: 'myCommand',
+		bindKey: 'F5',
+		exec: function(editor) {
+			$('#form').submit();
+		},
+		readonly: false
+	});
 
 	var status = {};
 	var idxmap = {};
