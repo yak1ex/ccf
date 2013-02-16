@@ -5,7 +5,18 @@
 //     (See accompanying file LICENSE_1_0.txt or copy at
 //      http://www.boost.org/LICENSE_1_0.txt)
 
-var tabopts = { spinner: '', cache: true };
+var tabopts = {
+	beforeLoad: function( event, ui ) {
+		if ( ui.tab.data( "loaded" ) ) {
+			event.preventDefault();
+			return;
+		}
+
+		ui.jqXHR.success(function() {
+			ui.tab.data( "loaded", true );
+		});
+	}
+};
 $(function() {
     var editor = ace.edit("source");
     editor.setTheme("ace/theme/eclipse");
@@ -66,7 +77,7 @@ $(function() {
 	});
 	// Status updater
 	var updater = function() {
-		var idx = $('#result').tabs('option', 'selected');
+		var idx = $('#result').tabs('option', 'active');
 		if(idx != 0) {
 			if(status[idxmap[idx]].status != 4) {
 				$.ajax({
@@ -80,7 +91,7 @@ $(function() {
 				setTimeout(updater, 1000);
 			} else {
 				$('#result').tabs('load', idx);
-				status[idmap[msg.id]].status = 5;
+				status[idxmap[idx]].status = 5;
 			}
 		}
 	};
@@ -90,8 +101,11 @@ $(function() {
 			window.alert('Currently, source size is limited to 10KiB.');
 			return false;
 		}
-		$('#result').tabs('destroy');
-		$('#result').tabs(tabopts);
+		$('.result-tabs').each(function() {
+			var tab = $(this).remove();
+			$('#' + tab.attr('aria-controls')).remove();
+		});
+		$('#result').tabs('refresh');
 		var types = $.map($('.ctypes:checked'), function(obj, idx) { return obj.name; });
 		if(types.length == 0) {
 			window.alert('You MUST choose at least one compiler.');
@@ -115,18 +129,21 @@ $(function() {
 			$.each(msg.keys, function(key, id) {
 				status[key].id = id;
 				idmap[id] = key;
-				$('#result').tabs('url', status[key].idx, 'ccf.cgi?command=show&id=' + id);
+				$('#result').find('.ui-tabs-nav li:eq(' + status[key].idx + ') a').attr('href', 'ccf.cgi?command=show&id=' + id);
 			});
+			$('#result').tabs('refresh');
 		});
 		$.each(types, function(idx, obj) {
-			$('#result').tabs('add', 'ccf.dummy.html', obj);
-			status[obj] = { status: 0, idx: $('#result').tabs('length')-1 };
-			idxmap[$('#result').tabs('length')-1] = obj;
+			// Add new tab
+			$('<li class="result-tabs"><a href="ccf.dummy.html">'+obj+'</a></li>').appendTo('#result .ui-tabs-nav');
+			status[obj] = { status: 0, idx: $('#result .ui-tabs-nav li').length - 1 };
+			idxmap[$('#result .ui-tabs-nav li').length - 1] = obj;
 		});
+		$('#result').tabs('refresh');
 		return false;
 	});
 	$('#result').tabs(tabopts);
-	$('#result').bind("tabsselect", function(event, ui) {
+	$('#result').bind('tabsactivate', function(event, ui) {
 		setTimeout(updater, 1000);
 		return true;
 	});
