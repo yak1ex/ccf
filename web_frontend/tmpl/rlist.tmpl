@@ -59,9 +59,13 @@ $(function() \{
 				return $(this).data('tooltip');
 			\},
 		position: \{
-				my: 'left+10 center+25%',
+				my: 'left+25 center+25%',
 				at: 'right center',
-				collision: 'fit'
+				collision: 'fit',
+				using: function(position, feedback) \{
+						$(this).css(position);
+						$('<div>').addClass('arrow').appendTo(this);
+					\},
 			\},
 		tooltipClass: 'tooltip'
 	\});
