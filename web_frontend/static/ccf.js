@@ -93,7 +93,6 @@ $(function() {
 		});
 		$('#input-container').addClass('ui-widget ui-widget-content ui-corner-all');
 		$('#source-label').addClass('ui-widget-header ui-corner-all');
-		$('#title-row').addClass('ui-widget-header ui-corner-all');
 	});
 	// Status updater
 	var updater = function() {
@@ -132,14 +131,17 @@ $(function() {
 			return false;
 		}
 		$.cookie('last_compiler_types', types.join('|'), { expires: 30 });
+		var source = editor.getValue();
+		source.match(/^\/\/\s*([^\n]*)\n/);
+		var title = RegExp.$1;
 		$.ajax({
 			type: 'POST',
 			url: 'ccf.cgi',
 			traditional: true,
 			data: {
 				command: 'invoke',
-				source: editor.getValue(),
-				title: $('#title').val(),
+				source: source,
+				title: title,
 				type: types,
 				execute: ($('#compile:checked').length == 0 ? 'true' : 'false'),
 			},
