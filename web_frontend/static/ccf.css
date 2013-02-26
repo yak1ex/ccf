@@ -107,3 +107,25 @@ body {
     -o-transform: rotate(45deg);
     tranform: rotate(45deg);
 }
+
+.show-header {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.show-note {
+    font-weight: bold;
+    text-decoration: underline;
+    margin-left: 1em;
+}
+
+.show-output {
+    background: #fff;
+    margin-left: 2em;
+}
+
+.show-error {
+    color: #800;
+    font-weight: bold;
+    margin-left: 2em;
+}

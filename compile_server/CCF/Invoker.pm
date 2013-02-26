@@ -207,17 +207,17 @@ sub __mktemp
 sub compile
 {
 	my ($self, $type, $source, $callback, $not_unlink) = @_;
-	my $result;
+	my ($result, $tresult) = {};
 
 	my $input = __mktemp('.cpp', $source);
 	my $obj   = __mktemp(($self->_is_cygwin2native($type) || $OSNAME eq 'MSWin32') ? '.obj' : '.o');
 
-	run_cmd($self->_make_arg($type, 'compile', $input, $obj, \$result))->cb(sub {
+	run_cmd($self->_make_arg($type, 'compile', $input, $obj, \$tresult))->cb(sub {
 		my $rc = shift->recv;
-		$result = $self->_recover_result($type, $result);
-		$result = $self->_dec($type, $result);
+		$tresult = $self->_recover_result($type, $tresult);
+		$result->{output} = $self->_dec($type, $tresult);
 		if($rc) {
-			$result .= sprintf "CCF: compilation failed by status: 0x%04X\n", $rc;
+			$result->{error} .= sprintf "CCF: compilation failed by status: 0x%04X\n", $rc;
 		}
 		unlink $obj unless defined $not_unlink;
 		unlink $input;
@@ -232,19 +232,17 @@ sub _obj_adjust
 
 	if($self->_is_sandbox($type)) {
 		my $obj2 = __mktemp(($self->_is_cygwin2native($type) || $OSNAME eq 'MSWin32') ? '.obj' : '.o');
-		my $result;
-		run_cmd(['objcopy', '--redefine-sym', ($self->_config($type, 'sandbox') eq 'win' ? '_main=_main_' : 'main=main_'), $obj, $obj2], '<', '/dev/null', '>', \$result, '2>', \$result)->cb(sub {
+		my ($result, $tresult) = {};
+		run_cmd(['objcopy', '--redefine-sym', ($self->_config($type, 'sandbox') eq 'win' ? '_main=_main_' : 'main=main_'), $obj, $obj2], '<', '/dev/null', '>', \$tresult, '2>', \$tresult)->cb(sub {
 			my $rc = shift->recv;
 			if($rc) {
-				$result .= $self->_dec($type, $result);
-			} else {
-				$result = '';
+				$result->{output} .= $self->_dec($type, $tresult);
 			}
 			unlink $obj;
 			$callback->($rc, $result, $obj2);
 		});
 	} else {
-		$callback->(0, '', $obj);
+		$callback->(0, {}, $obj);
 	}
 }
 
@@ -261,23 +259,23 @@ sub link
 			return;
 		}
 		$self->_obj_adjust($type, $obj, sub {
-			my ($rc, $result2, $obj) = @_;
-			$result .= $self->_dec($type, $result2);
+			my ($rc, $tresult, $obj) = @_;
+			$result->{output} .= $self->_dec($type, $tresult->{output});
 			if($rc) {
 				unlink $obj;
-				$result .= sprintf "CCF: Adjujstment of obj prior to link failed by status: 0x%04X\n", $rc;
+				$result->{error} .= sprintf "CCF: Adjujstment of obj prior to link failed by status: 0x%04X\n", $rc;
 				$callback->($rc, $result);
 				return;
 			}
-			my $result3;
+			undef $tresult;
 			my $out = __mktemp('.exe');
-			run_cmd($self->_make_arg($type, 'link', $obj, $out, \$result3))->cb(sub {
+			run_cmd($self->_make_arg($type, 'link', $obj, $out, \$tresult))->cb(sub {
 				my $rc = shift->recv;
-				$result3 = $self->_recover_result($type, $result3);
-				$result .= $self->_dec($type, $result3);
+				$tresult = $self->_recover_result($type, $tresult);
+				$result->{output} .= $self->_dec($type, $tresult);
 				if($rc) {
 					unlink $obj;
-					$result .= sprintf "CCF: link failed by status: 0x%04X\n", $rc;
+					$result->{error} .= sprintf "CCF: link failed by status: 0x%04X\n", $rc;
 					$callback->($rc, $result);
 					return;
 				}
@@ -293,13 +291,13 @@ sub link
 sub execute
 {
 	my ($self, $type, $out, $callback) = @_;
-	my $result;
+	my ($result, $tresult) = {};
 
-	run_cmd($self->_make_arg($type, 'execute', $out, undef, \$result))->cb(sub {
+	run_cmd($self->_make_arg($type, 'execute', $out, undef, \$tresult))->cb(sub {
 		my $rc = shift->recv;
-		$result = $self->_recover_result($type, $result);
+		$result->{output} = $self->_recover_result($type, $tresult);
 		if($rc) {
-			$result .= sprintf "CCF: exit with non-zero status: 0x%04X\n", $rc;
+			$result->{error} .= sprintf "CCF: exit with non-zero status: 0x%04X\n", $rc;
 		}
 		unlink $out;
 		$callback->($rc, $result);

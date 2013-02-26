@@ -77,14 +77,14 @@ $cv->cb(sub {
 	if(!exists $obj->{type} || !exists $conf->{$obj->{type}}) {
 		$storage->update_compile_status_async($curid, {
 			status => FINISHED,
-			compile => 'CCF: Unknown compiler type.',
+			compile => { error => 'CCF: Unknown compiler type.' },
 		});
 		return;
 	}
 	if(exists $obj->{source} && length $obj->{source} > 10 * 1024) {
 		$storage->update_compile_status_async($curid, {
 			status => FINISHED,
-			compile => 'CCF: Source size is over 10KiB.',
+			compile => { error => 'CCF: Source size is over 10KiB.' },
 		});
 		return;
 	}
@@ -96,7 +96,7 @@ $cv->cb(sub {
 		$invoker->link($obj->{type}, $obj->{source}, sub {
 			my ($rc, $result, $out) = @_;
 		$cv->cb(sub {
-			$opts{v} and print STDERR "---compile begin---\n$result---compile  end ---\n";
+			$opts{v} and print STDERR "---compile begin---\n$result->{output}$result->{error}---compile  end ---\n";
 			if($rc) {
 				$storage->update_compile_status_async($curid, {
 					status => FINISHED,
@@ -110,11 +110,11 @@ $cv->cb(sub {
 				$invoker->execute($obj->{type}, $out, sub{
 					my ($rc, $result) = @_;
 				$cv->cb(sub {
-					if(length $result > 10 * 1024) {
-						$result = substr $result, 0, 10 * 1024;
-						$result .= 'CCF: Output size is over 10KiB.';
+					if(length $result->{output} > 10 * 1024) {
+						$result->{output} = substr $result->{output}, 0, 10 * 1024;
+						$result->{error} .= 'CCF: Output size is over 10KiB.';
 					}
-					$opts{v} and print STDERR "---execute begin---\n$result---execute  end ---\n";
+					$opts{v} and print STDERR "---execute begin---\n$result->{output}$result->{error}---execute  end ---\n";
 					unlink $out;
 					$storage->update_compile_status_async($curid, {
 						status => FINISHED,
@@ -129,7 +129,7 @@ $cv->cb(sub {
 		$invoker->compile($obj->{type}, $obj->{source}, sub {
 			my ($rc, $result) = @_;
 		$cv->cb(sub {
-			$opts{v} and print STDERR "---compile begin---\n$result---compile  end ---\n";
+			$opts{v} and print STDERR "---compile begin---\n$result->{output}$result->{error}---compile  end ---\n";
 			$storage->update_compile_status_async($curid, {
 				status => FINISHED,
 				compile => $result,
