@@ -5,7 +5,7 @@ use warnings;
 use feature 'switch';
 
 use parent qw(Plack::Component);
-use CGI::PSGI;
+use Plack::Request;
 use Plack::Util;
 
 use AnyEvent;
@@ -210,22 +210,22 @@ sub call
 	return sub {
 		my $responder = shift;
 
-		my $q = CGI::PSGI->new($env);
+		my $q = Plack::Request->new($env);
 		my $responders = {
 			html => sub {
 				my $str = shift;
-				$responder->([$q->psgi_header(-type => 'text/html', -charset => 'utf-8'), [ Encode::encode_utf8($str) ] ]);
+				$responder->($q->new_response(200, ['Content-Type' => 'text/html; charset=utf-8'], Encode::encode_utf8($str))->finalize);
 			},
 			json => sub {
 				my $obj = shift;
-				$responder->([$q->psgi_header(-type => 'application/json', -charset => 'utf-8'), [Encode::encode_utf8(encode_json($obj))] ]);
+				$responder->($q->new_response(200, ['Content-Type' => 'application/json; charset=utf-8'], Encode::encode_utf8(encode_json($obj)))->finalize);
 			}
 		};
 
 		my (%obj) = map { my (@t) = $q->param($_); $_, exists $multikey{$_} ? [ @t ] : $t[0] } $q->param;
-		if($env->{SCRIPT_NAME} ne '/ccf.cgi') {
-			if($env->{SCRIPT_NAME} eq '/result') {
-				if(length $env->{PATH_INFO} > 1) {
+		if($q->script_name ne '/ccf.cgi') {
+			if($q->script_name eq '/result') {
+				if(length $q->path_info > 1) {
 					my $req_id = $q->path_info;
 					$req_id =~ s#^/##;
 					$obj{command} = 'result';
@@ -235,8 +235,8 @@ sub call
 				}
 			} else { # '/results'
 				$obj{command} = 'rlist';
-				if(length $env->{PATH_INFO} > 1) {
-					$env->{PATH_INFO} =~ m,^/(\d+)(?:/(\d+)?)?$,;
+				if(length $q->path_info > 1) {
+					$q->path_info =~ m,^/(\d+)(?:/(\d+)?)?$,;
 					$obj{from} = $1;
 					$obj{number} = length($2) ? $2 : undef;
 				}
