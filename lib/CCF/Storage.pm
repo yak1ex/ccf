@@ -1,4 +1,4 @@
-package CCF::S3Storage;
+package CCF::Storage;
 
 use strict;
 use warnings;
@@ -221,12 +221,12 @@ __END__
 
 =head1 NAME
 
-CCF::S3Storage - S3 Storage handler for CCF
+CCF::Storage - S3 Storage handler for CCF
 
 =head1 SYNOPSIS
 
   # AWS key is retrieved from environment variables
-  my $storage = CCF::S3Stroage->new(
+  my $storage = CCF::Stroage->new(
       bucket => 'bucketname',
   );
 

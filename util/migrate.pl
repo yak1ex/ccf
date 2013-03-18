@@ -19,8 +19,8 @@ use Pod::Usage;
 
 use YAML::Any;
 
-use CCF::S3Storage;
-use CCF::S3Storage::Dummy;
+use CCF::Storage;
+use CCF::Storage::Dummy;
 
 my %opts;
 getopts('hd:', \%opts);
@@ -30,9 +30,9 @@ my $dir = $opts{d} || '../web_frontend';
 my $conf = YAML::Any::LoadFile($dir.'/config.yaml');
 my $maxid = YAML::Any::LoadFile($dir.'/id.yaml')->{compile} - 1;
 
-my $storage = exists $ENV{CCF_S3_DUMMY_ROOT} ?
-	CCF::S3Storage::Dummy->new(bucket => $conf->{bucket}) :
-	CCF::S3Storage->new(bucket => $conf->{bucket});
+my $storage = exists $ENV{CCF_STORAGE_DUMMY_ROOT} ?
+	CCF::Storage::Dummy->new(bucket => $conf->{bucket}) :
+	CCF::Storage->new(bucket => $conf->{bucket});
 
 print STDERR 'converting...';
 foreach my $id (0..$maxid) {

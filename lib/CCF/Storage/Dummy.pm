@@ -1,4 +1,4 @@
-package CCF::S3Storage::Dummy;
+package CCF::Storage::Dummy;
 
 use strict;
 use warnings;
@@ -15,7 +15,7 @@ sub new
 	my ($self, %arg) = @_;
 	my $class = ref($self) || $self;
 
-	$arg{root} ||= $ENV{CCF_S3_DUMMY_ROOT};
+	$arg{root} ||= $ENV{CCF_STORAGE_DUMMY_ROOT};
 	$arg{root} =~ s#/$##;
 
 	croak "ROOT folder is not properly set" if ! length $arg{root};
@@ -189,12 +189,12 @@ __END__
 
 =head1 NAME
 
-CCF::S3Storage::Dummy - Mock of S3 Storage handler for CCF
+CCF::Storage::Dummy - Mock of S3 Storage handler for CCF
 
 =head1 SYNOPSIS
 
-  # is retrieved from environment variable $ENV{CCF_S3_DUMMY_ROOT}
-  my $storage = CCF::S3Stroage::Dummy->new(
+  # is retrieved from environment variable $ENV{CCF_STORAGE_DUMMY_ROOT}
+  my $storage = CCF::Stroage::Dummy->new(
       bucket => 'bucketname',
   );
 

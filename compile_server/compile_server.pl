@@ -19,8 +19,8 @@ use Pod::Usage;
 use Socket ();
 
 use CCF::Invoker;
-use CCF::S3Storage;
-use CCF::S3Storage::Dummy;
+use CCF::Storage;
+use CCF::Storage::Dummy;
 
 use constant {
 	REQUESTED => 1,
@@ -49,9 +49,9 @@ my $port = $opts{p} // 8888;
 $conf = $conf->{$confkey};
 my $invoker = CCF::Invoker->new(config => $conf, verbose => $opts{v}, debug => $opts{d});
 
-my $storage = exists $ENV{CCF_S3_DUMMY_ROOT} ? 
-	CCF::S3Storage::Dummy->new(bucket => $bucketname) :
-	CCF::S3Storage->new(bucket => $bucketname);
+my $storage = exists $ENV{CCF_STORAGE_DUMMY_ROOT} ? 
+	CCF::Storage::Dummy->new(bucket => $bucketname) :
+	CCF::Storage->new(bucket => $bucketname);
 
 sub invoke
 {
