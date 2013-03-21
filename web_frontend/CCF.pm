@@ -20,7 +20,6 @@ use Time::Duration;
 use CCF::Dispatcher;
 use CCF::IDCounter;
 use CCF::Storage;
-use CCF::Storage::Dummy;
 
 opendir DIR, 'tmpl';
 my @tmpl = map { s/\.tmpl$//; uc($_) } grep { /\.tmpl$/ } readdir DIR;
@@ -41,9 +40,7 @@ sub new
 
 	return bless {
 		_DISPATCHER => CCF::Dispatcher->new(backend => $arg{backend}),
-		_STORAGE => exists $ENV{CCF_STORAGE_DUMMY_ROOT} ?
-			CCF::Storage::Dummy->new(bucket => $arg{bucket}) :
-			CCF::Storage->new(bucket => $arg{bucket}),
+		_STORAGE => CCF::Storage->new(bucket => $arg{bucket}),
 		_ID => \$id,
 		_RID => \$rid,
 	}, $class;
