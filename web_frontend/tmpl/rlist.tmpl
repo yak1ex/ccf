@@ -49,7 +49,7 @@ $(function() \{
 		$str =~ s/\t/&nbsp;&nbsp;/g;
 		$str =~ s/</&lt;/g;
 		$str =~ s/>/&gt;/g;
-		$str =~ s/\n/<br>/g;
+		$str =~ s/\r?\n|\r|\N{U+2028}|\N{U+2029}/<br>/g;
 		$OUT .= "\t\$('#item-".$key->[0]."').data('tooltip', '".$str."');\n";
 	}
 }
