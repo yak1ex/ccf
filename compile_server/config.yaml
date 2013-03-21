@@ -11,9 +11,9 @@ cygwin:
     cpulimit-compile: 20000000
     cpulimit-link: 20000000
     cpulimit-execute: 20000000
-# 10sec
-    rtlimit-compile: 10
-    rtlimit-link: 10
+# 120sec
+    rtlimit-compile: 120
+    rtlimit-link: 120
 # 4sec
     rtlimit-execute: 4
     sandbox: win
