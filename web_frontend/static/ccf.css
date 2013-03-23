@@ -78,6 +78,7 @@ body {
 
 .ui-tooltip {
     max-width: 450px;
+    min-height: 70px;
     border-radius: 5px;
     box-shadow: 0 0 7px black;
     font-size: 11px;
