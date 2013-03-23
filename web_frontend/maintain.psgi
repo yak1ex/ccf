@@ -33,7 +33,7 @@ __[template]__
 <body>
 <div id="header">
 <img src="/ccf.png" alt="C++ Compiler Farm" title="C++ Compiler Farm" />
-<p id="owner-notice">ownered by <a href="http://twitter.com/yak_ex">@yak_ex</a></p>
+<p id="owner-notice">by <a href="http://twitter.com/yak_ex">@yak_ex</a></p>
 <p id="menu">
 <img src="/home.png" alt="Home" title="Home" />
 <img src="/recent.png" alt="Recent" title="Recent" />
