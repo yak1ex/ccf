@@ -132,8 +132,10 @@ $(function() {
 		}
 		$.cookie('last_compiler_types', types.join('|'), { expires: 30 });
 		var source = editor.getValue();
-		source.match(/^\/\/\s*([^\n]*)\n/);
-		var title = RegExp.$1;
+		var title = '';
+		if(source.match(/^\/\/\s*([^\n]*)\n/) !== null) {
+			title = RegExp.$1;
+		}
 		$.ajax({
 			type: 'POST',
 			url: 'ccf.cgi',
