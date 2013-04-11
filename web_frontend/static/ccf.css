@@ -10,6 +10,10 @@ body {
     float: right;
 }
 
+#tweet-button {
+    float: right;
+}
+
 #menu {
     margin-top: 0px;
 }
