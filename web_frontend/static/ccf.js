@@ -82,6 +82,13 @@ $(function() {
 				$('#'+key.replace(/([-+ ])/g, '\\$1')+':not(:checked)').click();
 			});
 		}
+		if($.cookie('compile_only') !== undefined) {
+			if($.cookie('compile_only') && $('#compile:checked').length == 0) {
+				$('#compile').click();
+			} else if(! $.cookie('compile_only') && $('#compile:checked').length != 0) {
+				$('#compile').click();
+			}
+		}
         $('#selectall').click(function(e) {
 			$('.ctypes:not(:checked)').click();
 		});
@@ -131,6 +138,7 @@ $(function() {
 			return false;
 		}
 		$.cookie('last_compiler_types', types.join('|'), { expires: 30 });
+		$.cookie('compile_only', $('#compile:checked').length == 0, { expires: 30 });
 		var source = editor.getValue();
 		var title = '';
 		if(source.match(/^\/\/\s*([^\n]*)\n/) !== null) {
