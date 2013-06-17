@@ -127,6 +127,11 @@ $(function() {
 			window.alert('Currently, source size is limited to 10KiB.');
 			return false;
 		}
+		if($('#compile:checked').length == 0 && editor.getValue().match(/\bmain\b/) === null) {
+			if(!window.confirm('It seems that main() does not exist while you want to execute the source.\nTry to execute anyway?')) {
+				return false;
+			}
+		}
 		$('.result-tabs').each(function() {
 			var tab = $(this).remove();
 			$('#' + tab.attr('aria-controls')).remove();
