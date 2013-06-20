@@ -89,7 +89,7 @@ sub _show
 					my $compile = $obj->{compile};
 					$compile = Plack::Util::encode_html($compile);
 					$compile = '&nbsp;' if $compile eq '';
-					$responders->{html}($tmpl{COMPILED}->fill_in(HASH => { compile => \$compile }));
+					$responders->{html}($tmpl{COMPILED}->fill_in(HASH => { compile => \$compile, execute => ($status == 3) }));
 				} else {
 					my $compile = $obj->{compile};
 					$compile = Plack::Util::encode_html($compile);
