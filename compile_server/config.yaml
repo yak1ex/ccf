@@ -666,3 +666,39 @@ linux:
       - -o
       - $output
       - $input
+  clang33:
+    name: 'Ubuntu clang 3.3-1ppa1~precise1'
+# 48MiB
+    memlimit-link: 50331648
+    compile:
+      - clang++-3.3
+      - -Wall
+      - -c
+      - -o
+      - $output
+      - $input
+    link:
+      - clang++-3.3
+      - -Wall
+      - -o
+      - $output
+      - $input
+  clang33-c++11:
+    name: 'Ubuntu clang 3.3-1ppa1~precise1'
+    c++11: true
+# 48MiB
+    memlimit-link: 50331648
+    compile:
+      - clang++-3.3
+      - -Wall
+      - -std=c++0x
+      - -c
+      - -o
+      - $output
+      - $input
+    link:
+      - clang++-3.3
+      - -Wall
+      - -o
+      - $output
+      - $input
