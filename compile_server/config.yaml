@@ -702,3 +702,40 @@ linux:
       - -o
       - $output
       - $input
+  gcc48-c++1y:
+    name: 'Ubuntu 4.8.1-2ubuntu1~12.04'
+    c++1y: true
+    compile:
+      - g++-4.8
+      - -Wall
+      - -std=c++1y
+      - -c
+      - -o
+      - $output
+      - $input
+    link:
+      - g++-4.8
+      - -Wall
+      - -std=c++1y
+      - -o
+      - $output
+      - $input
+  clang33-c++1y:
+    name: 'Ubuntu clang 3.3-1ppa1~precise1'
+    c++1y: true
+# 48MiB
+    memlimit-link: 50331648
+    compile:
+      - clang++-3.3
+      - -Wall
+      - -std=c++1y
+      - -c
+      - -o
+      - $output
+      - $input
+    link:
+      - clang++-3.3
+      - -Wall
+      - -o
+      - $output
+      - $input
