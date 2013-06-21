@@ -167,7 +167,7 @@ sub list
 {
 	my ($handle, $obj) = @_;
 
-	$handle->push_write(storable => { map { $_ => [ $conf->{$_}{name}, $conf->{$_}{'c++11'} ] } grep { $_ ne 'GLOBAL' } keys %$conf });
+	$handle->push_write(storable => { map { $_ => [ $conf->{$_}{name}, $conf->{$_}{'c++11'}, $conf->{$_}{'c++1y'} ] } grep { $_ ne 'GLOBAL' } keys %$conf });
 }
 
 my %handler = (
