@@ -5,18 +5,6 @@
 //     (See accompanying file LICENSE_1_0.txt or copy at
 //      http://www.boost.org/LICENSE_1_0.txt)
 
-var tabopts = {
-	beforeLoad: function( event, ui ) {
-		if ( ui.tab.data( "loaded" ) ) {
-			event.preventDefault();
-			return;
-		}
-
-		ui.jqXHR.success(function() {
-			ui.tab.data( "loaded", true );
-		});
-	}
-};
 $(function() {
     var editor = ace.edit("source");
     editor.setTheme("ace/theme/eclipse");
@@ -53,6 +41,23 @@ $(function() {
 	var status = {};
 	var idxmap = {};
 	var idmap = {};
+	var tabopts = {
+		beforeLoad: function( event, ui ) {
+			if ( ui.tab.data( "loaded" ) ) {
+				event.preventDefault();
+				return;
+			}
+
+			var idx = $('#result').tabs('option', 'active');
+			if(idx != 0) {
+				if(status[idxmap[idx]].status == 5) {
+					ui.jqXHR.success(function() {
+						ui.tab.data( "loaded", true );
+					});
+				}
+			}
+		}
+	};
 	// Init
 	// TODO: Select all and deselect all
 	$.ajax({
