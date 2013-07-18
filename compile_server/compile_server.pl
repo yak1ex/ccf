@@ -183,7 +183,7 @@ tcp_server undef, $port, sub {
 
 	my ($myport, $myaddr) = Socket::sockaddr_in(getsockname($fh));
 	$myaddr = format_address($myaddr);
-	$opts{v} and print STDERR "connect with ${myaddr}:${myport} from ${host}:${port}\n";
+#	$opts{v} and print STDERR "connect with ${myaddr}:${myport} from ${host}:${port}\n";
 
 	my $handle; $handle = AnyEvent::Handle->new(
 		fh => $fh,
