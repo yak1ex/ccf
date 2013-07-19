@@ -559,7 +559,7 @@ linux:
       - $output
       - $input
   clang30:
-    name: 'Debian clang 3.0-debian6.2ppa1'
+    name: 'Debian clang 3.0-debian6.2ppa2'
 # 48MiB
     memlimit-link: 50331648
     compile:
@@ -576,7 +576,7 @@ linux:
       - $output
       - $input
   clang30-c++11:
-    name: 'Debian clang 3.0-debian6.2ppa1'
+    name: 'Debian clang 3.0-debian6.2ppa2'
     c++11: true
 # 48MiB
     memlimit-link: 50331648
@@ -595,7 +595,7 @@ linux:
       - $output
       - $input
   clang31:
-    name: 'Debian clang 3.1-debian8ppa2'
+    name: 'Debian clang 3.1-debian8ppa3'
 # 48MiB
     memlimit-link: 50331648
     compile:
@@ -612,7 +612,7 @@ linux:
       - $output
       - $input
   clang31-c++11:
-    name: 'Debian clang 3.1-debian8ppa2'
+    name: 'Debian clang 3.1-debian8ppa3'
     c++11: true
 # 48MiB
     memlimit-link: 50331648
