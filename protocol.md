@@ -65,9 +65,9 @@ One schema definition might be effective because types can be defined at one pla
                 "error": {
                     "description": "Error message",
                     "type": "string"
-                },
-                "required": ["output"]
-            }
+                }
+            },
+            "required": ["output"]
         },
         "execute": {
             "descrpition": "Execution result",
@@ -80,9 +80,9 @@ One schema definition might be effective because types can be defined at one pla
                 "error": {
                     "description": "Error message",
                     "type": "string"
-                },
-                "required": ["output"]
-            }
+                }
+            },
+            "required": ["output"]
         },
         "status": {
             "description": "Status 1:INVOKED/2:COMPILING/3:COMPILED/4:EXECUTED",
@@ -307,9 +307,9 @@ This is NO LONGER used.
                 "error": {
                     "description": "Error message",
                     "type": "string"
-                },
-                "required": ["output"]
-            }
+                }
+            },
+            "required": ["output"]
         },
         "execute": {
             "descrpition": "Execution result",
@@ -322,9 +322,9 @@ This is NO LONGER used.
                 "error": {
                     "description": "Error message",
                     "type": "string"
-                },
-                "required": ["output"]
-            }
+                }
+            },
+            "required": ["output"]
         }
     },
     "required": ["id","compile"]
