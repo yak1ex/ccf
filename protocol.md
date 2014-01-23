@@ -1,27 +1,19 @@
-# Overview
+# Overall JSON schema
 
-One schema definition might be effective because types can be defined at one place.
-
-# Storage in S3
-
-## Request in S3
+Most messsages in protocol are JSON objects or corresponding plain perl objects.
+Thus, they can be defined as JSON schema.
 
 ```json
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
-    "title": "request",
-    "description": "request in S3",
-    "type": "object",
-    "properties": {
-        "source": {
-            "description": "C++ source",
-            "type": "string"
+    "description": "JSON schemata for CCF",
+    "definitions": {
+        "booleanString": {
+            "description": "A boolean flag in string representation",
+            "type": "string",
+            "enum": ["true","false"]
         },
-        "title": {
-            "description": "Title",
-            "type": "string"
-        },
-        "keys": {
+        "compilationIDs": {
             "description": "Compilation IDs",
             "type": "object",
             "patternProperties": {
@@ -31,67 +23,340 @@ One schema definition might be effective because types can be defined at one pla
                 }
             }
         },
-        "execute": {
-            "description": "A flag of execution",
-            "type": "string",
-            "enum": ["true","false"]
+        "compilerCharacteristics": {
+            "description": "Compiler characteristics",
+            "type": "object",
+            "patternProperties": {
+                "": {
+                    "description": "Compiler characteristics for key",
+                    "type": "array",
+                    "items": [
+                        {
+                            "description": "Compiler description",
+                            "type": "string"
+                        },
+                        {
+                            "description": "C++11",
+                            "type": "string",
+                            "enum": ["true", "false"]
+                        },
+                        {
+                            "description": "C++1y",
+                            "type": "string",
+                            "enum": ["true", "false"]
+                        }
+                    ],
+                    "additionalItems": false,
+                    "minItems": 3
+                }
+            }
+        },
+        "statusEnum": {
+            "description": "Status 1:INVOKED/2:COMPILING/3:COMPILED/4:EXECUTED",
+            "type": "integer",
+            "enum": [1,2,3,4]
+        },
+        "result": {
+            "descrpition": "Results of compilation/execution",
+            "type": "object",
+            "properties": {
+                "output": {
+                    "description": "Output string",
+                    "type": "string"
+                },
+                "error": {
+                    "description": "Error message",
+                    "type": "string"
+                }
+            },
+            "required": ["output"]
         }
     },
-    "required": ["source","keys","execute"]
+    "s3": {
+        "description": "Schemata for S3",
+        "request": {
+            "description": "A request in S3",
+            "type": "object",
+            "properties": {
+                "source": {
+                    "description": "C++ source",
+                    "type": "string"
+                },
+                "title": { "type": "string" },
+                "keys": {
+                    "description": "Compilation IDs",
+                    "$ref": "#/definitions/compilationIDs"
+                },
+                "execute": {
+                    "description": "A flag of execution",
+                    "$ref": "#/definitions/booleanString"
+                }
+            },
+            "required": ["source","keys","execute"]
+        },
+        "compile": {
+            "description": "A compilation in S3",
+            "type": "object",
+            "properties": {
+                "id": { "type": "integer" },
+                "compile": {
+                    "descrpition": "Compilation result",
+                    "$ref": "#/definitions/result"
+                },
+                "execute": {
+                    "descrpition": "Execution result",
+                    "$ref": "#/definitions/result"
+                },
+                "status": { "$ref": "#/definitions/statusEnum" }
+            },
+            "required": ["id", "status"]
+        }
+    },
+    "internal": {
+        "description": "Schemata for internal protocol between servers",
+        "list_request": {
+            "description": "Request for list command",
+            "type": "object",
+            "properties": {
+                "command": { "enum": ["list"] }
+            },
+            "required": ["command"]
+        },
+        "list_response": {
+            "description": "Response for list command",
+            "$ref": "#/definitions/compilerCharacteristics"
+        },
+        "invoke_request": {
+            "description": "Request for invoke command",
+            "type": "object",
+            "properties": {
+                "command": { "enum": ["invoke"] },
+                "id": { "type": "integer" },
+                "source": {
+                    "description": "C++ source",
+                    "type": "string"
+                },
+                "type": {
+                    "description": "Compiler key",
+                    "type": "string"
+                },
+                "execute": {
+                    "description": "A flag of execution",
+                    "$ref": "#/definitions/booleanString"
+                }
+            },
+            "required": ["command", "id", "source", "type", "execute"]
+        },
+        "invoke_response": {
+            "description": "Response for invoke command",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "description": "Request ID",
+                    "type": "integer"
+                }
+            },
+            "required": ["id"]
+        },
+        "status_request": {
+            "description": "Request for status command",
+            "type": "object",
+            "properties": {
+                "command": { "enum": ["status"] },
+                "id": {
+                    "description": "Compilation ID",
+                    "type": "integer"
+                }
+            },
+            "required": ["command","id"]
+        },
+        "status_response": {
+            "description": "Response for status command",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "description": "Compilation ID",
+                    "type": "integer"
+                },
+                "status": { "$ref": "#/definitions/statusEnum" }
+            },
+            "required": ["id","status"]
+        },
+        "result_request": {
+            "description": "Request for result command",
+            "type": "object",
+            "properties": {
+                "command": { "enum": ["result"] },
+                "id": {
+                    "description": "Compilation ID",
+                    "type": "integer"
+                }
+            },
+            "required": ["command","id"]
+        },
+        "result_response": {
+            "description": "Response for result command",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "description": "Compilation ID",
+                    "type": "integer"
+                },
+                "compile": {
+                    "descrpition": "Compilation result",
+                    "$ref": "#/definitions/result"
+                },
+                "execute": {
+                    "descrpition": "Execution result",
+                    "$ref": "#/definitions/result"
+                }
+            },
+            "required": ["id","compile"]
+        }
+    },
+    "external": {
+        "description": "Schemata for external protocol between server and client",
+        "list_request": {
+            "description": "Request for list command",
+            "type": "object",
+            "properties": {
+                "command": { "enum": ["list"] }
+            },
+            "required": ["command"]
+        },
+        "list_response": {
+            "description": "Response for list command",
+            "$ref": "#/definitions/compilerCharacteristics"
+        },
+        "invoke_request": {
+            "description": "Request for invoke command",
+            "type": "object",
+            "properties": {
+                "command": { "enum": ["invoke"] },
+                "source": {
+                    "description": "C++ source",
+                    "type": "string"
+                },
+                "title": { "type": "string" },
+                "types": {
+                    "description": "Compiler keys",
+                    "type": "array",
+                    "items": {
+                        "description": "Compiler key",
+                        "type": "string"
+                    }
+                },
+                "execute": {
+                    "description": "A flag of execution",
+                    "$ref": "#/definitions/booleanString"
+                }
+            },
+            "required": ["command"]
+        },
+        "invoke_response": {
+            "description": "Response for invoke command",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "description": "Request ID",
+                    "type": "integer"
+                },
+                "keys": {
+                    "description": "Compilation IDs",
+                    "$ref": "#/definitions/compilationIDs"
+                }
+            },
+            "required": ["id", "keys"]
+        },
+        "show_request": {
+            "description": "Request for show command",
+            "type": "object",
+            "properties": {
+                "command": { "enum": ["show"] },
+                "id": {
+                    "description": "Compilation ID",
+                    "type": "integer"
+                }
+            },
+            "required": ["command"]
+        },
+        "status_request": {
+            "description": "Request for status command",
+            "type": "object",
+            "properties": {
+                "command": { "enum": ["status"] },
+                "id": {
+                    "description": "Compilation ID",
+                    "type": "integer"
+                }
+            },
+            "required": ["command"]
+        },
+        "status_response": {
+            "description": "Response for status command",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "description": "Compilation ID",
+                    "type": "integer"
+                },
+                "status": { "$ref": "#/definitions/statusEnum" }
+            },
+            "required": ["id","status"]
+        },
+        "result_request": {
+            "description": "Request for result command",
+            "type": "object",
+            "properties": {
+                "command": { "enum": ["result"] },
+                "id": {
+                    "description": "Compilation ID",
+                    "type": "integer"
+                }
+            },
+            "required": ["command"]
+        },
+        "rlist_request": {
+            "description": "Request for rlist command",
+            "type": "object",
+            "properties": {
+                "command": { "enum": ["rlist"] },
+                "from": {
+                    "description": "The number of the start item in the resultant list. Defaults to the last ID",
+                    "type": "integer"
+                },
+                "number": {
+                    "description": "The number of items in the resultant list",
+                    "type": "integer",
+                    "default": 20
+                }
+            },
+            "required": ["command"]
+        },
+        "cstats_request": {
+            "description": "Request for cstats command",
+            "type": "object",
+            "properties": {
+                "command": { "enum": ["cstats"] }
+            },
+            "required": ["command"]
+        }
+    }
 }
+```
+
+# Storage in S3
+
+## Request in S3
+
+```json
+{ "$ref": "#/s3/request" }
 ```
 
 ## Compilation in S3
 
 ```json
-{
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "title": "compilation",
-    "description": "compilation in S3",
-    "type": "object",
-    "properties": {
-        "id": {
-            "description": "Compilation ID",
-            "type": "integer"
-        },
-        "compile": {
-            "descrpition": "Compilation result",
-            "type": "object",
-            "properties": {
-                "output": {
-                    "description": "Output string",
-                    "type": "string"
-                },
-                "error": {
-                    "description": "Error message",
-                    "type": "string"
-                }
-            },
-            "required": ["output"]
-        },
-        "execute": {
-            "descrpition": "Execution result",
-            "type": "object",
-            "properties": {
-                "output": {
-                    "description": "Output string",
-                    "type": "string"
-                },
-                "error": {
-                    "description": "Error message",
-                    "type": "string"
-                }
-            },
-            "required": ["output"]
-        },
-        "status": {
-            "description": "Status 1:INVOKED/2:COMPILING/3:COMPILED/4:EXECUTED",
-            "type": "integer",
-            "enum": [1,2,3,4]
-        }
-    },
-    "required": ["id", "status"]
-}
+{ "$ref": "#/s3/compile" }
 ```
 
 # Commands between servers
@@ -101,55 +366,13 @@ One schema definition might be effective because types can be defined at one pla
 ### Request
 
 ```json
-{
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "title": "list_request",
-    "description": "command: list between servers",
-    "type": "object",
-    "properties": {
-        "command": {
-            "description": "Command type",
-            "type": "string",
-            "enum": ["list"]
-        }
-    },
-    "required": ["command"]
-}
+{ "$ref": "#/internal/list_request" }
 ```
 
 ### Response
 
 ```json
-{
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "title": "list_response",
-    "description": "response for command: list between servers",
-    "type": "object",
-    "patternProperties": {
-        "": {
-            "description": "Compiler characteristics for key",
-            "type": "array",
-            "items": [
-                {
-                    "description": "Compiler description",
-                    "type": "string"
-                },
-                {
-                    "description": "C++11",
-                    "type": "string",
-                    "enum": ["true", "false"]
-                },
-                {
-                    "description": "C++1y",
-                    "type": "string",
-                    "enum": ["true", "false"]
-                }
-            ],
-            "additionalItems": false,
-            "minItems": 3
-        }
-    }
-}
+{ "$ref": "#/internal/list_response" }
 ```
 
 ## Command: 'invoke' between servers
@@ -157,55 +380,13 @@ One schema definition might be effective because types can be defined at one pla
 ### Request
 
 ```json
-{
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "title": "invoke_request",
-    "description": "command: invoke from JS",
-    "type": "object",
-    "properties": {
-        "command": {
-            "description": "Command type",
-            "type": "string",
-            "enum": ["invoke"]
-        },
-        "id": {
-            "description": "Request ID",
-            "type": "integer"
-        },
-        "source": {
-            "description": "C++ source",
-            "type": "string"
-        },
-        "type": {
-            "description": "Compiler key",
-            "type": "string"
-        },
-        "execute": {
-            "description": "A flag of execution",
-            "type": "string",
-            "enum": ["true","false"]
-        }
-    },
-    "required": ["command", "id", "source", "type", "execute"]
-}
+{ "$ref": "#/internal/invoke_request" }
 ```
 
 ### Response
 
 ```json
-{
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "title": "invoke_response",
-    "description": "response for command: invoke between servers",
-    "type": "object",
-    "properties": {
-        "id": {
-            "description": "Request ID",
-            "type": "integer"
-        }
-    },
-    "required": ["id"]
-}
+{ "$ref": "#/internal/invoke_response" }
 ```
 
 ## Command: 'status' between servers
@@ -213,47 +394,13 @@ One schema definition might be effective because types can be defined at one pla
 ### Request
 
 ```json
-{
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "title": "status_request",
-    "description": "command: status between servers",
-    "type": "object",
-    "properties": {
-        "command": {
-            "description": "Command type",
-            "type": "string",
-            "enum": ["status"]
-        },
-        "id": {
-            "description": "Compilation ID",
-            "type": "integer"
-        }
-    },
-    "required": ["command","id"]
-}
+{ "$ref": "#/internal/status_request" }
 ```
 
 ### Response
 
 ```json
-{
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "title": "status_response",
-    "description": "response for command: status between servers",
-    "type": "object",
-    "properties": {
-        "id": {
-            "description": "Compilation ID",
-            "type": "integer"
-        },
-        "status": {
-            "description": "Status 1:INVOKED/2:COMPILING/3:COMPILED/4:EXECUTED",
-            "type": "integer",
-            "enum": [1,2,3,4]
-        }
-    },
-    "required": ["id","status"]
-}
+{ "$ref": "#/internal/status_response" }
 ```
 
 ## Command: 'result' between servers
@@ -263,72 +410,13 @@ This is NO LONGER used.
 ### Request
 
 ```json
-{
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "title": "result_request",
-    "description": "command: result between servers",
-    "type": "object",
-    "properties": {
-        "command": {
-            "description": "Command type",
-            "type": "string",
-            "enum": ["result"]
-        },
-        "id": {
-            "description": "Compilation ID",
-            "type": "integer"
-        }
-    },
-    "required": ["command","id"]
-}
+{ "$ref": "#/internal/result_request" }
 ```
 
 ### Response
 
 ```json
-{
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "title": "result_response",
-    "description": "response for command: result between servers",
-    "type": "object",
-    "properties": {
-        "id": {
-            "description": "Compilation ID",
-            "type": "integer"
-        },
-        "compile": {
-            "descrpition": "Compilation result",
-            "type": "object",
-            "properties": {
-                "output": {
-                    "description": "Output string",
-                    "type": "string"
-                },
-                "error": {
-                    "description": "Error message",
-                    "type": "string"
-                }
-            },
-            "required": ["output"]
-        },
-        "execute": {
-            "descrpition": "Execution result",
-            "type": "object",
-            "properties": {
-                "output": {
-                    "description": "Output string",
-                    "type": "string"
-                },
-                "error": {
-                    "description": "Error message",
-                    "type": "string"
-                }
-            },
-            "required": ["output"]
-        }
-    },
-    "required": ["id","compile"]
-}
+{ "$ref": "#/internal/result_response" }
 ```
 
 # Commands between server and client
@@ -338,55 +426,13 @@ This is NO LONGER used.
 ### Request
 
 ```json
-{
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "title": "list_request",
-    "description": "command: list from JS",
-    "type": "object",
-    "properties": {
-        "command": {
-            "description": "Command type",
-            "type": "string",
-            "enum": ["list"]
-        }
-    },
-    "required": ["command"]
-}
+{ "$ref": "#/external/list_request" }
 ```
 
 ### Response
 
 ```json
-{
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "title": "list_response",
-    "description": "response for command: list to JS",
-    "type": "object",
-    "patternProperties": {
-        "": {
-            "description": "Compiler characteristics for key",
-            "type": "array",
-            "items": [
-                {
-                    "description": "Compiler description",
-                    "type": "string"
-                },
-                {
-                    "description": "C++11",
-                    "type": "string",
-                    "enum": ["true", "false"]
-                },
-                {
-                    "description": "C++1y",
-                    "type": "string",
-                    "enum": ["true", "false"]
-                }
-            ],
-            "additionalItems": false,
-            "minItems": 3
-        }
-    }
-}
+{ "$ref": "#/external/list_response" }
 ```
 
 ## Command: 'invoke' between server and client
@@ -394,69 +440,13 @@ This is NO LONGER used.
 ### Request
 
 ```json
-{
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "title": "invoke_request",
-    "description": "command: invoke from JS",
-    "type": "object",
-    "properties": {
-        "command": {
-            "description": "Command type",
-            "type": "string",
-            "enum": ["invoke"]
-        },
-        "source": {
-            "description": "C++ source",
-            "type": "string"
-        },
-        "title": {
-            "description": "Title",
-            "type": "string"
-        },
-        "types": {
-            "description": "Compiler keys",
-            "type": "array",
-            "items": {
-                "description": "Compiler key",
-                "type": "string"
-            }
-        },
-        "execute": {
-            "description": "A flag of execution",
-            "type": "string",
-            "enum": ["true","false"]
-        }
-    },
-    "required": ["command"]
-}
+{ "$ref": "#/external/invoke_request" }
 ```
 
 ### Response
 
 ```json
-{
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "title": "invoke_response",
-    "description": "response for command: invoke to JS",
-    "type": "object",
-    "properties": {
-        "id": {
-            "description": "Request ID",
-            "type": "integer"
-        },
-        "keys": {
-            "description": "Compilation IDs",
-            "type": "object",
-            "patternProperties": {
-                "": {
-                    "description": "Compilation ID for key",
-                    "type": "integer"
-                }
-            }
-        }
-    },
-    "required": ["id", "keys"]
-}
+{ "$ref": "#/external/invoke_response" }
 ```
 
 ## Command: 'show' between server and client
@@ -464,24 +454,7 @@ This is NO LONGER used.
 ### Request
 
 ```json
-{
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "title": "show_request",
-    "description": "command: show from JS",
-    "type": "object",
-    "properties": {
-        "command": {
-            "description": "Command type",
-            "type": "string",
-            "enum": ["show"]
-        },
-        "id": {
-            "description": "Compilation ID",
-            "type": "integer"
-        }
-    },
-    "required": ["command"]
-}
+{ "$ref": "#/external/show_request" }
 ```
 
 ### Response
@@ -493,47 +466,13 @@ HTML
 ### Request
 
 ```json
-{
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "title": "status_request",
-    "description": "command: status from JS",
-    "type": "object",
-    "properties": {
-        "command": {
-            "description": "Command type",
-            "type": "string",
-            "enum": ["status"]
-        },
-        "id": {
-            "description": "Compilation ID",
-            "type": "integer"
-        }
-    },
-    "required": ["command"]
-}
+{ "$ref": "#/external/status_request" }
 ```
 
 ### Response
 
 ```json
-{
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "title": "status_response",
-    "description": "response for command: status to JS",
-    "type": "object",
-    "properties": {
-        "id": {
-            "description": "Compilation ID",
-            "type": "integer"
-        },
-        "status": {
-            "description": "Status 1:INVOKED/2:COMPILING/3:COMPILED/4:EXECUTED",
-            "type": "integer",
-            "enum": [1,2,3,4]
-        }
-    },
-    "required": ["id","status"]
-}
+{ "$ref": "#/external/status_response" }
 ```
 
 ## Command: 'result' between server and client
@@ -541,24 +480,7 @@ HTML
 ### Request
 
 ```json
-{
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "title": "result_request",
-    "description": "command: result from JS",
-    "type": "object",
-    "properties": {
-        "command": {
-            "description": "Command type",
-            "type": "string",
-            "enum": ["result"]
-        },
-        "id": {
-            "description": "Compilation ID",
-            "type": "integer"
-        }
-    },
-    "required": ["command"]
-}
+{ "$ref": "#/external/result_request" }
 ```
 
 ### Response
@@ -570,29 +492,7 @@ HTML
 ### Request
 
 ```json
-{
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "title": "rlist",
-    "description": "command: rlist from JS",
-    "type": "object",
-    "properties": {
-        "command": {
-            "description": "Command type",
-            "type": "string",
-            "enum": ["rlist"]
-        },
-        "from": {
-            "description": "The number of the start item in the resultant list. Defaults to the last ID",
-            "type": "integer"
-        },
-        "number": {
-            "description": "The number of items in the resultant list",
-            "type": "integer",
-            "default": 20
-        }
-    },
-    "required": ["command"]
-}
+{ "$ref": "#/external/cstats_request" }
 ```
 
 ### Response
@@ -604,20 +504,7 @@ HTML
 ### Request
 
 ```json
-{
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "title": "cstats",
-    "description": "command: cstats from JS",
-    "type": "object",
-    "properties": {
-        "command": {
-            "description": "Command type",
-            "type": "string",
-            "enum": ["cstats"]
-        }
-    },
-    "required": ["command"]
-}
+{ "$ref": "#/external/cstats_request" }
 ```
 
 ### Response
