@@ -11,7 +11,13 @@ sub new
 	my $self = shift;
 	my $class = 'CCF::Storage::S3';
 
-	$class = 'CCF::Storage::Dummy' if exists $ENV{CCF_STORAGE_DUMMY_ROOT};
+	if(exists $ENV{CCF_STORAGE_DUMMY_ROOT}) {
+		$class = 'CCF::Storage::Dummy';
+		push @_, root => delete $ENV{CCF_STORAGE_DUMMY_ROOT};
+	} else {
+		my %arg = @_;
+		$class = 'CCF::Storage::Dummy' if exists $arg{root};
+	}
 
 	return $class->new(@_);
 }
@@ -40,8 +46,9 @@ CCF::Storage - Storage handler for CCF
 
 =head1 DESCRIPTION
 
-If environment variable C<CCF_STORAGE_DUMMY_ROOT> is defined, CCF::Storage::Dummy is used.
+If environment variable C<CCF_STORAGE_DUMMY_ROOT> is defined or root is specified by options, CCF::Storage::Dummy is used.
 Otherwise, CCF::Storage::S3 is used.
+Note that C<CCF_STORAGE_DUMMY_ROOT> will be deleted after the object creation if root is not specified and the environment variable C<CCF_STORAGE_DUMMY_ROOT> is defined.
 
 =head1 OPTIONS
 

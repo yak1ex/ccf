@@ -40,7 +40,12 @@ sub new
 
 	return bless {
 		_DISPATCHER => CCF::Dispatcher->new(backend => $arg{backend}),
-		_STORAGE => CCF::Storage->new(bucket => $arg{bucket}),
+		_STORAGE => CCF::Storage->new(
+			bucket => $arg{bucket},
+			root => delete $ENV{CCF_STORAGE_DUMMY_ROOT},
+			aws_access_key_id => delete $ENV{AWS_ACCESS_KEY_ID},
+			aws_secret_access_key => delete $ENV{AWS_ACCESS_KEY_SECRET},
+		),
 		_ID => \$id,
 		_RID => \$rid,
 	}, $class;

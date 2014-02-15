@@ -15,7 +15,7 @@ sub new
 	my ($self, %arg) = @_;
 	my $class = ref($self) || $self;
 
-	$arg{root} ||= $ENV{CCF_STORAGE_DUMMY_ROOT};
+	$arg{root} ||= delete $ENV{CCF_STORAGE_DUMMY_ROOT};
 	$arg{root} =~ s#/$##;
 
 	croak "ROOT folder is not properly set" if ! length $arg{root};
@@ -193,7 +193,7 @@ CCF::Storage::Dummy - Mock of S3 Storage handler for CCF
 
 =head1 SYNOPSIS
 
-  # is retrieved from environment variable $ENV{CCF_STORAGE_DUMMY_ROOT}
+  # Root directory is retrieved from environment variable $ENV{CCF_STORAGE_DUMMY_ROOT}
   my $storage = CCF::Stroage::Dummy->new(
       bucket => 'bucketname',
   );

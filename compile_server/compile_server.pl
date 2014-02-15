@@ -48,7 +48,12 @@ my $port = $opts{p} // 8888;
 $conf = $conf->{$confkey};
 my $invoker = CCF::Invoker->new(config => $conf, verbose => $opts{v}, debug => $opts{d});
 
-my $storage = CCF::Storage->new(bucket => $bucketname);
+my $storage = CCF::Storage->new(
+	bucket => $bucketname,
+	root => delete $ENV{CCF_STORAGE_DUMMY_ROOT},
+	aws_access_key_id => delete $ENV{AWS_ACCESS_KEY_ID},
+	aws_secret_access_key => delete $ENV{AWS_ACCESS_KEY_SECRET},
+);
 
 sub invoke
 {

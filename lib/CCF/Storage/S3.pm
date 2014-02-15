@@ -15,8 +15,8 @@ sub new
 	my ($self, %arg) = @_;
 	my $class = ref($self) || $self;
 
-	$arg{aws_access_key_id} ||= $ENV{AWS_ACCESS_KEY_ID};
-	$arg{aws_secret_access_key} ||= $ENV{AWS_ACCESS_KEY_SECRET};
+	$arg{aws_access_key_id} ||= delete $ENV{AWS_ACCESS_KEY_ID};
+	$arg{aws_secret_access_key} ||= delete $ENV{AWS_ACCESS_KEY_SECRET};
 
 	croak "AWS key is not properly set"
 		if ! length $arg{aws_access_key_id} || ! length $arg{aws_secret_access_key};
