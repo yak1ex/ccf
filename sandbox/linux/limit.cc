@@ -164,9 +164,10 @@ void alrm(int sig)
 
 extern "C" int main_(int argc, char **argv);
 
-int main(int argc, char** argv)
+void initer() __attribute__((constructor (0)));
+void initer()
 {
-	if(!getenv("SANDBOX_MEMLIMIT") || !getenv("SANDBOX_CPULIMIT") || !getenv("SANDBOX_RTLIMIT")) return 250;
+	if(!getenv("SANDBOX_MEMLIMIT") || !getenv("SANDBOX_CPULIMIT") || !getenv("SANDBOX_RTLIMIT")) exit(250);
 
 	struct sigaction sa;
 	sa.sa_handler = xcpu;
@@ -197,8 +198,26 @@ int main(int argc, char** argv)
 		itimerspec its = { { 0, 0 }, { rtlimit, 0 } };
 		timer_settime(tid, 0, &its, NULL);
 	}
+#ifndef SANDBOX_COMPILER
+	int proc_fd = open("/proc", O_RDONLY|O_DIRECTORY);
+	if(Sandbox::supportsSeccompSandbox(proc_fd) != Sandbox::STATUS_AVAILABLE) {
+		perror("sandbox");
+		char buf[1024];
+		itoa_r(Sandbox::supportsSeccompSandbox(proc_fd), buf, sizeof(buf));
+		write(2, buf, strlen(buf));
+		itoa_r(proc_fd, buf, sizeof(buf));
+		write(2, buf, strlen(buf));
+		exit(1);
+	}
+	Sandbox::setProcFd(proc_fd);
+	Sandbox::setSandboxPolicy(evaluator, NULL);
+	Sandbox::startSandbox();
+#endif
+}
 
 #ifdef SANDBOX_COMPILER
+int main(int argc, char **argv)
+{
 	UNUSED(argc);
 	if((child = fork())) {
 		int status = 0;
@@ -208,16 +227,10 @@ int main(int argc, char** argv)
 		execvp(argv[1], argv+1);
 		return 251; // Not reached, basically.
 	}
-#else
-	int proc_fd = open("/proc", O_RDONLY|O_DIRECTORY);
-	if(Sandbox::supportsSeccompSandbox(proc_fd) != Sandbox::STATUS_AVAILABLE) {
-		perror("sandbox");
-		exit(1);
-	}
-	Sandbox::setProcFd(proc_fd);
-	Sandbox::setSandboxPolicy(evaluator, NULL);
-	Sandbox::startSandbox();
-
-	return main_(argc, argv);
-#endif
 }
+#else
+int main(int argc, char **argv)
+{
+	return main_(argc, argv);
+}
+#endif
