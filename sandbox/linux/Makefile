@@ -15,7 +15,7 @@ test_.o: test.o
 sandbox-compiler: sandbox-compiler.o libseccomp_bpf_sa.a
 	$(CXX) -o $@ $^ ${LDFLAGS}
 
-sandbox-compiier.o: limit.cc
+sandbox-compiler.o: limit.cc
 	$(CXX) $(CXXFLAGS) -DSANDBOX_COMPILER -c -o $@ $<
 
 libsandbox.a: sandbox_bpf.o util.o verifier.o limit.o syscall-names.o
