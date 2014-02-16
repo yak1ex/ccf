@@ -405,9 +405,9 @@ class Sandbox {
   static bool          dryRun_;
   static SandboxStatus status_;
   static int           proc_fd_;
-  static Evaluators    evaluators_;
+  static Evaluators&   evaluators_();
   static Traps         *traps_;
-  static TrapIds       trapIds_;
+  static TrapIds&      trapIds_();
   static ErrorCode     *trapArray_;
   static size_t        trapArraySize_;
   DISALLOW_IMPLICIT_CONSTRUCTORS(Sandbox);

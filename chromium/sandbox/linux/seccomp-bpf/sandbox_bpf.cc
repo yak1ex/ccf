@@ -90,7 +90,7 @@ bool Sandbox::RunFunctionInPolicy(void (*CodeInSandbox)(),
       static const char msg[] = "Failed to set up stderr\n";
       if (HANDLE_EINTR(write(fds[1], msg, sizeof(msg)-1))) { }
     } else {
-      evaluators_.clear();
+      evaluators_().clear();
       setSandboxPolicy(syscallEvaluator, NULL);
       setProcFd(proc_fd);
       startSandbox();
@@ -305,12 +305,12 @@ void Sandbox::setSandboxPolicy(EvaluateSyscall syscallEvaluator,
     die("Cannot change policy after sandbox has started");
   }
   policySanityChecks(syscallEvaluator, argumentEvaluator);
-  evaluators_.push_back(std::make_pair(syscallEvaluator, argumentEvaluator));
+  evaluators_().push_back(std::make_pair(syscallEvaluator, argumentEvaluator));
 }
 
 void Sandbox::installFilter() {
   // Verify that the user pushed a policy.
-  if (evaluators_.empty()) {
+  if (evaluators_().empty()) {
   filter_failed:
     die("Failed to configure system call filters");
   }
@@ -334,7 +334,7 @@ void Sandbox::installFilter() {
 
   // We can't handle stacked evaluators, yet. We'll get there eventually
   // though. Hang tight.
-  if (evaluators_.size() != 1) {
+  if (evaluators_().size() != 1) {
     die("Not implemented");
   }
 
@@ -395,7 +395,7 @@ void Sandbox::installFilter() {
   // There is really nothing the caller can do until the bug is fixed.
 #ifndef NDEBUG
   const char *err = NULL;
-  if (!Verifier::verifyBPF(*program, evaluators_, &err)) {
+  if (!Verifier::verifyBPF(*program, evaluators_(), &err)) {
     die(err);
   }
 #endif
@@ -418,7 +418,7 @@ void Sandbox::installFilter() {
   delete program;
 
   // Release memory that is no longer needed
-  evaluators_.clear();
+  evaluators_().clear();
 
   // Install BPF filter program
   if (prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0)) {
@@ -438,7 +438,7 @@ void Sandbox::findRanges(Ranges *ranges) {
   // deal with this disparity by enumerating from MIN_SYSCALL to MAX_SYSCALL,
   // and then verifying that the rest of the number range (both positive and
   // negative) all return the same ErrorCode.
-  EvaluateSyscall evaluateSyscall = evaluators_.begin()->first;
+  EvaluateSyscall evaluateSyscall = evaluators_().begin()->first;
   uint32_t oldSysnum              = 0;
   ErrorCode oldErr                = evaluateSyscall(oldSysnum);
   for (uint32_t sysnum = std::max(1u, MIN_SYSCALL);
@@ -647,8 +647,8 @@ int Sandbox::getTrapId(Sandbox::TrapFnc fnc, const void *aux) {
   // Each unique pair of TrapFnc and auxiliary data make up a distinct instance
   // of a SECCOMP_RET_TRAP.
   std::pair<TrapFnc, const void *> key(fnc, aux);
-  TrapIds::const_iterator iter = trapIds_.find(key);
-  if (iter != trapIds_.end()) {
+  TrapIds::const_iterator iter = trapIds_().find(key);
+  if (iter != trapIds_().end()) {
     // We have seen this pair before. Return the same id that we assigned
     // earlier.
     return iter->second;
@@ -669,7 +669,7 @@ int Sandbox::getTrapId(Sandbox::TrapFnc fnc, const void *aux) {
     }
 
     traps_->push_back(ErrorCode(fnc, aux, id));
-    trapIds_[key] = id;
+    trapIds_()[key] = id;
 
     // We want to access the traps_ vector from our signal handler. But
     // we are not assured that doing so is async-signal safe. On the other
@@ -686,9 +686,17 @@ int Sandbox::getTrapId(Sandbox::TrapFnc fnc, const void *aux) {
 bool Sandbox::dryRun_                   = false;
 Sandbox::SandboxStatus Sandbox::status_ = STATUS_UNKNOWN;
 int    Sandbox::proc_fd_                = -1;
-Sandbox::Evaluators Sandbox::evaluators_;
+Sandbox::Evaluators& Sandbox::evaluators_()
+{
+	static Sandbox::Evaluators obj;
+	return obj;
+}
 Sandbox::Traps *Sandbox::traps_         = NULL;
-Sandbox::TrapIds Sandbox::trapIds_;
+Sandbox::TrapIds& Sandbox::trapIds_()
+{
+	static Sandbox::TrapIds obj;
+	return obj;
+}
 Sandbox::ErrorCode *Sandbox::trapArray_ = NULL;
 size_t Sandbox::trapArraySize_          = 0;
 
