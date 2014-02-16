@@ -16,7 +16,7 @@ sub new
 		push @_, root => delete $ENV{CCF_STORAGE_DUMMY_ROOT};
 	} else {
 		my %arg = @_;
-		$class = 'CCF::Storage::Dummy' if exists $arg{root};
+		$class = 'CCF::Storage::Dummy' if exists $arg{root} && defined $arg{root};
 	}
 
 	return $class->new(@_);
