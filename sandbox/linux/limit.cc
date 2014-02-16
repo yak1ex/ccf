@@ -145,7 +145,7 @@ static Sandbox::ErrorCode evaluator(int sysno) {
 void xcpu(int sig)
 {
 	UNUSED(sig);
-	write(0, "\nCCF: Time limit exceeded.\n", 27);
+	write(2, "\nCCF: Time limit exceeded.\n", 27);
 #ifdef SANDBOX_COMPILER
 	kill(child, SIGKILL);
 #endif
@@ -155,7 +155,7 @@ void xcpu(int sig)
 void alrm(int sig)
 {
 	UNUSED(sig);
-	write(0, "\nCCF: Time(real) limit exceeded.\n", 33);
+	write(2, "\nCCF: Time(real) limit exceeded.\n", 33);
 #ifdef SANDBOX_COMPILER
 	kill(child, SIGKILL);
 #endif
