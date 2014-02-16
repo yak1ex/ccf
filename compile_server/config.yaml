@@ -390,8 +390,9 @@ linux:
     rtlimit-execute: 4
     sandbox: linux
     sandbox-path: ../sandbox/linux/sandbox-compiler
-    sandbox-arg:
+    sandbox-prearg:
       - ../sandbox/linux/libsandbox.a
+    sandbox-arg:
       - -lrt
   gcc44:
     name: 'Ubuntu/Linaro 4.4.7-1ubuntu2'
