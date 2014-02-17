@@ -44,7 +44,7 @@ public:
 		cin(std::cin.rdbuf()), cout(std::cout.rdbuf()), cerr(std::cerr.rdbuf()), clog(std::clog.rdbuf()),
 		csh(in, out),
 //	NOTE: Using undocumented constructor accepting FILE*
-//	      Only onstructor accepts FILE* and swap is spcified since C++11, so we need to use constructor
+//	      Only constructor accepts FILE* and swap is specified since C++11, so we need to use constructor
 		ifs(stdin), ofs(stdout)
 	{
 		std::cin.rdbuf(ifs.rdbuf());
