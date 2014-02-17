@@ -14,6 +14,8 @@
 #include "sandbox/win/src/sandbox_types.h"
 #include "sandbox/win/src/sharedmem_ipc_server.h"
 
+#include <algorithm>
+
 namespace {
 
 void CopyPolicyToTarget(const void* source, size_t size, void* dest) {
