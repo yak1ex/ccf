@@ -146,6 +146,10 @@ Initer::Initer()
 			ofs << "CCF: Time limit exceeded." << std::endl;
 		}
 
+		// To avoid calling other static initializers out of sandbox,
+		// it is necessary to exit immediately.
+		exit(ret);
+
 	} else {
 
 #ifndef SANDBOX_COMPILER
@@ -175,13 +179,9 @@ Initer::Initer()
 
 int main(int argc, char** argv)
 {
-	if(sandbox::SandboxFactory::GetBrokerServices()) {
-		return ret;
-	} else {
-		Deleter d;
-		d.take(g_saver);
-		return main_(argc, argv);
-	}
+	Deleter d;
+	d.take(g_saver);
+	return main_(argc, argv);
 }
 
 #ifdef SANDBOX_COMPILER
