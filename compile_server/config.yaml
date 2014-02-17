@@ -610,7 +610,7 @@ linux:
       - $output
       - $input
   clang30:
-    name: 'Debian clang 3.0-debian6.2ppa2'
+    name: 'Debian 3.0-debian6.2ppa5'
 # 48MiB
     memlimit-link: 50331648
     compile:
@@ -627,7 +627,7 @@ linux:
       - $output
       - $input
   clang30-c++11:
-    name: 'Debian clang 3.0-debian6.2ppa2'
+    name: 'Debian 3.0-debian6.2ppa5'
     c++11: true
 # 48MiB
     memlimit-link: 50331648
@@ -646,7 +646,7 @@ linux:
       - $output
       - $input
   clang31:
-    name: 'Debian clang 3.1-debian8ppa4'
+    name: 'Debian 3.1-debian8ppa5'
 # 48MiB
     memlimit-link: 50331648
     compile:
@@ -663,7 +663,7 @@ linux:
       - $output
       - $input
   clang31-c++11:
-    name: 'Debian clang 3.1-debian8ppa4'
+    name: 'Debian 3.1-debian8ppa5'
     c++11: true
 # 48MiB
     memlimit-link: 50331648
@@ -682,7 +682,7 @@ linux:
       - $output
       - $input
   clang32:
-    name: 'Debian clang 3.2-debian1ppa1~exp9'
+    name: 'Debian 3.2-debian11ppa8'
 # 48MiB
     memlimit-link: 50331648
     compile:
@@ -699,7 +699,7 @@ linux:
       - $output
       - $input
   clang32-c++11:
-    name: 'Debian clang 3.2-debian1ppa1~exp9'
+    name: 'Debian 3.2-debian11ppa8'
     c++11: true
 # 48MiB
     memlimit-link: 50331648
@@ -718,7 +718,7 @@ linux:
       - $output
       - $input
   clang33:
-    name: 'Ubuntu clang 3.3-1ppa1~precise1'
+    name: 'Debian 3.3-debian16ppa5'
 # 48MiB
     memlimit-link: 50331648
     compile:
@@ -735,7 +735,7 @@ linux:
       - $output
       - $input
   clang33-c++11:
-    name: 'Ubuntu clang 3.3-1ppa1~precise1'
+    name: 'Debian 3.3-debian16ppa5'
     c++11: true
 # 48MiB
     memlimit-link: 50331648
@@ -749,6 +749,42 @@ linux:
       - $input
     link:
       - clang++-3.3
+      - -Wall
+      - -o
+      - $output
+      - $input
+  clang34:
+    name: 'Debian 3.4-debian1ppa2'
+# 48MiB
+    memlimit-link: 50331648
+    compile:
+      - clang++-3.4
+      - -Wall
+      - -c
+      - -o
+      - $output
+      - $input
+    link:
+      - clang++-3.4
+      - -Wall
+      - -o
+      - $output
+      - $input
+  clang34-c++11:
+    name: 'Debian 3.4-debian1ppa2'
+    c++11: true
+# 48MiB
+    memlimit-link: 50331648
+    compile:
+      - clang++-3.4
+      - -Wall
+      - -std=c++0x
+      - -c
+      - -o
+      - $output
+      - $input
+    link:
+      - clang++-3.4
       - -Wall
       - -o
       - $output
@@ -772,7 +808,7 @@ linux:
       - $output
       - $input
   clang33-c++1y:
-    name: 'Ubuntu clang 3.3-1ppa1~precise1'
+    name: 'Debian 3.3-debian16ppa5'
     c++1y: true
 # 48MiB
     memlimit-link: 50331648
@@ -786,6 +822,25 @@ linux:
       - $input
     link:
       - clang++-3.3
+      - -Wall
+      - -o
+      - $output
+      - $input
+  clang34-c++1y:
+    name: 'Debian 3.4-debian1ppa2'
+    c++1y: true
+# 48MiB
+    memlimit-link: 50331648
+    compile:
+      - clang++-3.4
+      - -Wall
+      - -std=c++1y
+      - -c
+      - -o
+      - $output
+      - $input
+    link:
+      - clang++-3.4
       - -Wall
       - -o
       - $output
