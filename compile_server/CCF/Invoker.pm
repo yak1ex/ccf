@@ -10,6 +10,8 @@ use English;
 use Encode;
 use File::Temp;
 
+use ObjectFile::Tiny;
+
 BEGIN {
 	if($^O eq 'cygwin') {
 		require Win32::Codepage::Simple;
@@ -246,6 +248,25 @@ sub _obj_adjust
 	}
 }
 
+sub _check_obj
+{
+	my ($self, $type, $obj) = @_;
+	if($self->_is_sandbox($type)) {
+		my $o = ObjectFile::Tiny->new($obj);
+		my $wd = $self->_config($type, 'sandbox-whiltelist-directive');
+		if(defined $wd) {
+			my @t = grep { $_ !~ qr/$wd/ } split /\s+/, $o->section_contents('.drectve');
+			return 'Found prohibited linker directive(s): '.join(', ', @t) if @t;
+		}
+		my $bs = $self->_config($type, 'sandbox-blacklist-section');
+		if(defined $bs) {
+			my @t = $o->exists_section(qr/$bs/);
+			return 'Found prohibited section(s): '.join(', ', @t) if @t;
+		}
+	}
+	return;
+}
+
 # External I/F for link
 sub link
 {
@@ -255,6 +276,13 @@ sub link
 		my ($rc, $result, $obj) = @_;
 		if($rc) {
 			unlink $obj;
+			$callback->($rc, $result);
+			return;
+		}
+		my $check = $self->_check_obj($type, $obj);
+		if(defined $check) {
+			unlink $obj;
+			$result->{error} .= 'CCF: '.$check;
 			$callback->($rc, $result);
 			return;
 		}
