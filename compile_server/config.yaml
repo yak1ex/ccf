@@ -18,7 +18,7 @@ cygwin:
     rtlimit-execute: 4
     sandbox: win
     sandbox-path: ../sandbox/win/sandbox-compiler.exe
-    sandbox-blacklist-section: '^\.CRT$X(?:I|C[^U])'
+    sandbox-blacklist-section: '^\.CRT\$X(?:I|C[^U])'
     sandbox-whitelist-directive: '^/DEFAULTLIB:.*$'
   'vc 8':
     name: '2005 / VC8 / 14.00.50727.42'
