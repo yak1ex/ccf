@@ -60,21 +60,37 @@ public:
 		std::clog.rdbuf(clog);
 	}
 };
-
-int main(int argc, char** argv)
+struct Deleter
 {
-	if(!getenv("SANDBOX_IN") || !getenv("SANDBOX_OUT") || !getenv("SANDBOX_MEMLIMIT") || !getenv("SANDBOX_CPULIMIT") || !getenv("SANDBOX_RTLIMIT")) return 250;
+	StdHandleSaver *saver;
+public:
+	Deleter(StdHandleSaver *p = 0) : saver(p) {}
+	void take(Deleter &d) { std::swap(saver, d.saver); }
+	~Deleter() { delete saver; }
+};
+
+#pragma init_seg(lib)
+
+Deleter g_saver;
+
+struct Initer
+{
+	Initer();
+} initer;
+static int ret = 0;
+
+Initer::Initer()
+{
+	if(!getenv("SANDBOX_IN") || !getenv("SANDBOX_OUT") || !getenv("SANDBOX_MEMLIMIT") || !getenv("SANDBOX_CPULIMIT") || !getenv("SANDBOX_RTLIMIT")) exit(250);
 
 	sandbox::BrokerServices* broker_service = sandbox::SandboxFactory::GetBrokerServices();
 	sandbox::ResultCode result;
-
-	int ret = 0;
 
 	if(broker_service != NULL) {
 
 		if ((result = broker_service->Init())) {
 			std::cerr << "Initialization of broker service failed." << std::endl;
-			return 1;
+			exit(1);
 		}
 
 		sandbox::TargetPolicy* policy = broker_service->CreatePolicy();
@@ -102,7 +118,7 @@ int main(int argc, char** argv)
 
 		if(result != sandbox::SBOX_ALL_OK) {
 			std::cout << "SpawnTarget failed." << std::endl;
-			return -1;
+			exit(-1);
 	    }
 
 		::ResumeThread(target_.hThread);
@@ -135,28 +151,37 @@ int main(int argc, char** argv)
 #ifndef SANDBOX_COMPILER
 		// SetStdHandle() does not work as expected
 		// Before locked-down, we can access arbitrary files.
-		StdHandleSaver shs(getenv("SANDBOX_IN"), getenv("SANDBOX_OUT"));
+		Deleter d(new StdHandleSaver(getenv("SANDBOX_IN"), getenv("SANDBOX_OUT")));
 #endif
 
 		sandbox::TargetServices* target_service = sandbox::SandboxFactory::GetTargetServices();
 		if (NULL == target_service) {
 			std::cerr << "Initialization of target service failed." << std::endl;
-			return -1;
+			exit(-1);
 		}
 
 		if (sandbox::SBOX_ALL_OK != (result = target_service->Init())) {
-			return -2;
+			exit(-2);
 		}
 
 		target_service->LowerToken();
 
 		Sleep(1);
-
-		ret = main_(argc, argv);
-
+#ifndef SANDBOX_COMPILER
+		g_saver.take(d);
+#endif
 	}
+}
 
-	return ret;
+int main(int argc, char** argv)
+{
+	if(sandbox::SandboxFactory::GetBrokerServices()) {
+		return ret;
+	} else {
+		Deleter d;
+		d.take(g_saver);
+		return main_(argc, argv);
+	}
 }
 
 #ifdef SANDBOX_COMPILER
