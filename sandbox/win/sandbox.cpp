@@ -20,7 +20,10 @@ class StdHandleSaver
 	{
 		CStreamHandler(const char* in, const char* out)
 		{
+// The reason is not clear but assertion failure occurs in VC12 and _fileno seems to be 0-2 without the below line
+#if _MSC_VER != 1800
 			_close(0); _close(1); _close(2);
+#endif
 
 			freopen(in, "r", stdin);
 			freopen(out, "w", stdout);
