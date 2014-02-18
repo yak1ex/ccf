@@ -75,6 +75,19 @@ sub req_id
 	return $self->{_RID};
 }
 
+sub __encode_html
+{
+	my $obj = shift;
+	if(exists $obj->{output}) {
+		$obj->{output} = Plack::Util::encode_html($obj->{output});
+		$obj->{output} = '&nbsp;' if $obj->{output} eq '';
+	}
+	if(exists $obj->{error}) {
+		$obj->{error} = Plack::Util::encode_html($obj->{error});
+		$obj->{error} = '&nbsp;' if $obj->{error} eq '';
+	}
+}
+
 sub _show
 {
 	my ($self, $obj, $responders) = @_;
@@ -92,16 +105,13 @@ sub _show
 # TODO: Apply CSS
 				if($status == 3 || ! exists $obj->{execute}) {
 					my $compile = $obj->{compile};
-					$compile = Plack::Util::encode_html($compile);
-					$compile = '&nbsp;' if $compile eq '';
+					__encode_html($compile);
 					$responders->{html}($tmpl{COMPILED}->fill_in(HASH => { compile => \$compile, execute => ($status == 3) }));
 				} else {
 					my $compile = $obj->{compile};
-					$compile = Plack::Util::encode_html($compile);
-					$compile = '&nbsp;' if $compile eq '';
+					__encode_html($compile);
 					my $execute = $obj->{execute};
-					$execute = Plack::Util::encode_html($execute);
-					$execute = '&nbsp;' if $execute eq '';
+					__encode_html($execute);
 					$responders->{html}($tmpl{EXECUTED}->fill_in(HASH => { compile => \$compile, execute => \$execute }));
 				}
 			}
@@ -169,7 +179,8 @@ sub _result
 	$self->storage->get_request_status_async($req_id)->cb(sub {
 		my $req = shift->recv;
 		my $source = Plack::Util::encode_html($req->{source});
-		$responders->{html}($tmpl{RESULT}->fill_in(HASH => { id => \$req_id, 'keys' => $req->{keys}, source => \$source, title => \$req->{title} }));
+		my $title = Plack::Util::encode_html($req->{title});
+		$responders->{html}($tmpl{RESULT}->fill_in(HASH => { id => \$req_id, 'keys' => $req->{keys}, source => \$source, title => \$title }));
 	});
 }
 
