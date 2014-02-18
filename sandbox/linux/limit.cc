@@ -135,6 +135,7 @@ static Sandbox::ErrorCode evaluator(int sysno) {
 	case __NR_write: case __NR_writev:
 	case __NR_mmap:
 	case __NR_mmap2:
+	case __NR_futex:
 		return Sandbox::SB_ALLOWED;
 	default:
 		return Sandbox::ErrorCode(defaultHandler, NULL);
