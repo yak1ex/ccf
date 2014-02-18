@@ -203,11 +203,6 @@ void initer()
 	int proc_fd = open("/proc", O_RDONLY|O_DIRECTORY);
 	if(Sandbox::supportsSeccompSandbox(proc_fd) != Sandbox::STATUS_AVAILABLE) {
 		perror("sandbox");
-		char buf[1024];
-		itoa_r(Sandbox::supportsSeccompSandbox(proc_fd), buf, sizeof(buf));
-		write(2, buf, strlen(buf));
-		itoa_r(proc_fd, buf, sizeof(buf));
-		write(2, buf, strlen(buf));
 		exit(1);
 	}
 	Sandbox::setProcFd(proc_fd);
