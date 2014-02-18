@@ -257,6 +257,7 @@ sub _check_obj
 		if(defined $wd) {
 			my $contents = $o->section_contents('.drectve');
 			$contents =~ s/^\s+//;
+			$contents =~ s/"(\w+='[^'"]*')?(\s+\w+='[^'"]*')*"/_/g;
 			my @t = grep { $_ !~ qr/$wd/ } split /\s+/, $contents;
 			return 'Found prohibited linker directive(s): '.join(', ', @t) if @t;
 		}
