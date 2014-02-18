@@ -611,8 +611,6 @@ linux:
       - $input
   clang30:
     name: 'Debian 3.0-debian6.2ppa5'
-# 48MiB
-    memlimit-link: 50331648
     compile:
       - clang++-3.0
       - -Wall
@@ -629,8 +627,6 @@ linux:
   clang30-c++11:
     name: 'Debian 3.0-debian6.2ppa5'
     c++11: true
-# 48MiB
-    memlimit-link: 50331648
     compile:
       - clang++-3.0
       - -Wall
@@ -647,8 +643,6 @@ linux:
       - $input
   clang31:
     name: 'Debian 3.1-debian8ppa5'
-# 48MiB
-    memlimit-link: 50331648
     compile:
       - clang++-3.1
       - -Wall
@@ -665,8 +659,6 @@ linux:
   clang31-c++11:
     name: 'Debian 3.1-debian8ppa5'
     c++11: true
-# 48MiB
-    memlimit-link: 50331648
     compile:
       - clang++-3.1
       - -Wall
@@ -683,8 +675,6 @@ linux:
       - $input
   clang32:
     name: 'Debian 3.2-debian11ppa8'
-# 48MiB
-    memlimit-link: 50331648
     compile:
       - clang++-3.2
       - -Wall
@@ -701,8 +691,6 @@ linux:
   clang32-c++11:
     name: 'Debian 3.2-debian11ppa8'
     c++11: true
-# 48MiB
-    memlimit-link: 50331648
     compile:
       - clang++-3.2
       - -Wall
@@ -719,8 +707,6 @@ linux:
       - $input
   clang33:
     name: 'Debian 3.3-debian16ppa5'
-# 48MiB
-    memlimit-link: 50331648
     compile:
       - clang++-3.3
       - -Wall
@@ -737,8 +723,6 @@ linux:
   clang33-c++11:
     name: 'Debian 3.3-debian16ppa5'
     c++11: true
-# 48MiB
-    memlimit-link: 50331648
     compile:
       - clang++-3.3
       - -Wall
@@ -755,8 +739,8 @@ linux:
       - $input
   clang34:
     name: 'Debian 3.4-debian1ppa2'
-# 48MiB
-    memlimit-link: 50331648
+# 64MiB
+    memlimit-link: 67108864
     compile:
       - clang++-3.4
       - -Wall
@@ -773,8 +757,8 @@ linux:
   clang34-c++11:
     name: 'Debian 3.4-debian1ppa2'
     c++11: true
-# 48MiB
-    memlimit-link: 50331648
+# 64MiB
+    memlimit-link: 67108864
     compile:
       - clang++-3.4
       - -Wall
@@ -810,8 +794,6 @@ linux:
   clang33-c++1y:
     name: 'Debian 3.3-debian16ppa5'
     c++1y: true
-# 48MiB
-    memlimit-link: 50331648
     compile:
       - clang++-3.3
       - -Wall
@@ -829,8 +811,8 @@ linux:
   clang34-c++1y:
     name: 'Debian 3.4-debian1ppa2'
     c++1y: true
-# 48MiB
-    memlimit-link: 50331648
+# 64MiB
+    memlimit-link: 67108864
     compile:
       - clang++-3.4
       - -Wall
