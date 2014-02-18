@@ -255,7 +255,9 @@ sub _check_obj
 		my $o = ObjectFile::Tiny->new($obj);
 		my $wd = $self->_config($type, 'sandbox-whitelist-directive');
 		if(defined $wd) {
-			my @t = grep { $_ !~ qr/$wd/ } split /\s+/, $o->section_contents('.drectve');
+			my $contents = $o->section_contents('.drectve');
+			$contents =~ s/^\s+//;
+			my @t = grep { $_ !~ qr/$wd/ } split /\s+/, $contents;
 			return 'Found prohibited linker directive(s): '.join(', ', @t) if @t;
 		}
 		my $bs = $self->_config($type, 'sandbox-blacklist-section');
