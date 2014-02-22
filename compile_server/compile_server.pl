@@ -56,6 +56,14 @@ my $storage = CCF::Storage->new(
 	aws_secret_access_key => delete $ENV{AWS_ACCESS_KEY_SECRET},
 );
 
+sub tracemsg
+{
+	my ($type, $result) = @_;
+	my $output = $result->{output} || '';
+	my $error = $result->{error} || '';
+	return "---$type begin---\n$output$error---$type  end ---\n";
+}
+
 sub invoke
 {
 	my ($handle, $obj) = @_;
@@ -103,7 +111,7 @@ sub invoke
 	if($obj->{execute} eq 'true') {
 		$invoker->link($obj->{type}, $obj->{source})->cb(sub {
 			my ($rc, $result, $out) = shift->recv;
-			$opts{v} and print STDERR "---compile begin---\n$result->{output}$result->{error}---compile  end ---\n";
+			$opts{v} and print STDERR tracemsg('compile', $result);
 			if($rc) {
 				$cv->flat_map(sub {
 					$storage->update_compile_status_async($curid, {
@@ -123,9 +131,10 @@ sub invoke
 					my ($rc, $result) = shift->recv;
 					if(length $result->{output} > 10 * 1024) {
 						$result->{output} = substr $result->{output}, 0, 10 * 1024;
-						$result->{error} .= 'CCF: Output size is over 10KiB.';
+						$result->{error} = '' if ! exists $result->{error};
+						$result->{error} = 'CCF: Output size is over 10KiB.';
 					}
-					$opts{v} and print STDERR "---execute begin---\n$result->{output}$result->{error}---execute  end ---\n";
+					$opts{v} and print STDERR tracemsg('execute', $result);
 					unlink $out;
 					$cv->flat_map(sub {
 						$storage->update_compile_status_async($curid, {
@@ -139,7 +148,7 @@ sub invoke
 	} else {
 		$invoker->compile($obj->{type}, $obj->{source})->cb(sub {
 			my ($rc, $result) = shift->recv;
-			$opts{v} and print STDERR "---compile begin---\n$result->{output}$result->{error}---compile  end ---\n";
+			$opts{v} and print STDERR tracemsg('compile', $result);
 			$cv->flat_map(sub {
 				$storage->update_compile_status_async($curid, {
 					status => FINISHED,

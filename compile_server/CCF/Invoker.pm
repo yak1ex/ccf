@@ -206,6 +206,14 @@ sub __mktemp
 	return $fh->filename;
 }
 
+sub __append_result
+{
+	my ($result, $key, $msg) = @_;
+	return unless defined $msg;
+	$result->{$key} = '' if ! exists $result->{$key};
+	$result->{$key} .= $msg;
+}
+
 # External I/F for compilation
 sub compile
 {
@@ -220,7 +228,7 @@ sub compile
 		$tresult = $self->_recover_result($type, $tresult);
 		$result->{output} = $self->_dec($type, $tresult);
 		if($rc) {
-			$result->{error} .= sprintf "CCF: compilation failed by status: 0x%04X\n", $rc;
+			__append_result($result, 'error', sprintf("CCF: compilation failed by status: 0x%04X\n", $rc));
 		}
 		unlink $obj unless defined $not_unlink;
 		unlink $input;
@@ -239,7 +247,7 @@ sub _obj_adjust
 		return run_cmd(['objcopy', '--redefine-sym', ($self->_config($type, 'sandbox') eq 'win' ? '_main=_main_' : 'main=main_'), $obj, $obj2], '<', '/dev/null', '>', \$tresult, '2>', \$tresult)->map(sub {
 			my $rc = shift;
 			if($rc) {
-				$result->{output} .= $self->_dec($type, $tresult);
+				__append_result($result, 'output', $self->_dec($type, $tresult));
 			}
 			unlink $obj;
 			return ($rc, $result, $obj2);
@@ -285,15 +293,15 @@ sub link
 		my $check = $self->_check_obj($type, $obj);
 		if(defined $check) {
 			unlink $obj;
-			$result->{error} .= 'CCF: '.$check;
+			__append_result($result, 'error', 'CCF: '.$check);
 			return cv_unit($rc, $result);
 		}
 		return $self->_obj_adjust($type, $obj)->flat_map(sub {
 			my ($rc, $tresult, $obj) = @_;
-			$result->{output} .= $self->_dec($type, $tresult->{output});
+			__append_result($result, 'output', $self->_dec($type, $tresult->{output}));
 			if($rc) {
 				unlink $obj;
-				$result->{error} .= sprintf "CCF: Adjujstment of obj prior to link failed by status: 0x%04X\n", $rc;
+				__append_result($result, 'error', sprintf("CCF: Adjujstment of obj prior to link failed by status: 0x%04X\n", $rc));
 				return cv_unit($rc, $result);
 			}
 			undef $tresult;
@@ -301,10 +309,10 @@ sub link
 			return run_cmd($self->_make_arg($type, 'link', $obj, $out, \$tresult))->map(sub {
 				my $rc = shift;
 				$tresult = $self->_recover_result($type, $tresult);
-				$result->{output} .= $self->_dec($type, $tresult);
+				__append_result($result, 'output', $self->_dec($type, $tresult));
 				if($rc) {
 					unlink $obj;
-					$result->{error} .= sprintf "CCF: link failed by status: 0x%04X\n", $rc;
+					__append_result($result, 'error', sprintf("CCF: link failed by status: 0x%04X\n", $rc));
 					return ($rc, $result);
 				}
 				unlink $obj;
@@ -325,7 +333,7 @@ sub execute
 		my $rc = shift;
 		$result->{output} = $self->_recover_result($type, $tresult);
 		if($rc) {
-			$result->{error} .= sprintf "CCF: exit with non-zero status: 0x%04X\n", $rc;
+			__append_error($result, sprintf("CCF: exit with non-zero status: 0x%04X\n", $rc));
 		}
 		unlink $out;
 		return ($rc, $result);
