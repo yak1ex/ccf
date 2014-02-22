@@ -95,8 +95,8 @@ $cv->cb(sub {
 		status => COMPILING
 	});
 	if($obj->{execute} eq 'true') {
-		$invoker->link($obj->{type}, $obj->{source}, sub {
-			my ($rc, $result, $out) = @_;
+		$invoker->link($obj->{type}, $obj->{source})->cb(sub {
+			my ($rc, $result, $out) = shift->recv;
 		$cv->cb(sub {
 			$opts{v} and print STDERR "---compile begin---\n$result->{output}$result->{error}---compile  end ---\n";
 			if($rc) {
@@ -109,8 +109,8 @@ $cv->cb(sub {
 					status => RUNNING,
 					compile => $result,
 				});
-				$invoker->execute($obj->{type}, $out, sub{
-					my ($rc, $result) = @_;
+				$invoker->execute($obj->{type}, $out)->cb(sub{
+					my ($rc, $result) = shift->recv;
 				$cv->cb(sub {
 					if(length $result->{output} > 10 * 1024) {
 						$result->{output} = substr $result->{output}, 0, 10 * 1024;
@@ -128,8 +128,8 @@ $cv->cb(sub {
 		});
 		});
 	} else {
-		$invoker->compile($obj->{type}, $obj->{source}, sub {
-			my ($rc, $result) = @_;
+		$invoker->compile($obj->{type}, $obj->{source})->cb(sub {
+			my ($rc, $result) = shift->recv;
 		$cv->cb(sub {
 			$opts{v} and print STDERR "---compile begin---\n$result->{output}$result->{error}---compile  end ---\n";
 			$storage->update_compile_status_async($curid, {

@@ -208,12 +208,13 @@ sub __mktemp
 # External I/F for compilation
 sub compile
 {
-	my ($self, $type, $source, $callback, $not_unlink) = @_;
+	my ($self, $type, $source, $not_unlink) = @_;
 	my ($result, $tresult) = {};
 
 	my $input = __mktemp('.cpp', $source);
 	my $obj   = __mktemp(($self->_is_cygwin2native($type) || $OSNAME eq 'MSWin32') ? '.obj' : '.o');
 
+	my $cv = AE::cv;
 	run_cmd($self->_make_arg($type, 'compile', $input, $obj, \$tresult))->cb(sub {
 		my $rc = shift->recv;
 		$tresult = $self->_recover_result($type, $tresult);
@@ -223,15 +224,17 @@ sub compile
 		}
 		unlink $obj unless defined $not_unlink;
 		unlink $input;
-		$callback->($rc, $result, $obj);
+		$cv->send($rc, $result, $obj);
 	});
+	return $cv;
 }
 
 # Adjust symbol name in an object file to hook
 sub _obj_adjust
 {
-	my ($self, $type, $obj, $callback) = @_;
+	my ($self, $type, $obj) = @_;
 
+    my $cv = AE::cv;
 	if($self->_is_sandbox($type)) {
 		my $obj2 = __mktemp(($self->_is_cygwin2native($type) || $OSNAME eq 'MSWin32') ? '.obj' : '.o');
 		my ($result, $tresult) = {};
@@ -241,11 +244,12 @@ sub _obj_adjust
 				$result->{output} .= $self->_dec($type, $tresult);
 			}
 			unlink $obj;
-			$callback->($rc, $result, $obj2);
+			$cv->send($rc, $result, $obj2);
 		});
 	} else {
-		$callback->(0, {}, $obj);
+		$cv->send(0, {}, $obj);
 	}
+	return $cv;
 }
 
 sub _check_obj
@@ -273,29 +277,30 @@ sub _check_obj
 # External I/F for link
 sub link
 {
-	my ($self, $type, $source, $callback) = @_;
+	my ($self, $type, $source) = @_;
 
-	$self->compile($type, $source, sub {
-		my ($rc, $result, $obj) = @_;
+    my $cv = AE::cv;
+	$self->compile($type, $source, 1)->cb(sub {
+		my ($rc, $result, $obj) = shift->recv;
 		if($rc) {
 			unlink $obj;
-			$callback->($rc, $result);
+			$cv->send($rc, $result);
 			return;
 		}
 		my $check = $self->_check_obj($type, $obj);
 		if(defined $check) {
 			unlink $obj;
 			$result->{error} .= 'CCF: '.$check;
-			$callback->($rc, $result);
+			$cv->send($rc, $result);
 			return;
 		}
-		$self->_obj_adjust($type, $obj, sub {
-			my ($rc, $tresult, $obj) = @_;
+		$self->_obj_adjust($type, $obj)->cb(sub {
+			my ($rc, $tresult, $obj) = shift->recv;
 			$result->{output} .= $self->_dec($type, $tresult->{output});
 			if($rc) {
 				unlink $obj;
 				$result->{error} .= sprintf "CCF: Adjujstment of obj prior to link failed by status: 0x%04X\n", $rc;
-				$callback->($rc, $result);
+				$cv->send($rc, $result);
 				return;
 			}
 			undef $tresult;
@@ -307,23 +312,25 @@ sub link
 				if($rc) {
 					unlink $obj;
 					$result->{error} .= sprintf "CCF: link failed by status: 0x%04X\n", $rc;
-					$callback->($rc, $result);
+					$cv->send($rc, $result);
 					return;
 				}
 				unlink $obj;
 				chmod 0711, $out if $self->_is_cygwin2native($type);
-				$callback->($rc, $result, $out);
+				$cv->send($rc, $result, $out);
 			});
 		});
-	}, 1);
+	});
+	return $cv;
 }
 
 # External I/F for execution
 sub execute
 {
-	my ($self, $type, $out, $callback) = @_;
+	my ($self, $type, $out) = @_;
 	my ($result, $tresult) = {};
 
+	my $cv = AE::cv;
 	run_cmd($self->_make_arg($type, 'execute', $out, undef, \$tresult))->cb(sub {
 		my $rc = shift->recv;
 		$result->{output} = $self->_recover_result($type, $tresult);
@@ -331,8 +338,9 @@ sub execute
 			$result->{error} .= sprintf "CCF: exit with non-zero status: 0x%04X\n", $rc;
 		}
 		unlink $out;
-		$callback->($rc, $result);
+		$cv->send($rc, $result);
 	});
+	return $cv;
 }
 
 1;

@@ -109,19 +109,19 @@ while(my ($idx, $spec) = each @{$case{$confkey}}) {
 	foreach my $key (@key) {
 		my $cv = AE::cv;
 		if($spec->[0] eq 'compile') {
-			$invoker->compile($key, $spec->[2], sub {
-				my ($rc, $result) = @_;
+			$invoker->compile($key, $spec->[2])->cb(sub {
+				my ($rc, $result) = shift->recv;
 				test($result, $key, $spec, $idx, 0);
 				test($result, $key, $spec, $idx, 1);
 				$cv->send;
 			});
 		} else { # 'execute'
-			$invoker->link($key, $spec->[2], sub {
-				my ($rc, $result, $out) = @_;
+			$invoker->link($key, $spec->[2])->cb(sub {
+				my ($rc, $result, $out) = shift->recv;
 				test($result, $key, $spec, $idx, 0);
 				test($result, $key, $spec, $idx, 1);
-				$invoker->execute($key, $out, sub{
-					my ($rc, $result) = @_;
+				$invoker->execute($key, $out)->cb(sub{
+					my ($rc, $result) = shift->recv;
 					test($result, $key, $spec, $idx, 2);
 					test($result, $key, $spec, $idx, 3);
 					unlink $out;
