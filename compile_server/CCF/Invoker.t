@@ -3,6 +3,7 @@ use CCF::Invoker;
 
 use YAML;
 use AnyEvent;
+use Data::Monad::CondVar;
 use Sys::Hostname;
 
 my $confname = 'config.yaml';
@@ -107,17 +108,15 @@ while(my ($idx, $spec) = each @{$case{$confkey}}) {
 	my $re = ref $spec->[1] eq 'Regexp' ? $spec->[1] : qr/^\Q$spec->[1]\E$/;
 	my @key = grep { $_ ne 'GLOBAL' && $_ =~ $re } keys %$conf;
 	foreach my $key (@key) {
-		my $cv = AE::cv;
 		if($spec->[0] eq 'compile') {
-			$invoker->compile($key, $spec->[2])->cb(sub {
-				my ($rc, $result) = shift->recv;
+			$invoker->compile($key, $spec->[2])->map(sub {
+				my ($rc, $result) = @_;
 				test($result, $key, $spec, $idx, 0);
 				test($result, $key, $spec, $idx, 1);
-				$cv->send;
-			});
+			})->recv;
 		} else { # 'execute'
-			$invoker->link($key, $spec->[2])->cb(sub {
-				my ($rc, $result, $out) = shift->recv;
+			$invoker->link($key, $spec->[2])->map(sub {
+				my ($rc, $result, $out) = @_;
 				test($result, $key, $spec, $idx, 0);
 				test($result, $key, $spec, $idx, 1);
 				$invoker->execute($key, $out)->cb(sub{
@@ -125,11 +124,9 @@ while(my ($idx, $spec) = each @{$case{$confkey}}) {
 					test($result, $key, $spec, $idx, 2);
 					test($result, $key, $spec, $idx, 3);
 					unlink $out;
-					$cv->send;
 				});
-			});
+			})->recv;
 		}
-		$cv->recv;
 	}
 }
 

@@ -5,6 +5,7 @@ use warnings;
 
 use AnyEvent;
 use AnyEvent::Util;
+use Data::Monad::CondVar;
 
 use English;
 use Encode;
@@ -214,9 +215,8 @@ sub compile
 	my $input = __mktemp('.cpp', $source);
 	my $obj   = __mktemp(($self->_is_cygwin2native($type) || $OSNAME eq 'MSWin32') ? '.obj' : '.o');
 
-	my $cv = AE::cv;
-	run_cmd($self->_make_arg($type, 'compile', $input, $obj, \$tresult))->cb(sub {
-		my $rc = shift->recv;
+	return run_cmd($self->_make_arg($type, 'compile', $input, $obj, \$tresult))->map(sub {
+		my $rc = shift;
 		$tresult = $self->_recover_result($type, $tresult);
 		$result->{output} = $self->_dec($type, $tresult);
 		if($rc) {
@@ -224,9 +224,8 @@ sub compile
 		}
 		unlink $obj unless defined $not_unlink;
 		unlink $input;
-		$cv->send($rc, $result, $obj);
+		return ($rc, $result, $obj);
 	});
-	return $cv;
 }
 
 # Adjust symbol name in an object file to hook
@@ -234,22 +233,20 @@ sub _obj_adjust
 {
 	my ($self, $type, $obj) = @_;
 
-    my $cv = AE::cv;
 	if($self->_is_sandbox($type)) {
 		my $obj2 = __mktemp(($self->_is_cygwin2native($type) || $OSNAME eq 'MSWin32') ? '.obj' : '.o');
 		my ($result, $tresult) = {};
-		run_cmd(['objcopy', '--redefine-sym', ($self->_config($type, 'sandbox') eq 'win' ? '_main=_main_' : 'main=main_'), $obj, $obj2], '<', '/dev/null', '>', \$tresult, '2>', \$tresult)->cb(sub {
-			my $rc = shift->recv;
+		return run_cmd(['objcopy', '--redefine-sym', ($self->_config($type, 'sandbox') eq 'win' ? '_main=_main_' : 'main=main_'), $obj, $obj2], '<', '/dev/null', '>', \$tresult, '2>', \$tresult)->map(sub {
+			my $rc = shift;
 			if($rc) {
 				$result->{output} .= $self->_dec($type, $tresult);
 			}
 			unlink $obj;
-			$cv->send($rc, $result, $obj2);
+			return ($rc, $result, $obj2);
 		});
 	} else {
-		$cv->send(0, {}, $obj);
+		return cv_unit(0, {}, $obj);
 	}
-	return $cv;
 }
 
 sub _check_obj
@@ -279,49 +276,43 @@ sub link
 {
 	my ($self, $type, $source) = @_;
 
-    my $cv = AE::cv;
-	$self->compile($type, $source, 1)->cb(sub {
-		my ($rc, $result, $obj) = shift->recv;
+	$self->compile($type, $source, 1)->flat_map(sub {
+		my ($rc, $result, $obj) = @_;
 		if($rc) {
 			unlink $obj;
-			$cv->send($rc, $result);
-			return;
+			return cv_unit($rc, $result);
 		}
 		my $check = $self->_check_obj($type, $obj);
 		if(defined $check) {
 			unlink $obj;
 			$result->{error} .= 'CCF: '.$check;
-			$cv->send($rc, $result);
-			return;
+			return cv_unit($rc, $result);
 		}
-		$self->_obj_adjust($type, $obj)->cb(sub {
-			my ($rc, $tresult, $obj) = shift->recv;
+		return $self->_obj_adjust($type, $obj)->flat_map(sub {
+			my ($rc, $tresult, $obj) = @_;
 			$result->{output} .= $self->_dec($type, $tresult->{output});
 			if($rc) {
 				unlink $obj;
 				$result->{error} .= sprintf "CCF: Adjujstment of obj prior to link failed by status: 0x%04X\n", $rc;
-				$cv->send($rc, $result);
-				return;
+				return cv_unit($rc, $result);
 			}
 			undef $tresult;
 			my $out = __mktemp('.exe');
-			run_cmd($self->_make_arg($type, 'link', $obj, $out, \$tresult))->cb(sub {
-				my $rc = shift->recv;
+			return run_cmd($self->_make_arg($type, 'link', $obj, $out, \$tresult))->map(sub {
+				my $rc = shift;
 				$tresult = $self->_recover_result($type, $tresult);
 				$result->{output} .= $self->_dec($type, $tresult);
 				if($rc) {
 					unlink $obj;
 					$result->{error} .= sprintf "CCF: link failed by status: 0x%04X\n", $rc;
-					$cv->send($rc, $result);
-					return;
+					return ($rc, $result);
 				}
 				unlink $obj;
 				chmod 0711, $out if $self->_is_cygwin2native($type);
-				$cv->send($rc, $result, $out);
+				return ($rc, $result, $out);
 			});
 		});
 	});
-	return $cv;
 }
 
 # External I/F for execution
@@ -330,17 +321,15 @@ sub execute
 	my ($self, $type, $out) = @_;
 	my ($result, $tresult) = {};
 
-	my $cv = AE::cv;
-	run_cmd($self->_make_arg($type, 'execute', $out, undef, \$tresult))->cb(sub {
-		my $rc = shift->recv;
+	return run_cmd($self->_make_arg($type, 'execute', $out, undef, \$tresult))->map(sub {
+		my $rc = shift;
 		$result->{output} = $self->_recover_result($type, $tresult);
 		if($rc) {
 			$result->{error} .= sprintf "CCF: exit with non-zero status: 0x%04X\n", $rc;
 		}
 		unlink $out;
-		$cv->send($rc, $result);
+		return ($rc, $result);
 	});
-	return $cv;
 }
 
 1;

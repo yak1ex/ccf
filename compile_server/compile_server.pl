@@ -7,6 +7,7 @@ use strict;
 use warnings;
 
 use AnyEvent;
+use Data::Monad::CondVar;
 use AnyEvent::Handle;
 use AnyEvent::Socket; # tcp_server
 use AnyEvent::Util; # run_cmd
@@ -74,72 +75,79 @@ sub invoke
 		status => REQUESTED,
 	});
 	$handle->push_write(storable => { id => $curid });
-$cv->cb(sub {
 # TODO: Other sanity check
 	if(!exists $obj->{type} || !exists $conf->{$obj->{type}}) {
-		$storage->update_compile_status_async($curid, {
-			status => FINISHED,
-			compile => { error => 'CCF: Unknown compiler type.' },
+		$cv->flat_map(sub {
+			$storage->update_compile_status_async($curid, {
+				status => FINISHED,
+				compile => { error => 'CCF: Unknown compiler type.' },
+			})
 		});
 		return;
 	}
 	if(exists $obj->{source} && length $obj->{source} > 10 * 1024) {
-		$storage->update_compile_status_async($curid, {
-			status => FINISHED,
-			compile => { error => 'CCF: Source size is over 10KiB.' },
+		$cv->flat_map(sub {
+			$storage->update_compile_status_async($curid, {
+				status => FINISHED,
+				compile => { error => 'CCF: Source size is over 10KiB.' },
+			})
 		});
 		return;
 	}
 
-	$cv = $storage->update_compile_status_async($curid, {
-		status => COMPILING
+	$cv = $cv->flat_map(sub {
+		$storage->update_compile_status_async($curid, {
+			status => COMPILING
+		})
 	});
 	if($obj->{execute} eq 'true') {
 		$invoker->link($obj->{type}, $obj->{source})->cb(sub {
 			my ($rc, $result, $out) = shift->recv;
-		$cv->cb(sub {
 			$opts{v} and print STDERR "---compile begin---\n$result->{output}$result->{error}---compile  end ---\n";
 			if($rc) {
-				$storage->update_compile_status_async($curid, {
-					status => FINISHED,
-					compile => $result,
+				$cv->flat_map(sub {
+					$storage->update_compile_status_async($curid, {
+						status => FINISHED,
+						compile => $result,
+					})
 				});
+				return;
 			} else {
-				$cv = $storage->update_compile_status_async($curid, {
-					status => RUNNING,
-					compile => $result,
+				$cv = $cv->flat_map(sub {
+					$storage->update_compile_status_async($curid, {
+						status => RUNNING,
+						compile => $result,
+					})
 				});
 				$invoker->execute($obj->{type}, $out)->cb(sub{
 					my ($rc, $result) = shift->recv;
-				$cv->cb(sub {
 					if(length $result->{output} > 10 * 1024) {
 						$result->{output} = substr $result->{output}, 0, 10 * 1024;
 						$result->{error} .= 'CCF: Output size is over 10KiB.';
 					}
 					$opts{v} and print STDERR "---execute begin---\n$result->{output}$result->{error}---execute  end ---\n";
 					unlink $out;
-					$storage->update_compile_status_async($curid, {
-						status => FINISHED,
-						execute => $result,
+					$cv->flat_map(sub {
+						$storage->update_compile_status_async($curid, {
+							status => FINISHED,
+							execute => $result,
+						});
 					});
 				});
-				});
 			}
-		});
 		});
 	} else {
 		$invoker->compile($obj->{type}, $obj->{source})->cb(sub {
 			my ($rc, $result) = shift->recv;
-		$cv->cb(sub {
 			$opts{v} and print STDERR "---compile begin---\n$result->{output}$result->{error}---compile  end ---\n";
-			$storage->update_compile_status_async($curid, {
-				status => FINISHED,
-				compile => $result,
+			$cv->flat_map(sub {
+				$storage->update_compile_status_async($curid, {
+					status => FINISHED,
+					compile => $result,
+				});
 			});
 		});
-		});
 	}
-});
 }
 
 sub status
