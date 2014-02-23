@@ -40,8 +40,10 @@ sub STORE
 {
 	my ($self, $value) = @_;
 	$self->{_obj}{$self->{_key}} = $value;
-	open my $fh, '>', $self->{_file};
+	open my $fh, '+<', $self->{_file};
 	flock($fh, LOCK_EX);
+	truncate($fh, 0);
+	seek($fh, 0, 0);
 	print $fh YAML::Dump($self->{_obj});
 	flock($fh, LOCK_UN);
 	close $fh;
