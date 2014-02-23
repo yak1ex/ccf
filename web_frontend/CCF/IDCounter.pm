@@ -25,7 +25,7 @@ sub TIESCALAR
 	return bless {
 		_file => $arg{file},
 		_key => $arg{key},
-		_obj => (-f $arg{file} ? YAML::LoadFile($arg{file}) : {}),
+		_obj => $obj,
 	}, $class;
 }
 
