@@ -13,12 +13,16 @@ sub TIESCALAR
 	my ($class, %arg) = @_;
 	my $obj;
 	if(exists $arg{file} && -f $arg{file}) {
-		open my $fh, '<', $arg{file};
-		flock($fh, LOCK_SH);
-		local $/;
-		$obj = YAML::Load(<$fh>);
-		flock($fh, LOCK_UN);
-		close $fh;
+		if(open my $fh, '<', $arg{file}) {
+			flock($fh, LOCK_SH);
+			local $/;
+			$obj = YAML::Load(<$fh>);
+			flock($fh, LOCK_UN);
+			close $fh;
+		} else {
+			warn "Open failed: $!";
+			$obj = {};
+		}
 	} else {
 		$obj = {};
 	}
@@ -40,7 +44,7 @@ sub STORE
 {
 	my ($self, $value) = @_;
 	$self->{_obj}{$self->{_key}} = $value;
-	open my $fh, '+<', $self->{_file};
+	open my $fh, '+<', $self->{_file} or warn "Open failed: $!" and return;
 	flock($fh, LOCK_EX);
 	truncate($fh, 0);
 	seek($fh, 0, 0);
