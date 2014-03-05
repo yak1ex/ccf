@@ -93,8 +93,16 @@ sub _show
 	my ($self, $obj, $responders) = @_;
 
 	my $id = $obj->{id};
+	if(! defined $id) {
+		$responders->{error}->(400); # Bad request
+		return;
+	}
 	$self->storage->get_compile_status_async($id)->cb(sub {
 		my $obj = shift->recv;
+		if(! defined $obj) {
+			$responders->{error}->(400); # Bad request
+			return;
+		}
 		my $html;
 		my $status = $obj->{status};
 		given($status) {
@@ -124,8 +132,16 @@ sub _status
 	my ($self, $obj, $responders) = @_;
 
 	my $id = $obj->{id};
+	if(! defined $id) {
+		$responders->{error}->(400); # Bad request
+		return;
+	}
 	$self->storage->get_compile_status_async($id)->cb(sub {
 		my $obj = shift->recv;
+		if(! defined $obj) {
+			$responders->{error}->(400); # Bad request
+			return;
+		}
 		$responders->{json}($obj);
 	});
 }
@@ -143,6 +159,11 @@ sub _invoke
 	my $cv = AE::cv;
 	my $req_id = ${$self->req_id}++;
 	my $result = { keys => {}, id => $req_id };
+
+	if(! exists $obj->{type} || @{$obj->{type}} == 0 || ! defined $obj->{source}) {
+		$responders->{error}->(400); # Bad request
+		return;
+	}
 
 	$cv->begin(sub {
 		$self->storage->update_request_status_async($req_id, {
@@ -176,8 +197,16 @@ sub _result
 	my ($self, $obj, $responders) = @_;
 
 	my $req_id = $obj->{id};
+	if(! defined $req_id) {
+		$responders->{error}->(400); # Bad request
+		return;
+	}
 	$self->storage->get_request_status_async($req_id)->cb(sub {
 		my $req = shift->recv;
+		if(! defined $req) {
+			$responders->{error}->(400); # Bad request
+			return;
+		}
 		my $source = Plack::Util::encode_html($req->{source});
 		my $title = Plack::Util::encode_html($req->{title});
 		$responders->{html}($tmpl{RESULT}->fill_in(HASH => { id => \$req_id, 'keys' => $req->{keys}, source => \$source, title => \$title }));
@@ -187,8 +216,8 @@ sub _result
 sub _rlist
 {
 	my ($self, $obj, $responders) = @_;
-	$obj->{from} = ${$self->req_id} - 1 if ! defined $obj->{from} || $obj->{from} > ${$self->req_id} - 1;
-	$obj->{number} ||= 20;
+	$obj->{from} = ${$self->req_id} - 1 if ! defined $obj->{from} || $obj->{from} > ${$self->req_id} - 1 || $obj->{from} < 0;
+	$obj->{number} = 20 if ! defined $obj->{number} || $obj->{number} <= 0;
 	$self->storage->get_requests_async($obj->{from}, $obj->{number})->cb(sub {
 		my $keys = [ map { [$_->[0], Time::Duration::ago(DateTime->now->epoch - $_->[1]->epoch, 1), $_->[2] ] } @{shift->recv} ];
 		$responders->{html}($tmpl{RLIST}->fill_in(HASH => { keys => \$keys, from => $obj->{from}, number => $obj->{number}, max_id => ${$self->req_id}-1 }));
@@ -232,7 +261,11 @@ sub call
 			json => sub {
 				my $obj = shift;
 				$responder->($q->new_response(200, ['Content-Type' => 'application/json; charset=utf-8'], Encode::encode_utf8(encode_json($obj)))->finalize);
-			}
+			},
+			error => sub {
+				my $status = shift;
+				$responder->($q->new_response($status)->finalize);
+			},
 		};
 
 		my (%obj) = map { my (@t) = $q->param($_); $_, exists $multikey{$_} ? [ @t ] : $t[0] } $q->param;
@@ -260,6 +293,7 @@ sub call
 			$dispatch{$obj{command}}->($self, \%obj, $responders);
 		} else {
 			warn "Unknown command: $obj{command}";
+			$responders->{error}->(400); # Bad request
 		}
 	};
 }
