@@ -289,9 +289,10 @@ sub call
 			}
 		}
 
-		if(exists $dispatch{$obj{command}}) {
+		if(exists $obj{command} && exists $dispatch{$obj{command}}) {
 			$dispatch{$obj{command}}->($self, \%obj, $responders);
 		} else {
+			$obj{command} = '';
 			warn "Unknown command: $obj{command}";
 			$responders->{error}->(400); # Bad request
 		}
