@@ -40,15 +40,14 @@ sub new
 	my ($self, $port) = @_;
 	my $class = ref $self || $self;
 	$self = {};
-	tcp_server undef, $port, sub {
+	$self->{_GUARD} = tcp_server undef, $port, sub {
 		my ($fh, $host, $port) = @_;
 
 		my $handle; $handle = AnyEvent::Handle->new(
 			fh => $fh,
-			on_eof => sub { $handle->destroy; delete $self->{_HANDLE}; },
-			on_error => sub { $handle->destroy; delete $self->{_HANDLE}; },
+			on_eof => sub { print "EOF\n"; $handle->destroy; },
+			on_error => sub { print "ERROR\n"; $handle->destroy; },
 		);
-		$self->{_HANDLE} = $handle;
 		my @handler; @handler = (storable => sub {
 			my ($handle, $obj) = @_;
 			if(exists $obj->{command} && exists $handler{$obj->{command}}) {
