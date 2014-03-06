@@ -51,7 +51,7 @@ sub new
 		my @handler; @handler = (storable => sub {
 			my ($handle, $obj) = @_;
 			if(exists $obj->{command} && exists $handler{$obj->{command}}) {
-				print STDERR "handler called by command `$obj->{command}'.\n";
+#				print STDERR "handler called by command `$obj->{command}'.\n";
 				$handler{$obj->{command}}->($handle, $obj);
 			} else {
 				my $command = '';
