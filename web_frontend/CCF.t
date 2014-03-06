@@ -132,7 +132,7 @@ is($res->code, 400, 'invoke w/o source - status code: bad request');
 $res = $test->request(GET '/ccf.cgi?command=invoke&source=mock');
 is($res->code, 400, 'invoke w/o type - status code: bad request');
 
-# CCF.pm expects storage update
+# Plack::Test::MockHTTP expects responder is immediately called
 #$res = $test->request(GET '/ccf.cgi?command=invoke&type=mock&source=mock');
 #is($res->code, 200, 'invoke - status code: ok');
 
