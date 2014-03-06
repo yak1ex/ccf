@@ -157,15 +157,14 @@ sub _invoke
 {
 	my ($self, $obj, $responders) = @_;
 
-	my $cv = AE::cv;
-	my $req_id = ${$self->req_id}++;
-	my $result = { keys => {}, id => $req_id };
-
 	if(! exists $obj->{type} || @{$obj->{type}} == 0 || ! defined $obj->{source}) {
 		$responders->{error}->(400); # Bad request
 		return;
 	}
 
+	my $cv = AE::cv;
+	my $req_id = ${$self->req_id}++;
+	my $result = { keys => {}, id => $req_id };
 	$cv->begin(sub {
 		$self->storage->update_request_status_async($req_id, {
 			execute => $obj->{execute},
