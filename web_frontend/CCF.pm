@@ -253,19 +253,23 @@ sub call
 	return sub {
 		my $responder = shift;
 
+		my $cv = AE::cv;
 		my $q = Plack::Request->new($env);
 		my $responders = {
 			html => sub {
 				my $str = shift;
 				$responder->($q->new_response(200, ['Content-Type' => 'text/html; charset=utf-8'], Encode::encode_utf8($str))->finalize);
+				$cv->send;
 			},
 			json => sub {
 				my $obj = shift;
 				$responder->($q->new_response(200, ['Content-Type' => 'application/json; charset=utf-8'], Encode::encode_utf8(encode_json($obj)))->finalize);
+				$cv->send;
 			},
 			error => sub {
 				my $status = shift;
 				$responder->($q->new_response($status)->finalize);
+				$cv->send;
 			},
 		};
 
@@ -292,6 +296,7 @@ sub call
 
 		if(exists $obj{command} && exists $dispatch{$obj{command}}) {
 			$dispatch{$obj{command}}->($self, \%obj, $responders);
+			$cv->recv unless $env->{'psgi.nonblocking'};
 		} else {
 			$obj{command} = '';
 			warn "Unknown command: $obj{command}";

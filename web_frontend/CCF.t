@@ -73,7 +73,7 @@ package main;
 
 use lib qw(../lib);
 
-use Test::More tests => 11;
+use Test::More tests => 13;
 use Plack::Test;
 use Plack::Builder;
 use HTTP::Request::Common;
@@ -86,6 +86,9 @@ my $mock = Mock::CompileServer->new(8888);
 {open my $fh, '>', $dir->dirname . "/id.yaml"; close $fh;}
 {open my $fh, '>', $dir->dirname . "/id2.yaml"; close $fh;}
 my $app = CCF->new(bucket => 'cpp-compiler-farm-test', backend => [['127.0.0.1', 8888]], dir => $dir->dirname);
+my $cv = AE::cv;
+my $w; $w = AE::timer 1, 0, sub { undef $w; $cv->send; };
+$cv->recv;
 my $test = Plack::Test->create(builder {
 	mount '/ccf.cgi' => $app;
 	mount '/result' => $app;
@@ -132,9 +135,9 @@ is($res->code, 400, 'invoke w/o source - status code: bad request');
 $res = $test->request(GET '/ccf.cgi?command=invoke&source=mock');
 is($res->code, 400, 'invoke w/o type - status code: bad request');
 
-# Plack::Test::MockHTTP expects responder is immediately called
-#$res = $test->request(GET '/ccf.cgi?command=invoke&type=mock&source=mock');
-#is($res->code, 200, 'invoke - status code: ok');
+$res = $test->request(GET '/ccf.cgi?command=invoke&type=mock&source=mock');
+is($res->code, 200, 'invoke - status code: ok');
+is($res->content, '{"keys":{"mock":"0"},"id":0}', 'invoke - result');
 
 ########################################################################
 # result
