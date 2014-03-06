@@ -84,7 +84,9 @@ use CCF;
 my $dir = File::Temp->newdir;
 $ENV{CCF_STORAGE_DUMMY_ROOT} = $dir->dirname;
 my $mock = Mock::CompileServer->new(8888);
-my $app = CCF->new(bucket => 'cpp-compiler-farm-test', backend => [['127.0.0.1', 8888]]);
+{open my $fh, '>', $dir->dirname . "/id.yaml"; close $fh;}
+{open my $fh, '>', $dir->dirname . "/id2.yaml"; close $fh;}
+my $app = CCF->new(bucket => 'cpp-compiler-farm-test', backend => [['127.0.0.1', 8888]], dir => $dir->dirname);
 my $test = Plack::Test->create(builder {
 	mount '/ccf.cgi' => $app;
 	mount '/result' => $app;

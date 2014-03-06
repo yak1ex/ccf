@@ -32,11 +32,12 @@ sub new
 	my ($self, %arg) = @_;
 	my $class = ref($self) || $self;
 
+	my $dir = $arg{dir} || '.';
 	my $id = 0;
-	tie $id, 'CCF::IDCounter', file => 'id.yaml', key => 'compile';
+	tie $id, 'CCF::IDCounter', file => "$dir/id.yaml", key => 'compile';
 	my $rid = 0;
 # TODO: share idcounter file between different keys
-	tie $rid, 'CCF::IDCounter', file => 'id2.yaml', key => 'request';
+	tie $rid, 'CCF::IDCounter', file => "$dir/id2.yaml", key => 'request';
 
 	return bless {
 		_DISPATCHER => CCF::Dispatcher->new(backend => $arg{backend}),
