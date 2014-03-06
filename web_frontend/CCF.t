@@ -7,7 +7,7 @@ use AnyEvent::Socket;
 sub invoke
 {
 	my ($handle, $obj) = @_;
-	$handle->push_write(storable => { id => 1 });
+	$handle->push_write(storable => { id => $obj->{id} });
 }
 
 sub status
