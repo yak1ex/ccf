@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<includepath>
+  <includepathentry path="${project_loc}/compile_server" />
+  <includepathentry path="${project_loc}/lib" />
+  <includepathentry path="${project_loc}/web_frontend" />
+</includepath>
+
