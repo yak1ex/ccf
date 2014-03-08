@@ -328,7 +328,7 @@ sub execute
 		my $rc = shift;
 		$result->{output} = $self->_recover_result($type, $tresult);
 		if($rc) {
-			__append_error($result, sprintf("CCF: exit with non-zero status: 0x%04X\n", $rc));
+			__append_result($result, 'error', sprintf("CCF: exit with non-zero status: 0x%04X\n", $rc));
 		}
 		unlink $out;
 		return ($rc, $result);
