@@ -121,7 +121,6 @@ sub _sandbox_env
 	};
 }
 
-# TODO: Refactor
 # Make arguments for run_cmd
 sub _make_arg
 {
@@ -138,31 +137,27 @@ sub _make_arg
 			$output = Cygwin::posix_to_win_path($output);
 			$on_prepare = $self->_prepare_env($type, $on_prepare) if exists($self->_config->{$type}{env});
 		}
-		@res = map {
+		push @res, $self->_config($type, 'sandbox-path') if $self->_is_sandbox($type);
+		push @res, map {
 			my $t = $_;
 			$t =~ s/\$output/$output/;
-			$t =~ s/\$input/$input/ && $mode eq 'link' && $self->_is_sandbox($type) && defined $self->_config($type, 'sandbox-prearg') ?
-			(@{$self->_config($type, 'sandbox-prearg')}, $t) : $t;
+# For link in sandbox, sandbox-prearg is prepended and sandbox-arg is appended to input
+			$t =~ s/\$input/$input/ && $mode eq 'link' && $self->_is_sandbox($type) ?
+			(@{$self->_config($type, 'sandbox-prearg') || []}, $t, @{$self->_config($type, 'sandbox-arg') || []}) : $t;
 		} @{$self->_config->{$type}{$mode}};
 	}
-	if($mode eq 'link' && $self->_is_sandbox($type) && defined $self->_config($type, 'sandbox-arg')) {
-		push @res, @{$self->_config($type, 'sandbox-arg')};
-	}
 # in/out setup in run_cmd arguments
-	if($self->_is_sandbox($type) && $self->_config($type, 'sandbox') eq 'win') {
-		push @arg, '<', '/dev/null';
-	} else {
-		push @arg, '<', '/dev/null', '>', $capture, '2>', $capture;
-	}
 	if($self->_is_sandbox($type)) {
-# in/out setup in sandbox environment variables
 		if($self->_config($type, 'sandbox') eq 'win') {
+			push @arg, '<', '/dev/null';
 			$$capture = __mktemp('.txt');
 			$on_prepare = $self->_sandbox_env($type, $mode, $on_prepare, $$capture);
 		} else {
+			push @arg, '<', '/dev/null', '>', $capture, '2>', $capture;
 			$on_prepare = $self->_sandbox_env($type, $mode, $on_prepare);
 		}
-		unshift @res, $self->_config($type, 'sandbox-path') if $mode ne 'execute';
+	} else {
+		push @arg, '<', '/dev/null', '>', $capture, '2>', $capture;
 	}
 # set on_prepare if any
 	push @arg, (on_prepare => $on_prepare) if defined $on_prepare;
