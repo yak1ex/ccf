@@ -104,31 +104,59 @@ sub test
 	}
 }
 
-while(my ($idx, $spec) = each @{$case{$confkey}}) {
-	my $re = ref $spec->[1] eq 'Regexp' ? $spec->[1] : qr/^\Q$spec->[1]\E$/;
-	my @key = grep { $_ ne 'GLOBAL' && $_ =~ $re } keys %$conf;
-	foreach my $key (@key) {
-		if($spec->[0] eq 'compile') {
-			$invoker->compile($key, $spec->[2])->map(sub {
-				my ($rc, $result) = @_;
-				test($result, $key, $spec, $idx, 0);
-				test($result, $key, $spec, $idx, 1);
-			})->recv;
-		} else { # 'execute'
-			$invoker->link($key, $spec->[2])->map(sub {
-				my ($rc, $result, $out) = @_;
-				test($result, $key, $spec, $idx, 0);
-				test($result, $key, $spec, $idx, 1);
-				$invoker->execute($key, $out)->cb(sub{
-					my ($rc, $result) = shift->recv;
-					test($result, $key, $spec, $idx, 2);
-					test($result, $key, $spec, $idx, 3);
-					unlink $out;
-				});
-			})->recv;
+sub process
+{
+	my $cb = shift;
+	while(my ($idx, $spec) = each @{$case{$confkey}}) {
+		my $re = ref $spec->[1] eq 'Regexp' ? $spec->[1] : qr/^\Q$spec->[1]\E$/;
+		my @key = grep { $_ ne 'GLOBAL' && $_ =~ $re } keys %$conf;
+		foreach my $key (@key) {
+			$cb->($key, $spec, $idx);
 		}
 	}
 }
 
-# TODO: plan tests
-done_testing;
+
+# Counting tests
+# It requires loops similar as actual tests, so it might look redundant
+# However, not all tests may be taken place in some situation, for example, error in callback.
+# Thus, we count tests, and do basic sanity check of test configuration.
+my $count = 0;
+my $invalid = '';
+process(sub {
+	my ($key, $spec, $idx) = @_;
+	if($spec->[0] eq 'compile') {
+		$invalid .= "$key $idx $spec->[0] consists of not 2 items\n" if @{$spec->[3]} != 2;
+	} else { # 'execute'
+		$invalid .= "$key $idx $spec->[0] consists of not 4 items\n" if @{$spec->[3]} != 4;
+	}
+	$invalid .= "$key $idx $spec->[0] contains invalid item(s)\n" if grep { ref($_) ne '' && ref($_) ne 'CODE' && ref($_) ne 'Regexp' } @{$spec->[3]};
+	$count += grep { defined } @{$spec->[3]};
+});
+die "Invalid test configurations\n$invalid" if length $invalid;
+plan tests => $count;
+
+# Actual tests
+process(sub {
+	my ($key, $spec, $idx) = @_;
+	if($spec->[0] eq 'compile') {
+		$invoker->compile($key, $spec->[2])->map(sub {
+			my ($rc, $result) = @_;
+			test($result, $key, $spec, $idx, 0);
+			test($result, $key, $spec, $idx, 1);
+		})->recv;
+	} else { # 'execute'
+		$invoker->link($key, $spec->[2])->map(sub {
+			my ($rc, $result, $out) = @_;
+			test($result, $key, $spec, $idx, 0);
+			test($result, $key, $spec, $idx, 1);
+			return $out;
+		})->flat_map(sub {
+			$invoker->execute($key, shift)
+		})->map(sub{
+			my ($rc, $result) = @_;
+			test($result, $key, $spec, $idx, 2);
+			test($result, $key, $spec, $idx, 3);
+		})->recv;
+	}
+});
