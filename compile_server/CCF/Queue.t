@@ -35,7 +35,7 @@ sub max
 
 package main;
 
-use Test::More tests => 12;
+use Test::More tests => 20;
 use Test::Exception;
 use AnyEvent;
 use Data::Monad::CondVar;
@@ -67,7 +67,7 @@ sub process
 				$ck->dec;
 				$cv->end;
 			})
-		});
+		}); # Not using result value of enque
 	}
 	$cv->end;
 	$cv->recv;
@@ -79,3 +79,34 @@ process(1, 5);
 process(3, 10);
 process(5, 10);
 process(5, 3);
+
+sub process2
+{
+	my ($len, $task) = @_;
+	my $q = CCF::Queue->new($len);
+	my $cv = AE::cv;
+	my $ck = Checker->new;
+	$cv->begin(sub { $cv->send });
+	foreach (1..$task) {
+		$cv->begin;
+		$q->enque(sub {
+			cv_unit()->map(sub {
+				$ck->inc;
+			})->sleep(rand(3))->map(sub {
+				$ck->dec;
+				return $cv;
+			})
+		})->map(sub { # Using result value of enque
+			shift->end;
+		});
+	}
+	$cv->end;
+	$cv->recv;
+	is($ck->max, ($len < $task ? $len : $task), "max - len: $len task: $task");
+	is($ck->min, 0, "min - len: $len task: $task");
+}
+
+process2(1, 5);
+process2(3, 10);
+process2(5, 10);
+process2(5, 3);
