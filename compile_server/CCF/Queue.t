@@ -38,7 +38,7 @@ sub max
 
 package main;
 
-use Test::More tests => 20;
+use Test::More tests => 40;
 use Test::Exception;
 use AnyEvent;
 use Data::Monad::CondVar;
@@ -85,6 +85,11 @@ process(1, 5);
 process(3, 10);
 process(5, 10);
 process(5, 3);
+process(5, 3, 3);
+process(5, 3, 10);
+process(5, 10, 3);
+process(5, 10, 10);
+process(5, 3, 3, 3);
 
 sub process2
 {
@@ -118,3 +123,8 @@ process2(1, 5);
 process2(3, 10);
 process2(5, 10);
 process2(5, 3);
+process2(5, 3, 3);
+process2(5, 3, 10);
+process2(5, 10, 3);
+process2(5, 10, 10);
+process2(5, 3, 3, 3);
