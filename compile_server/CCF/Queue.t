@@ -68,7 +68,7 @@ sub process
 			$q->enque(sub {
 				cv_unit()->map(sub {
 					$ck->inc;
-				})->sleep(rand(3))->map(sub {
+				})->sleep(rand(0.3))->map(sub {
 					$ck->dec;
 					$cv->end;
 				})
@@ -104,7 +104,7 @@ sub process2
 			$q->enque(sub {
 				cv_unit()->map(sub {
 					$ck->inc;
-				})->sleep(rand(3))->map(sub {
+				})->sleep(rand(0.3))->map(sub {
 					$ck->dec;
 					return $cv;
 				})
