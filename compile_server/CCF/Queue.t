@@ -50,9 +50,9 @@ BEGIN {
 
 {
 	my $q = CCF::Queue->new(5);
-	throws_ok { $q->enque(sub {}) } qr/a queued task does not return AnyEvent::CondVar/, 'invalid arg1';
-	throws_ok { $q->enque(sub { 1 }) } qr/a queued task does not return AnyEvent::CondVar/, 'invalid arg2';
-	throws_ok { $q->enque(sub { $q }) } qr/a queued task does not return AnyEvent::CondVar/, 'invalid arg3';
+	throws_ok { $q->enqueue(sub {}) } qr/a queued task does not return AnyEvent::CondVar/, 'invalid arg1';
+	throws_ok { $q->enqueue(sub { 1 }) } qr/a queued task does not return AnyEvent::CondVar/, 'invalid arg2';
+	throws_ok { $q->enqueue(sub { $q }) } qr/a queued task does not return AnyEvent::CondVar/, 'invalid arg3';
 }
 
 sub process
@@ -65,7 +65,7 @@ sub process
 		$cv->begin(sub { $cv->send });
 		foreach (1..$task) {
 			$cv->begin;
-			$q->enque(sub {
+			$q->enqueue(sub {
 				cv_unit()->map(sub {
 					$ck->inc;
 				})->sleep(rand(0.3))->map(sub {
@@ -101,7 +101,7 @@ sub process2
 		$cv->begin(sub { $cv->send });
 		foreach (1..$task) {
 			$cv->begin;
-			$q->enque(sub {
+			$q->enqueue(sub {
 				cv_unit()->map(sub {
 					$ck->inc;
 				})->sleep(rand(0.3))->map(sub {

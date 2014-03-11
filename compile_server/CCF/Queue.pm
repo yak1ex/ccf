@@ -41,7 +41,7 @@ sub _leave
 	}
 }
 
-sub enque
+sub enqueue
 {
 	my ($self, $coderef) = @_;
 	my $cv = AE::cv;
