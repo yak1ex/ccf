@@ -12,6 +12,7 @@ use Encode;
 use File::Temp;
 
 use ObjectFile::Tiny;
+use CCF::Queue;
 
 BEGIN {
 	if($^O eq 'cygwin') {
@@ -26,6 +27,7 @@ sub new
 	my $class = ref($self) || $self;
 	return bless {
 		_config => $arg{config},
+		_queue => CCF::Queue->new($arg{config}{GLOBAL}{queue} || 5),
 		(exists $arg{verbose} ? (_verbose => $arg{verbose}) : ()),
 		(exists $arg{debug} ? (_debug => $arg{debug}) : ()),
 	}, $class;
@@ -41,6 +43,11 @@ sub _config
 	return $self->_config->{$type}{$key} if exists $self->_config->{$type} && exists $self->_config->{$type}{$key};
 	return $self->_config->{GLOBAL}{$key} if exists $self->_config->{GLOBAL} && exists $self->_config->{GLOBAL}{$key};
 	return undef;
+}
+
+sub _enqueue
+{
+	return $_[0]->{_queue}->enqueue($_[1]);
 }
 
 # Check verbose flag
@@ -218,7 +225,9 @@ sub compile
 	my $input = __mktemp('.cpp', $source);
 	my $obj   = __mktemp(($self->_is_cygwin2native($type) || $OSNAME eq 'MSWin32') ? '.obj' : '.o');
 
-	return run_cmd($self->_make_arg($type, 'compile', $input, $obj, \$tresult))->map(sub {
+	return $self->_enqueue(sub {
+		run_cmd($self->_make_arg($type, 'compile', $input, $obj, \$tresult));
+	})->map(sub {
 		my $rc = shift;
 		$tresult = $self->_recover_result($type, $tresult);
 		$result->{output} = $self->_dec($type, $tresult);
@@ -239,7 +248,9 @@ sub _obj_adjust
 	if($self->_is_sandbox($type)) {
 		my $obj2 = __mktemp(($self->_is_cygwin2native($type) || $OSNAME eq 'MSWin32') ? '.obj' : '.o');
 		my ($result, $tresult) = {};
-		return run_cmd(['objcopy', '--redefine-sym', ($self->_config($type, 'sandbox') eq 'win' ? '_main=_main_' : 'main=main_'), $obj, $obj2], '<', '/dev/null', '>', \$tresult, '2>', \$tresult)->map(sub {
+		return $self->_enqueue(sub {
+			run_cmd(['objcopy', '--redefine-sym', ($self->_config($type, 'sandbox') eq 'win' ? '_main=_main_' : 'main=main_'), $obj, $obj2], '<', '/dev/null', '>', \$tresult, '2>', \$tresult);
+		})->map(sub {
 			my $rc = shift;
 			if($rc) {
 				__append_result($result, 'output', $self->_dec($type, $tresult));
@@ -278,9 +289,10 @@ sub _check_obj
 sub link
 {
 	my ($self, $type, $source) = @_;
+	my ($rc, $obj, $result, $tresult, $out);
 
 	$self->compile($type, $source, 1)->flat_map(sub {
-		my ($rc, $result, $obj) = @_;
+		($rc, $result, $obj) = @_;
 		if($rc) {
 			unlink $obj;
 			return cv_unit($rc, $result);
@@ -291,30 +303,32 @@ sub link
 			__append_result($result, 'error', 'CCF: '.$check);
 			return cv_unit($rc, $result);
 		}
-		return $self->_obj_adjust($type, $obj)->flat_map(sub {
-			my ($rc, $tresult, $obj) = @_;
-			__append_result($result, 'output', $self->_dec($type, $tresult->{output}));
-			if($rc) {
-				unlink $obj;
-				__append_result($result, 'error', sprintf("CCF: Adjujstment of obj prior to link failed by status: 0x%04X\n", $rc));
-				return cv_unit($rc, $result);
-			}
-			undef $tresult;
-			my $out = __mktemp('.exe');
-			return run_cmd($self->_make_arg($type, 'link', $obj, $out, \$tresult))->map(sub {
-				my $rc = shift;
-				$tresult = $self->_recover_result($type, $tresult);
-				__append_result($result, 'output', $self->_dec($type, $tresult));
-				if($rc) {
-					unlink $obj;
-					__append_result($result, 'error', sprintf("CCF: link failed by status: 0x%04X\n", $rc));
-					return ($rc, $result);
-				}
-				unlink $obj;
-				chmod 0711, $out if $self->_is_cygwin2native($type);
-				return ($rc, $result, $out);
-			});
+		return $self->_obj_adjust($type, $obj);
+	})->flat_map(sub {
+		($rc, $tresult, $obj) = @_;
+		__append_result($result, 'output', $self->_dec($type, $tresult->{output}));
+		if($rc) {
+			unlink $obj;
+			__append_result($result, 'error', sprintf("CCF: Adjujstment of obj prior to link failed by status: 0x%04X\n", $rc));
+			return cv_unit($rc, $result);
+		}
+		undef $tresult;
+		$out = __mktemp('.exe');
+		return $self->_enqueue(sub {
+			run_cmd($self->_make_arg($type, 'link', $obj, $out, \$tresult));
 		});
+	})->map(sub {
+		my $rc = shift;
+		$tresult = $self->_recover_result($type, $tresult);
+		__append_result($result, 'output', $self->_dec($type, $tresult));
+		if($rc) {
+			unlink $obj;
+			__append_result($result, 'error', sprintf("CCF: link failed by status: 0x%04X\n", $rc));
+			return ($rc, $result);
+		}
+		unlink $obj;
+		chmod 0711, $out if $self->_is_cygwin2native($type);
+		return ($rc, $result, $out);
 	});
 }
 
@@ -324,7 +338,9 @@ sub execute
 	my ($self, $type, $out) = @_;
 	my ($result, $tresult) = {};
 
-	return run_cmd($self->_make_arg($type, 'execute', $out, undef, \$tresult))->map(sub {
+	return $self->_enqueue(sub {
+		run_cmd($self->_make_arg($type, 'execute', $out, undef, \$tresult));
+	})->map(sub {
 		my $rc = shift;
 		$result->{output} = $self->_recover_result($type, $tresult);
 		if($rc) {
