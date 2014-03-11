@@ -246,6 +246,7 @@ cygwin:
       - $input
 cygwin-test:
   GLOBAL:
+    queue: 1
     memlimit-compile: 0
     memlimit-execute: 0
     cpulimit-compile: 0
