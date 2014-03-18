@@ -110,8 +110,6 @@ sub _show
 			when (1)     { $responders->{html}($tmpl{INVOKED}->fill_in(HASH => {})); }
 			when (2)     { $responders->{html}($tmpl{COMPILING}->fill_in(HASH => {})); }
 			when ([3,4]) {
-# TODO: HTML escape
-# TODO: Apply CSS
 				if($status == 3 || ! exists $obj->{execute}) {
 					my $compile = $obj->{compile};
 					__encode_html($compile);
