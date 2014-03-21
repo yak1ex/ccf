@@ -120,9 +120,11 @@ $(function() {
 					data: { command: 'status', id: status[idxmap[idx]].id },
 					dataType: 'json'
 				}).done(function(msg) {
-					status[idmap[msg.id]].status = msg.status;
+					if(status[idmap[msg.id]].status != msg.status) {
+						status[idmap[msg.id]].status = msg.status;
+						$('#result').tabs('load', idx);
+					}
 				});
-				$('#result').tabs('load', idx);
 				setTimeout(updater, 1000);
 			} else {
 				$('#result').tabs('load', idx);
