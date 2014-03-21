@@ -9,7 +9,7 @@ use CCF;
 use YAML;
 
 my $conf = YAML::LoadFile('config.yaml');
-my $app = CCF->new(bucket => $conf->{bucket}, backend => $conf->{backend});
+my $app = CCF->new(bucket => $conf->{bucket}, backend => $conf->{backend})->to_app;
 
 builder {
 	mount '/ccf.cgi' => $app;
