@@ -298,45 +298,49 @@ sub link
 	my ($self, $type, $source) = @_;
 	my ($rc, $obj, $result, $tresult, $out);
 
-	$self->compile($type, $source, 1)->flat_map(sub {
-		($rc, $result, $obj) = @_;
-		if($rc) {
+	call_cc {
+		my $cont = shift;
+
+		$self->compile($type, $source, 1)->flat_map(sub {
+			($rc, $result, $obj) = @_;
+			if($rc) {
+				unlink $obj;
+				return $cont->($rc, $result); # Globally escape
+			}
+			my $check = $self->_check_obj($type, $obj);
+			if(defined $check) {
+				unlink $obj;
+				__append_result($result, 'error', 'CCF: '.$check);
+				return $cont->($rc, $result); # Globally escape
+			}
+			return $self->_obj_adjust($type, $obj);
+		})->flat_map(sub {
+			($rc, $tresult, $obj) = @_;
+			__append_result($result, 'output', $self->_dec($type, $tresult->{output}));
+			if($rc) {
+				unlink $obj;
+				__append_result($result, 'error', sprintf("CCF: Adjujstment of obj prior to link failed by status: 0x%04X\n", $rc));
+				return $cont->($rc, $result); # Globally escape
+			}
+			undef $tresult;
+			$out = __mktemp('.exe');
+			return $self->_enqueue(sub {
+				run_cmd($self->_make_arg($type, 'link', $obj, $out, \$tresult));
+			});
+		})->map(sub {
+			my $rc = shift;
+			$tresult = $self->_recover_result($type, $tresult);
+			__append_result($result, 'output', $self->_dec($type, $tresult));
+			if($rc) {
+				unlink $obj;
+				__append_result($result, 'error', sprintf("CCF: link failed by status: 0x%04X\n", $rc));
+				return ($rc, $result)
+			}
 			unlink $obj;
-			return cv_unit($rc, $result);
-		}
-		my $check = $self->_check_obj($type, $obj);
-		if(defined $check) {
-			unlink $obj;
-			__append_result($result, 'error', 'CCF: '.$check);
-			return cv_unit($rc, $result);
-		}
-		return $self->_obj_adjust($type, $obj);
-	})->flat_map(sub {
-		($rc, $tresult, $obj) = @_;
-		__append_result($result, 'output', $self->_dec($type, $tresult->{output}));
-		if($rc) {
-			unlink $obj;
-			__append_result($result, 'error', sprintf("CCF: Adjujstment of obj prior to link failed by status: 0x%04X\n", $rc));
-			return cv_unit($rc, $result);
-		}
-		undef $tresult;
-		$out = __mktemp('.exe');
-		return $self->_enqueue(sub {
-			run_cmd($self->_make_arg($type, 'link', $obj, $out, \$tresult));
+			chmod 0711, $out if $self->_is_cygwin2native($type);
+			return ($rc, $result, $out);
 		});
-	})->map(sub {
-		my $rc = shift;
-		$tresult = $self->_recover_result($type, $tresult);
-		__append_result($result, 'output', $self->_dec($type, $tresult));
-		if($rc) {
-			unlink $obj;
-			__append_result($result, 'error', sprintf("CCF: link failed by status: 0x%04X\n", $rc));
-			return ($rc, $result);
-		}
-		unlink $obj;
-		chmod 0711, $out if $self->_is_cygwin2native($type);
-		return ($rc, $result, $out);
-	});
+	};
 }
 
 # External I/F for execution
