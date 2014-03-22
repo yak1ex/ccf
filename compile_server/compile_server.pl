@@ -111,6 +111,11 @@ sub invoke
 	if($obj->{execute} eq 'true') {
 		$invoker->link($obj->{type}, $obj->{source})->cb(sub {
 			my ($rc, $result, $out) = shift->recv;
+			if(length $result->{output} > 10 * 1024) {
+				$result->{output} = substr($result->{output}, 0, 10 * 1024)."...\n";
+				$result->{error} = '' if ! exists $result->{error};
+				$result->{error} .= 'CCF: Output size is over 10KiB.';
+			}
 			$opts{v} and print STDERR tracemsg('compile', $result);
 			if($rc) {
 				$cv->flat_map(sub {
@@ -130,9 +135,9 @@ sub invoke
 				$invoker->execute($obj->{type}, $out)->cb(sub{
 					my ($rc, $result) = shift->recv;
 					if(length $result->{output} > 10 * 1024) {
-						$result->{output} = substr $result->{output}, 0, 10 * 1024;
+						$result->{output} = substr($result->{output}, 0, 10 * 1024)."...\n";
 						$result->{error} = '' if ! exists $result->{error};
-						$result->{error} = 'CCF: Output size is over 10KiB.';
+						$result->{error} .= 'CCF: Output size is over 10KiB.';
 					}
 					$opts{v} and print STDERR tracemsg('execute', $result);
 					unlink $out;
@@ -148,6 +153,11 @@ sub invoke
 	} else {
 		$invoker->compile($obj->{type}, $obj->{source})->cb(sub {
 			my ($rc, $result) = shift->recv;
+			if(length $result->{output} > 10 * 1024) {
+				$result->{output} = substr($result->{output}, 0, 10 * 1024)."...\n";
+				$result->{error} = '' if ! exists $result->{error};
+				$result->{error} .= 'CCF: Output size is over 10KiB.';
+			}
 			$opts{v} and print STDERR tracemsg('compile', $result);
 			$cv->flat_map(sub {
 				$storage->update_compile_status_async($curid, {

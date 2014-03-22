@@ -154,17 +154,24 @@ sub _make_arg
 		} @{$self->_config->{$type}{$mode}};
 	}
 # in/out setup in run_cmd arguments
-	if($self->_is_sandbox($type)) {
-		if($self->_config($type, 'sandbox') eq 'win') {
-			push @arg, '<', '/dev/null';
-			$$capture = __mktemp('.txt');
-			$on_prepare = $self->_sandbox_env($type, $mode, $on_prepare, $$capture);
-		} else {
-			push @arg, '<', '/dev/null', '>', $capture, '2>', $capture;
-			$on_prepare = $self->_sandbox_env($type, $mode, $on_prepare);
-		}
+	if($self->_is_sandbox($type) && $self->_config($type, 'sandbox') eq 'win') {
+		push @arg, '<', '/dev/null';
+		$$capture = __mktemp('.txt');
+		$on_prepare = $self->_sandbox_env($type, $mode, $on_prepare, $$capture);
 	} else {
-		push @arg, '<', '/dev/null', '>', $capture, '2>', $capture;
+		if($self->_is_sandbox($type)) {
+			$on_prepare = $self->_sandbox_env($type, $mode, $on_prepare) if $self->_is_sandbox($type);
+		}
+		$$capture ||= '';
+		my $appender = sub {
+			return unless $_[0];
+			if(length($_[0]) + length($$capture) <= 10 * 1024) {
+				$$capture .= $_[0];
+			} else {
+				$$capture .= substr($_[0], 0, 10 * 1024 - length($$capture))."...\n";
+			}
+		};
+		push @arg, '<', '/dev/null', '>', $appender, '2>', $appender;
 	}
 # set on_prepare if any
 	push @arg, (on_prepare => $on_prepare) if defined $on_prepare;
