@@ -222,21 +222,22 @@ tcp_server undef, $port, sub {
 		on_eof => sub { AE::log debug => 'on_eof called in compile_server'; $handle->destroy },
 		on_error => sub { warn "on_error called by $_[2] in compile_server"; $handle->destroy; },
 	);
-	my @handler; @handler = (storable => sub {
-		my ($handle, $obj) = @_;
-		if(exists $obj->{command} && exists $handler{$obj->{command}}) {
-			$opts{v} and print STDERR "handler called by command `$obj->{command}'.\n";
-			$handler{$obj->{command}}->($handle, $obj);
-		} else {
-			my $command = '';
-			$command = $obj->{command} if exists $obj->{command};
-			$command = "Unknown command `$command'";
-			warn $command;
-			$handle->push_write(storable => { error => $command });
-		}
-		$handle->push_read(@handler);
+	$handle->on_read(sub {
+		my ($handle) = @_;
+		$handle->push_read(storable => sub {
+			my ($handle, $obj) = @_;
+			if(exists $obj->{command} && exists $handler{$obj->{command}}) {
+				$opts{v} and print STDERR "handler called by command `$obj->{command}'.\n";
+				$handler{$obj->{command}}->($handle, $obj);
+			} else {
+				my $command = '';
+				$command = $obj->{command} if exists $obj->{command};
+				$command = "Unknown command `$command'";
+				warn $command;
+				$handle->push_write(storable => { error => $command });
+			}
+		});
 	});
-	$handle->push_read(@handler);
 };
 
 AnyEvent->condvar->recv;
