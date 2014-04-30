@@ -69,7 +69,8 @@ sub _handle
 	my ($self, $idx) = @_;
 	my $handle; $handle = AnyEvent::Handle->new(
 		connect => [$self->_host($idx), $self->_port($idx)],
-		on_error => sub { undef $handle },
+		on_error => sub { warn "on_error called by $_[2] in CCF::Dispatcher"; $handle->destroy },
+		on_eof => sub { AE::log debug => 'on_eof called in CCF::Dispatcher'; $handle->destroy },
 	);
 	return $handle;
 }

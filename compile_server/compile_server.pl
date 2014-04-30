@@ -219,8 +219,8 @@ tcp_server undef, $port, sub {
 
 	my $handle; $handle = AnyEvent::Handle->new(
 		fh => $fh,
-		on_eof => sub { $handle->destroy; },
-		on_error => sub { $handle->destroy; },
+		on_eof => sub { AE::log debug => 'on_eof called in compile_server'; $handle->destroy },
+		on_error => sub { warn "on_error called by $_[2] in compile_server"; $handle->destroy; },
 	);
 	my @handler; @handler = (storable => sub {
 		my ($handle, $obj) = @_;
