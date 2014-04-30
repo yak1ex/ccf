@@ -184,6 +184,7 @@ sub _invoke
 		$handle->push_read(storable => sub {
 			my ($handle, $obj) = @_;
 			$result->{keys}{$key} = $obj->{id};
+			$handle->destroy;
 			$cv->end;
 		});
 	}

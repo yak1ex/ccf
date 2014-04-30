@@ -43,6 +43,7 @@ sub new
 		$handle->push_read(storable => sub { 
 			my ($handle_, $obj) = @_;
 			$self->{_list}[$idx] = $obj;
+			$handle->destroy;
 			$cv->end;
 		});
 	}
