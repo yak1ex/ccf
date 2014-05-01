@@ -244,6 +244,54 @@ cygwin:
       - /MDd
       - /Fe$output
       - $input
+  vc12ctp:
+    name: '2013CTP / VC12CTP / 18.00.21114.1'
+    c++11: true
+    c++1y: true
+    cygwin2native: true
+    env:
+      - VSINSTALLDIR: 'C:\Program Files (x86)\Microsoft Visual Studio 12.0\'
+        VCINSTALLDIR: 'C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\'
+        FrameworkDir32: 'C:\Windows\Microsoft.NET\Framework\'
+        FrameworkVersion32: 'v4.0.30319'
+        Framework40Version: 'v4.0'
+        WindowsSdkDir: 'C:\Program Files (x86)\Windows Kits\8.1\'
+        WindowsSDK_ExecutablePath_x86: 'C:\Program Files (x86)\Microsoft SDKs\Windows\v8.1A\bin\NETFX 4.5.1 Tools\'
+      - DevEnvDir: '%VSINSTALLDIR%Common7\IDE\'
+        VS120COMNTOOLS: '%VSINSTALLDIR%Common7\Tools\'
+        FrameworkDir: %FrameworkDir32%
+        FrameworkVersion: %FrameworkVersion32%
+      - PATH: 'C:\Program Files (x86)\Microsoft Visual C++ Compiler Nov 2013 CTP\bin;%DevEnvDir%;%VCINSTALLDIR%BIN;%VSINSTALLDIR%Common7\Tools;%FrameworkDir%%FrameworkVersion%;%FrameworkDir%%Framework40Version%;%VCINSTALLDIR%VCPackages;%WindowsSdkDir%bin\x86;%WindowsSDK_ExecutablePath_x86%;%PATH%'
+        INCLUDE: 'C:\Program Files (x86)\Microsoft Visual C++ Compiler Nov 2013 CTP\include;%VCINSTALLDIR%INCLUDE;%WindowsSdkDir%include\shared;%WindowsSdkDir%include\um;%WindowsSdkDir%include\winrt;%INCLUDE%'
+        LIB: 'C:\Program Files (x86)\Microsoft Visual C++ Compiler Nov 2013 CTP\lib;%VCINSTALLDIR%LIB;%WindowsSdkDir%lib\winv6.3\um\x86;%LIB%'
+        LIBPATH: '%FrameworkDir%%FrameworkVersion%;%FrameworkDir%%Framework40Version%;%VCINSTALLDIR%LIB;%WindowsSdkDir%References\CommonConfiguration\Neutral;%ExtensionSDKDir%\Microsoft.VCLibs\12.0\References\CommonConfiguration\neutral;%LIBPATH%'
+    sandbox-prearg:
+      - '..\sandbox\win\vc12\sandbox.obj'
+    sandbox-arg:
+      - '..\sandbox\win\vc12\sandbox-win-standalone.lib'
+      - advapi32.lib
+      - user32.lib
+      - shell32.lib
+      - dbghelp.lib
+      - psapi.lib
+    compile:
+      - cl
+      - /nologo
+      - /W3
+      - /EHsc
+      - /MDd
+      - '/Ic:\boost'
+      - /c
+      - /Fo$output
+      - $input
+    link:
+      - cl
+      - /nologo
+      - /W3
+      - /EHsc
+      - /MDd
+      - /Fe$output
+      - $input
 cygwin-test:
   GLOBAL:
     queue: 1
