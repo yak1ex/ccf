@@ -252,8 +252,8 @@ cygwin-test:
     cpulimit-compile: 0
     cpulimit-execute: 0
     sandbox: none
-  gcc45:
-    name: 'gcc 4.5.3'
+  gcc48:
+    name: 'gcc 4.8.2'
     compile:
       - g++
       - -Wall
@@ -267,8 +267,8 @@ cygwin-test:
       - -o
       - $output
       - $input
-  gcc45-c++11:
-    name: 'gcc 4.5.3 with -std=c++0x'
+  gcc48-c++11:
+    name: 'gcc 4.8.2 with -std=c++0x'
     c++11: true
     compile:
       - g++
@@ -282,6 +282,24 @@ cygwin-test:
       - g++
       - -Wall
       - -std=c++0x
+      - -o
+      - $output
+      - $input
+  gcc48-c++1y:
+    name: 'gcc 4.8.2 with -std=c++1y'
+    c++1y: true
+    compile:
+      - g++
+      - -Wall
+      - -std=c++1y
+      - -c
+      - -o
+      - $output
+      - $input
+    link:
+      - g++
+      - -Wall
+      - -std=c++1y
       - -o
       - $output
       - $input
