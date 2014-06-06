@@ -111,8 +111,10 @@ $(function() {
 		$('#source-label').addClass('ui-widget-header ui-corner-all');
 	});
 	// Status updater
+	var updater_id;
 	var updater = function() {
 		var idx = $('#result').tabs('option', 'active');
+		updater_id = undefined; // Assuming only one updater is active
 		if(idx != 0) {
 			if(status[idxmap[idx]].status != 4) {
 				$.ajax({
@@ -125,7 +127,7 @@ $(function() {
 						$('#result').tabs('load', idx);
 					}
 				});
-				setTimeout(updater, 1000);
+				updater_id = setTimeout(updater, 1000);
 			} else {
 				$('#result').tabs('load', idx);
 				status[idxmap[idx]].status = 5;
@@ -192,7 +194,8 @@ $(function() {
 	});
 	$('#result').tabs(tabopts);
 	$('#result').bind('tabsactivate', function(event, ui) {
-		setTimeout(updater, 1000);
+		if(updater_id) clearTimeout(updater_id);
+		updater_id = setTimeout(updater, 1000);
 		return true;
 	});
 });
