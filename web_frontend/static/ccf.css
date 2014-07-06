@@ -143,3 +143,11 @@ body {
     font-weight: bold;
     margin-left: 2em;
 }
+
+/* WORKAROUND: Avoid problem of Lucida Sans with Google Chrome */
+.ui-widget {
+    font-family: Lucida Grande,Arial,sans-serif;
+}
+.ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget button {
+    font-family: Lucida Grande,Arial,sans-serif;
+}
