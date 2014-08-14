@@ -805,7 +805,7 @@ linux:
       - $output
       - $input
   clang34:
-    name: 'Debian 3.4-debian1ppa2'
+    name: 'Debian 3.4-debian2ppa2'
 # 64MiB
     memlimit-link: 67108864
     compile:
@@ -822,7 +822,7 @@ linux:
       - $output
       - $input
   clang34-c++11:
-    name: 'Debian 3.4-debian1ppa2'
+    name: 'Debian 3.4-debian2ppa2'
     c++11: true
 # 64MiB
     memlimit-link: 67108864
@@ -876,7 +876,7 @@ linux:
       - $output
       - $input
   clang34-c++1y:
-    name: 'Debian 3.4-debian1ppa2'
+    name: 'Debian 3.4-debian2ppa2'
     c++1y: true
 # 64MiB
     memlimit-link: 67108864
