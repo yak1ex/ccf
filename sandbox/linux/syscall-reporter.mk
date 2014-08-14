@@ -11,7 +11,7 @@
 #syscall-names.h: /usr/include/sys/syscall.h syscall-reporter.mk
 # - remove static specifier
 # - add guard for madvise1 to avoid override
-syscall-names.c: /usr/include/sys/syscall.h syscall-reporter.mk
+syscall-names.c: /usr/include/i386-linux-gnu/sys/syscall.h syscall-reporter.mk
 	echo "const char *syscall_names[] = {" > $@ ;\
 	echo "#include <sys/syscall.h>" | cpp -dM | grep '^#define __NR_' | \
 		LC_ALL=C sed -e '/madvise1/d' | \
