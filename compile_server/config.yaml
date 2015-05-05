@@ -611,7 +611,7 @@ linux:
       - $output
       - $input
   gcc47:
-    name: 'Ubuntu/Linaro 4.7.3-2ubuntu1~12.04'
+    name: 'Ubuntu/Linaro 4.7.3-12ubuntu1precise2'
     compile:
       - g++-4.7
       - -Wall
@@ -626,7 +626,7 @@ linux:
       - $output
       - $input
   gcc47-c++11:
-    name: 'Ubuntu/Linaro 4.7.3-2ubuntu1~12.04'
+    name: 'Ubuntu/Linaro 4.7.3-12ubuntu1precise2'
     c++11: true
     compile:
       - g++-4.7
@@ -644,7 +644,7 @@ linux:
       - $output
       - $input
   gcc48:
-    name: 'Ubuntu 4.8.1-2ubuntu1~12.04'
+    name: 'Ubuntu 4.8.2-19ubuntu1precise2'
     compile:
       - g++-4.8
       - -Wall
@@ -659,7 +659,7 @@ linux:
       - $output
       - $input
   gcc48-c++11:
-    name: 'Ubuntu 4.8.1-2ubuntu1~12.04'
+    name: 'Ubuntu 4.8.2-19ubuntu1precise2'
     c++11: true
     compile:
       - g++-4.8
@@ -676,8 +676,74 @@ linux:
       - -o
       - $output
       - $input
+  gcc49:
+    name: 'Ubuntu 4.9.2-10ubuntu13precise1'
+    compile:
+      - g++-4.9
+      - -Wall
+      - -c
+      - -o
+      - $output
+      - $input
+    link:
+      - g++-4.9
+      - -Wall
+      - -o
+      - $output
+      - $input
+  gcc49-c++11:
+    name: 'Ubuntu 4.9.2-10ubuntu13precise1'
+    c++11: true
+    compile:
+      - g++-4.9
+      - -Wall
+      - -std=c++0x
+      - -c
+      - -o
+      - $output
+      - $input
+    link:
+      - g++-4.9
+      - -Wall
+      - -std=c++0x
+      - -o
+      - $output
+      - $input
+  gcc5:
+    name: 'Ubuntu 5.1.0-0ubuntu11~12.04.2'
+    compile:
+      - g++-5
+      - -Wall
+      - -c
+      - -o
+      - $output
+      - $input
+    link:
+      - g++-5
+      - -Wall
+      - -o
+      - $output
+      - $input
+  gcc5-c++11:
+    name: 'Ubuntu 5.1.0-0ubuntu11~12.04.2'
+    c++11: true
+    compile:
+      - g++-5
+      - -Wall
+      - -std=c++0x
+      - -c
+      - -o
+      - $output
+      - $input
+    link:
+      - g++-5
+      - -Wall
+      - -std=c++0x
+      - -o
+      - $output
+      - $input
   clang30:
-    name: 'Debian 3.0-debian6.2ppa5'
+    name: 'Debian 3.0-debian6.2precise1'
     compile:
       - clang++-3.0
       - -Wall
@@ -692,7 +758,7 @@ linux:
       - $output
       - $input
   clang30-c++11:
-    name: 'Debian 3.0-debian6.2ppa5'
+    name: 'Debian 3.0-debian6.2precise1'
     c++11: true
     compile:
       - clang++-3.0
@@ -709,7 +775,7 @@ linux:
       - $output
       - $input
   clang31:
-    name: 'Debian 3.1-debian8ppa5'
+    name: 'Debian 3.1-debian8precise1'
     compile:
       - clang++-3.1
       - -Wall
@@ -724,7 +790,7 @@ linux:
       - $output
       - $input
   clang31-c++11:
-    name: 'Debian 3.1-debian8ppa5'
+    name: 'Debian 3.1-debian8precise1'
     c++11: true
     compile:
       - clang++-3.1
@@ -741,7 +807,7 @@ linux:
       - $output
       - $input
   clang32:
-    name: 'Debian 3.2-debian11ppa8'
+    name: 'Debian 3.2-debian11precise1.1'
     compile:
       - clang++-3.2
       - -Wall
@@ -756,7 +822,7 @@ linux:
       - $output
       - $input
   clang32-c++11:
-    name: 'Debian 3.2-debian11ppa8'
+    name: 'Debian 3.2-debian11precise1.1'
     c++11: true
     compile:
       - clang++-3.2
@@ -773,7 +839,7 @@ linux:
       - $output
       - $input
   clang33:
-    name: 'Debian 3.3-debian16ppa5'
+    name: 'Debian 3.3-debian16precise1'
     compile:
       - clang++-3.3
       - -Wall
@@ -788,7 +854,7 @@ linux:
       - $output
       - $input
   clang33-c++11:
-    name: 'Debian 3.3-debian16ppa5'
+    name: 'Debian 3.3-debian16precise1'
     c++11: true
     compile:
       - clang++-3.3
@@ -805,7 +871,7 @@ linux:
       - $output
       - $input
   clang34:
-    name: 'Debian 3.4-debian2ppa2'
+    name: 'Debian 3.4.2-debian13precise1'
 # 64MiB
     memlimit-link: 67108864
     compile:
@@ -822,7 +888,7 @@ linux:
       - $output
       - $input
   clang34-c++11:
-    name: 'Debian 3.4-debian2ppa2'
+    name: 'Debian 3.4.2-debian13precise1'
     c++11: true
 # 64MiB
     memlimit-link: 67108864
@@ -840,8 +906,80 @@ linux:
       - -o
       - $output
       - $input
+  clang35:
+    name: 'Debian 3.5.2-debian1precise1'
+# 64MiB
+    memlimit-link: 67108864
+    compile:
+      - clang++-3.5
+      - -Wall
+      - -c
+      - -o
+      - $output
+      - $input
+    link:
+      - clang++-3.5
+      - -Wall
+      - -o
+      - $output
+      - $input
+  clang35-c++11:
+    name: 'Debian 3.5.2-debian1precise1'
+    c++11: true
+# 64MiB
+    memlimit-link: 67108864
+    compile:
+      - clang++-3.5
+      - -Wall
+      - -std=c++0x
+      - -c
+      - -o
+      - $output
+      - $input
+    link:
+      - clang++-3.5
+      - -Wall
+      - -o
+      - $output
+      - $input
+  clang36:
+    name: 'Debian 3.6.0-debian2precise1'
+# 64MiB
+    memlimit-link: 67108864
+    compile:
+      - clang++-3.6
+      - -Wall
+      - -c
+      - -o
+      - $output
+      - $input
+    link:
+      - clang++-3.6
+      - -Wall
+      - -o
+      - $output
+      - $input
+  clang36-c++11:
+    name: 'Debian 3.6.0-debian2precise1'
+    c++11: true
+# 64MiB
+    memlimit-link: 67108864
+    compile:
+      - clang++-3.6
+      - -Wall
+      - -std=c++0x
+      - -c
+      - -o
+      - $output
+      - $input
+    link:
+      - clang++-3.6
+      - -Wall
+      - -o
+      - $output
+      - $input
   gcc48-c++1y:
-    name: 'Ubuntu 4.8.1-2ubuntu1~12.04'
+    name: 'Ubuntu 4.8.2-19ubuntu1precise2'
     c++1y: true
     compile:
       - g++-4.8
@@ -853,6 +991,42 @@ linux:
       - $input
     link:
       - g++-4.8
+      - -Wall
+      - -std=c++1y
+      - -o
+      - $output
+      - $input
+  gcc49-c++1y:
+    name: 'Ubuntu 4.9.2-10ubuntu13precise1'
+    c++1y: true
+    compile:
+      - g++-4.9
+      - -Wall
+      - -std=c++1y
+      - -c
+      - -o
+      - $output
+      - $input
+    link:
+      - g++-4.9
+      - -Wall
+      - -std=c++1y
+      - -o
+      - $output
+      - $input
+  gcc5-c++1y:
+    name: 'Ubuntu 5.1.0-0ubuntu11~12.04.2'
+    c++1y: true
+    compile:
+      - g++-5
+      - -Wall
+      - -std=c++1y
+      - -c
+      - -o
+      - $output
+      - $input
+    link:
+      - g++-5
       - -Wall
       - -std=c++1y
       - -o
@@ -890,6 +1064,100 @@ linux:
       - $input
     link:
       - clang++-3.4
+      - -Wall
+      - -o
+      - $output
+      - $input
+  clang35-c++1y:
+    name: 'Debian 3.5.2-debian1precise1'
+    c++1y: true
+# 64MiB
+    memlimit-link: 67108864
+    compile:
+      - clang++-3.5
+      - -Wall
+      - -std=c++1y
+      - -c
+      - -o
+      - $output
+      - $input
+    link:
+      - clang++-3.5
+      - -Wall
+      - -o
+      - $output
+      - $input
+  clang36-c++1y:
+    name: 'Debian 3.6.0-debian2precise1'
+    c++1y: true
+# 64MiB
+    memlimit-link: 67108864
+    compile:
+      - clang++-3.6
+      - -Wall
+      - -std=c++1y
+      - -c
+      - -o
+      - $output
+      - $input
+    link:
+      - clang++-3.6
+      - -Wall
+      - -o
+      - $output
+      - $input
+  gcc5-c++1z:
+    name: 'Ubuntu 5.1.0-0ubuntu11~12.04.2'
+    c++1z: true
+    compile:
+      - g++-5
+      - -Wall
+      - -std=c++1z
+      - -c
+      - -o
+      - $output
+      - $input
+    link:
+      - g++-5
+      - -Wall
+      - -std=c++1z
+      - -o
+      - $output
+      - $input
+  clang35-c++1z:
+    name: 'Debian 3.5.2-debian1precise1'
+    c++1z: true
+# 64MiB
+    memlimit-link: 67108864
+    compile:
+      - clang++-3.5
+      - -Wall
+      - -std=c++1z
+      - -c
+      - -o
+      - $output
+      - $input
+    link:
+      - clang++-3.5
+      - -Wall
+      - -o
+      - $output
+      - $input
+  clang36-c++1z:
+    name: 'Debian 3.6.0-debian2precise1'
+    c++1z: true
+# 64MiB
+    memlimit-link: 67108864
+    compile:
+      - clang++-3.6
+      - -Wall
+      - -std=c++1z
+      - -c
+      - -o
+      - $output
+      - $input
+    link:
+      - clang++-3.6
       - -Wall
       - -o
       - $output
