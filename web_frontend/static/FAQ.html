@@ -45,9 +45,9 @@
 <p class="question"><a name="opensource">オープンソース？</a></p>
 <p class="answer">はい。自分の書いた部分については <a href="http://www.boost.org/users/license.html">Boost Software License, Version 1.0</a> です。<a href="http://www.chromium.org/Home">The Chromium Project の Chromium</a> から一部ソースを改変して使用していますが、その部分はオリジナルと同じライセンスになります。ソースコードについては <a href="https://github.com/yak1ex/ccf">Github</a> に置いてあります。</p>
 <p class="question"><a name="new_compiler">○○コンパイラはないの？</a></p>
-<p class="answer">とりあえず無償使用可能として公開されてるものが対象になります。VC7 (.NET 2003) は使用している sandbox ライブラリがそのままではコンパイルできないのでとりあえずパス。clang 3.[012] は <a href="https://launchpad.net/~h-rayflood/+archive/llvm">https://launchpad.net/~h-rayflood/+archive/llvm</a> を、いくつかの gcc は <a href="https://launchpad.net/~ubuntu-toolchain-r/+archive/test">https://launchpad.net/~ubuntu-toolchain-r/+archive/test</a> を使用させて頂いています。clang-3.3 は自前 PPA <a href="https://launchpad.net/~yak1ex/+archive/llvm">https://launchpad.net/~yak1ex/+archive/llvm</a> です。他、Ubuntu 12.04 でバージョン共存可能なパッケージがあれば早いと思います。</p>
+<p class="answer">とりあえず無償使用可能として公開されてるものが対象になります。VC7 (.NET 2003) は使用している sandbox ライブラリがそのままではコンパイルできないのでとりあえずパス。clang 3.[0-4] は <a href="https://launchpad.net/~h-rayflood/+archive/llvm">https://launchpad.net/~h-rayflood/+archive/llvm</a> を、clang 3.[56] は <a href="https://launchpad.net/~h-rayflood/+archive/llvm-upper">https://launchpad.net/~h-rayflood/+archive/llvm-upper</a> を、g++ 4.[789] は <a href="https://launchpad.net/~h-rayflood/+archive/gcc-upper">https://launchpad.net/~h-rayflood/+archive/gcc-upper</a> を、g++ 4.6, 5 は <a href="https://launchpad.net/~ubuntu-toolchain-r/+archive/test">https://launchpad.net/~ubuntu-toolchain-r/+archive/test</a> を使用させて頂いています。clang-3.3 は自前 PPA <a href="https://launchpad.net/~yak1ex/+archive/llvm">https://launchpad.net/~yak1ex/+archive/llvm</a> です。他、Ubuntu 12.04 でバージョン共存可能なパッケージがあれば早いと思います。</p>
 <p class="question"><a name="boost">Boost は？</a></p>
-<p class="answer">ライブラリのビルドをしていないのでヘッダオンリーであれば 1.50 が使用可能です。1.50 なのは Ubuntu のパッケージに合わせただけなのでファイルを差し替えれば更新は可能です。反響次第でしょうか。</p>
+<p class="answer">ライブラリのビルドをしていないのでヘッダオンリーであれば 1.55 が使用可能です。</p>
 <p class="question"><a name="port5000">なんでポート 5000 なの？</a></p>
 <p class="answer"><a href="http://search.cpan.org/dist/Plack/">Plack</a> のデフォルトのままです。まぁ 80 番よりはアタック少ないかも、というのもあります。</p>
 <p class="question"><a name="message_including_CCF">CCF: ... とかいうメッセージが表示される</a></p>
